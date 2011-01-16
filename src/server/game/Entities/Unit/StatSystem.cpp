@@ -23,6 +23,7 @@
 #include "SharedDefines.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "eliteFactor.h"
 #include "SpellMgr.h"
 
 inline bool _ModifyUInt32(bool apply, uint32& baseValue, int32& amount)
@@ -774,6 +775,8 @@ void Player::_RemoveAllStatBonuses()
 ########                         ########
 #######################################*/
 
+#define ELITE_FACTOR(f) EF_FORMULA(m_eliteFactor, f)
+
 bool Creature::UpdateStats(Stats /*stat*/)
 {
     return true;
@@ -782,6 +785,7 @@ bool Creature::UpdateStats(Stats /*stat*/)
 bool Creature::UpdateAllStats()
 {
     UpdateMaxHealth();
+		ResetPlayerDamageReq();
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);
 
@@ -799,7 +803,7 @@ void Creature::UpdateResistances(uint32 school)
     if (school > SPELL_SCHOOL_NORMAL)
     {
         float value  = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
-        SetResistance(SpellSchools(school), int32(value));
+        SetResistance(SpellSchools(school), int32(value / ELITE_FACTOR(HEALTH_FACTOR)));
     }
     else
         UpdateArmor();
@@ -808,13 +812,13 @@ void Creature::UpdateResistances(uint32 school)
 void Creature::UpdateArmor()
 {
     float value = GetTotalAuraModValue(UNIT_MOD_ARMOR);
-    SetArmor(int32(value));
+    SetArmor(int32(value / ELITE_FACTOR(HEALTH_FACTOR)));
 }
 
 void Creature::UpdateMaxHealth()
 {
     float value = GetTotalAuraModValue(UNIT_MOD_HEALTH);
-    SetMaxHealth((uint32)value);
+		SetMaxHealth((uint32)(value / ELITE_FACTOR(HEALTH_FACTOR)));
 }
 
 void Creature::UpdateMaxPower(Powers power)
@@ -844,8 +848,8 @@ void Creature::UpdateAttackPowerAndDamage(bool ranged)
     float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
     float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
-    SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
-    SetInt32Value(index_mod, (uint32)attPowerMod);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
+    SetInt32Value(index, (uint32)(base_attPower));            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    SetInt32Value(index_mod, (uint32)(attPowerMod));          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MODS field
     SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
 
     //automatically update weapon damage after attack power modification

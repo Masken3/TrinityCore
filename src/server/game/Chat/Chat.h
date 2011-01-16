@@ -349,6 +349,8 @@ class ChatHandler
         //bool HandleSet32Bit(const char* args);
         bool HandleSaveAllCommand(const char* args);
 
+				bool HandleNerfCommand(const char* args);
+
         // Utility methods for commands
         bool LookupPlayerSearchCommand(QueryResult result, int32 limit);
         bool HandleBanListHelper(QueryResult result);

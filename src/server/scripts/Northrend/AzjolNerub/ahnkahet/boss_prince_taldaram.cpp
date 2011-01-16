@@ -84,6 +84,7 @@ public:
             pInstance = c->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+				CheckSpheres();
         }
 
         uint32 uiBloodthirstTimer;

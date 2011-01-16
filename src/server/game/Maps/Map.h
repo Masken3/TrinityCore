@@ -606,6 +606,8 @@ class InstanceMap : public Map
         bool m_unloadWhenEmpty;
         InstanceScript* i_data;
         uint32 i_script_id;
+
+				void UpdateEliteFactors(Player* player);
 };
 
 class BattlegroundMap : public Map

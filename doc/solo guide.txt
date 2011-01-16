@@ -1,0 +1,99 @@
+This is a guide for playing World of Warcraft on the "solo" fork of TrinityCore.
+
+
+Useful websites:
+
+wowwiki.com
+old.wowhead.com
+
+
+
+Useful commands when playing in solo mode.
+Any base commands by themselves give a list of subcommands.
+For more details, and a searchable list of commands, use the Source. Specifically, Chat.cpp.
+
+All commands can be shortened to their lowest uncommon denominator.
+For example, ".lookup creature" can be rendered ".lo c". ".quest complete" becomes ".q c".
+
+
+.help [base-command]		// Get a list of all available commands [or sub-commands].
+
+.lookup				// Find the id of something that you know the name of.
+.lookup item <name>
+.lookup quest <name>
+.lookup creature <name>
+.lookup skill <name>
+.lookup object <name>
+.lookup spell <name>
+
+.tele
+.tele <wherever>		// Teleport you
+.lookup tele [pattern]		// Show a list of teleport destinations
+.tele add <new name>		// Add a new destination
+.tele del <careful...>		// Delete a destination
+
+.mod speed <factor>		// Change your running speed. Default is 1.
+.mod aspeed <factor>		// Change all speeds (swimming, riding, flying). Default is 1.
+
+.additem <id> [amount]		// Add one or more items into your backpack
+.setskill <skill-id> <skill-level>	// Increase a skill-line, like Alchemy or Swords.
+
+.gm icast on			// Reduces cast time for all spells to zero. Most useful for slow crafting skills.
+.gm icast off			// Restores cast time to normal.
+
+.cast <spellid>			// Cast a spell
+Note: trainer spell IDs can be difficult to find, as the spells have different names from the skills they teach, for example: "Artisan Tailor", without the "ing".
+
+Useful spells:
+.cast 22700			// Summon Repairbot. This bot will repair your gear, and buy any item. Useful on long treks and in dungeons, when your bags are full.
+.cast 47883			// Soulstone Resurrection. For 15 minutes, you can self-resurrect in case of death. Beware, however: if you resurrect close to an enemy, they will attack you again!
+
+.unaura <spellid>		// Remove an aura(buff/debuff) from yourself. Useful if you get stuck with something like "Compelled" (48714).
+
+.reset talents			// Reset talents, for free.
+
+.mod rep <factionId> <value>	// Modifies your standing reputation with a faction.
+.lookup faction <name>
+
+.mod money <amount>		// Adds money to your purse. Amount can be negative, to remove money.
+
+.levelup			// Level up!
+
+.gm fly on			// Turns on flying mode.
+.gm fly off			// Turns off flying mode.
+
+.gm on				// Turns on non-combat mode. Creatures will not attack you, and you cannot harm them.
+.gm off				// Turns off non-combat mode, restoring normality.
+
+.combatstop			// Leave combat. Useful if you're stuck in combat due to a bug. Useless if an enemy is nearby.
+
+.die				// Kills targeted NPC. You don't get credit unless you've dealt enough damage.
+
+.quest
+.quest start <qid>		// Starts a quest, if possible.
+.quest complete <qid>		// Finishes a quest, if you haven't already done it. You still have to turn it in.
+
+.npc
+.npc info			// Shows info about selected NPC.
+.respawn			// Respawns ALL nearby creatures AND objects. Or, if you have a selected NPC, just that NPC is respawned.
+.npc tempadd <creatureid>	// Spawns a temporary clone NPC at your position. It does not leave a corpse when killed, so no loot.
+.npc add <creatureid>		// Spawns a new clone NPC at your position. WARNING: This is permanent. Clean up with .npc del.
+.npc del			// Deletes selected NPC permanently. Works on corpses and tempadds, too.
+
+.list creature <creatureid>	// Shows a list of all creatures of the specified type on your current map. Useful for finding that rare spawn.
+
+.bank				// Access your bank account, from anywhere in the game world.
+
+.gobject
+.gobject target			// Shows info about the closest game-object, like a door or a chest.
+.gobject activate <guid>	// Activates an object.
+.gobject add <gobjectid>	// Permanently spawns a new game-object.
+
+.nerf				// Shows the nerf-factor of the selected NPC. Default is 1.0. The nerf-factor should be the number of players required to defeat the NPC in standard WoW.
+.nerf <newFactor>		// Set the nerf-factor of the selected NPC. Please use .nerf first to see if it's been set already.
+
+
+
+For game-masters:
+.namego <name>			// Teleports character <name> to your position. Also resurrects the dead.
+.goname <name>			// Teleports you to character <name>. If character is dead, teleports you to her ghost, although you cannot see ghosts if you're alive, unless GM mode is on.

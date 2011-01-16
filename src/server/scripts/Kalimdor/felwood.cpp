@@ -87,8 +87,125 @@ public:
 
 };
 
+/*######
+## npc_niby_the_almighty
+######*/
+enum
+{
+    QUEST_KROSHIUS     = 7603,
+
+    NPC_IMPSY          = 14470,
+
+    SPELL_SUMMON_POLLO = 23056,
+
+    SAY_NIBY_1         = -1000635,
+    SAY_NIBY_2         = -1000636,
+    EMOTE_IMPSY_1      = -1000637,
+    SAY_IMPSY_1        = -1000638,
+    SAY_NIBY_3         = -1000639
+};
+
+class npc_niby_the_almighty : public CreatureScript
+{
+public:
+	npc_niby_the_almighty() : CreatureScript("npc_niby_the_almighty") { }
+
+	CreatureAI* GetAI(Creature* pCreature)
+	{
+		return new npc_niby_the_almightyAI(pCreature);
+	}
+
+	bool OnQuestReward(Player* pPlayer, Creature* pCreature, const Quest* pQuest, uint32 slot)
+	{
+		if (pQuest->GetQuestId() == QUEST_KROSHIUS)
+		{
+			if (npc_niby_the_almightyAI* pNibyAI = CAST_AI(npc_niby_the_almightyAI, pCreature->AI()))
+			{
+				pNibyAI->StartEvent();
+			}
+		}
+		return true;
+	}
+
+	struct npc_niby_the_almightyAI : public ScriptedAI
+	{
+		npc_niby_the_almightyAI(Creature* pCreature) : ScriptedAI(pCreature){ Reset(); }
+
+		uint32 m_uiSummonTimer;
+		uint8  m_uiSpeech;
+
+		bool m_bEventStarted;
+
+		void Reset()
+		{
+			m_uiSummonTimer = 500;
+			m_uiSpeech = 0;
+
+			m_bEventStarted = false;
+		}
+
+		void StartEvent()
+		{
+			Reset();
+			m_bEventStarted = true;
+			me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+		}
+
+		void UpdateAI(const uint32 uiDiff)
+		{
+			if (m_bEventStarted)
+			{
+				if (m_uiSummonTimer <= uiDiff)
+				{
+					switch (m_uiSpeech)
+					{
+					case 1:
+						me->GetMotionMaster()->Clear();
+						me->GetMotionMaster()->MovePoint(0, 5407.19f, -753.00f, 350.82f);
+						m_uiSummonTimer = 6200;
+						break;
+					case 2:
+						DoScriptText(SAY_NIBY_1, me);
+						m_uiSummonTimer = 3000;
+						break;
+					case 3:
+						DoScriptText(SAY_NIBY_2, me);
+						DoCast(me, SPELL_SUMMON_POLLO,true);
+						m_uiSummonTimer = 2000;
+						break;
+					case 4:
+						if (Creature* pImpsy = GetClosestCreatureWithEntry(me, NPC_IMPSY, 20.0))
+						{
+							DoScriptText(EMOTE_IMPSY_1, pImpsy);
+							DoScriptText(SAY_IMPSY_1, pImpsy);
+							m_uiSummonTimer = 2500;
+						}
+						else
+						{
+							m_uiSummonTimer = 40000;
+							++m_uiSpeech;
+						}
+						break;
+					case 5:
+						DoScriptText(SAY_NIBY_3, me);
+						m_uiSummonTimer = 40000;
+						break;
+					case 6:
+						me->GetMotionMaster()->MoveTargetedHome();
+						me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+						m_bEventStarted = false;
+					}
+					++m_uiSpeech;
+				}
+				else
+					m_uiSummonTimer -= uiDiff;
+			}
+		}
+	};
+};
 
 void AddSC_felwood()
 {
     new npcs_riverbreeze_and_silversky();
+    new npc_niby_the_almighty();
 }

@@ -149,9 +149,81 @@ public:
 
 };
 
+/*########
+## Quest: Saving Princess Stillpine
+########*/
+
+enum StillPineCage
+{
+    QUEST_SAVE_PRINCESS_STILLPINE         = 9667,
+    NPC_PRINCESS_STILLPINE                = 17682,
+    GO_STILLPINE_CAGE                     = 181928,
+    PRINCESS_SAY_1                        = -1230013
+};
+
+class npc_princess_stillpine : public CreatureScript
+{
+public:
+	npc_princess_stillpine() : CreatureScript("npc_princess_stillpine") { }
+
+	CreatureAI* GetAI(Creature* pCreature)
+	{
+		return new npc_princess_stillpineAI(pCreature);
+	}
+
+	struct npc_princess_stillpineAI : public ScriptedAI
+	{
+		npc_princess_stillpineAI(Creature *c) : ScriptedAI(c){}
+
+		uint32 FleeTimer;
+
+		void Reset()
+		{
+			FleeTimer = 0;
+			GameObject* cage = me->FindNearestGameObject(GO_STILLPINE_CAGE, 5.0f);
+			if(cage)
+				cage->ResetDoorOrButton();
+		}
+
+		void UpdateAI(const uint32 diff)
+		{
+			if(FleeTimer)
+			{
+				if(FleeTimer <= diff)
+					me->ForcedDespawn();
+				else FleeTimer -= diff;
+			}
+		}
+	};
+};
+
+class go_stillpine_cage : public GameObjectScript
+{
+public:
+	go_stillpine_cage() : GameObjectScript("go_stillpine_cage") { }
+
+	bool OnGossipHello(Player* pPlayer, GameObject* pGo)
+	{
+		if(pPlayer->GetQuestStatus(QUEST_SAVE_PRINCESS_STILLPINE) == QUEST_STATUS_INCOMPLETE)
+		{
+			Creature* pCreature = pGo->FindNearestCreature(NPC_PRINCESS_STILLPINE, 5.0f, true);
+			if(pCreature)
+			{
+				DoScriptText(PRINCESS_SAY_1, pCreature, pPlayer);
+				pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
+				pPlayer->KilledMonsterCredit(pCreature->GetEntry(), pCreature->GetGUID());
+				CAST_AI(npc_princess_stillpine::npc_princess_stillpineAI, pCreature->AI())->FleeTimer = 3500;
+				return false;
+			}
+		}
+		return true;
+	}
+};
 
 void AddSC_bloodmyst_isle()
 {
     new mob_webbed_creature();
     new npc_captured_sunhawk_agent();
+    new npc_princess_stillpine();
+    new go_stillpine_cage();
 }

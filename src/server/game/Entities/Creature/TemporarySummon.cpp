@@ -21,6 +21,7 @@
 #include "CreatureAI.h"
 #include "ObjectMgr.h"
 #include "TemporarySummon.h"
+#include "eliteFactor.h"
 
 TempSummon::TempSummon(SummonPropertiesEntry const *properties, Unit *owner) :
 Creature(), m_Properties(properties), m_type(TEMPSUMMON_MANUAL_DESPAWN),
@@ -176,12 +177,102 @@ void TempSummon::InitStats(uint32 duration)
 
     Unit *owner = GetSummoner();
 
-    if (owner && isTrigger() && m_spells[0])
+		sLog->outDetail("TempSummon, InitStats. mindmg: %i",
+			GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE));
+
+		CreatureInfo* info = (CreatureInfo*)this->GetCreatureInfo();
+		if(info) {
+			sLog->outDetail("Has info. eliteFactor: %f", info->eliteFactor);
+			if(info->eliteFactor == 1.0f) {
+				bool setEliteFactor = false;
+				float newBaseEliteFactor, newEffectiveEliteFactor;
+				// set creature's factor to its owner's.
+				if(owner) {
+					Creature* co = owner->ToCreature();
+					if(co) {
+						setEliteFactor = true;
+						const CreatureInfo* ci = co->GetCreatureInfo();
+						if(!ci) {
+							sLog->outError("TempSummon: no data for owner of %i", info->Entry);
+						} else {
+							newBaseEliteFactor = ci->eliteFactor;
+						}
+						newEffectiveEliteFactor = co->m_eliteFactor;
+					}
+				}	//owner
+				if(!setEliteFactor) {
+					// TODO: try to set it from the current map.
+					// if we're in an instance, it should be doable.
+					const CreatureData* data = GetCreatureData();
+					if(!data) {
+						sLog->outError("TempSummon: no data for creature %i", info->Entry);
+					} else {
+						const MapEntry* mapEntry = sMapStore.LookupEntry(data->mapid);
+						if(!mapEntry) {
+							sLog->outError("TempSummon: no entry for map %d", data->mapid);
+						} else if(mapEntry->IsDungeon()) {
+							const MapDifficulty* mapDiff = GetMapDifficultyData(data->mapid,
+								REGULAR_DIFFICULTY);
+							if(!mapDiff) {
+								sLog->outError("TempSummon: no mapDiff for map %d", data->mapid);
+							} else {
+								setEliteFactor = true;
+								newBaseEliteFactor = (float)mapDiff->maxPlayers;
+								newEffectiveEliteFactor = newBaseEliteFactor /
+									owner->GetMap()->GetPlayers().getSize();
+							}
+						}	//mapEntry
+					}	//data
+				}	//eliteFactorSet
+				if(setEliteFactor) {
+					info->eliteFactor = newBaseEliteFactor;
+					m_eliteFactor = newEffectiveEliteFactor;
+					sLog->outDetail("TempSummon %i: eliteFactor set to %f (base), %f (effective)",
+						info->Entry, info->eliteFactor, m_eliteFactor);
+					UpdateAllStats();
+					SetHealth(GetMaxHealth());
+					ResetPlayerDamageReq();
+				}
+			}	//info->eliteFactor == 1.0f
+		}	//info
+
+		sLog->outDetail("TempSummon, InitStats 2. mindmg: %i",
+			GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE));
+
+		if (owner && isTrigger() && m_spells[0])
     {
         setFaction(owner->getFaction());
         SetLevel(owner->getLevel());
         if (owner->GetTypeId() == TYPEID_PLAYER)
             m_ControlledByPlayer = true;
+
+				// copied from SelectLevel
+				CreatureBaseStats const* stats =
+					sObjectMgr->GetCreatureBaseStats(owner->getLevel(), info->unit_class);
+
+				// health
+				uint32 basehp = stats->GenerateHealth(info);
+
+				SetCreateHealth(basehp);
+				SetMaxHealth(basehp);
+				SetHealth(basehp);
+				ResetPlayerDamageReq();
+
+				//damage
+				float damagemod = (owner->getLevel() / (float)info->maxlevel);
+
+				SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, info->mindmg * damagemod);
+				SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, info->maxdmg * damagemod);
+
+				SetFloatValue(UNIT_FIELD_MINRANGEDDAMAGE,info->minrangedmg * damagemod);
+				SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE,info->maxrangedmg * damagemod);
+
+				SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, info->attackpower * damagemod);
+				UpdateAllStats();
+				SetHealth(GetMaxHealth());
+				ResetPlayerDamageReq();
+				sLog->outDetail("TempSummon, second update. mindmg: %i",
+					GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE));
     }
 
     if (!m_Properties)

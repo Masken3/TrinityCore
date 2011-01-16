@@ -713,6 +713,131 @@ public:
 };
 
 
+/*######
+## npc_morokk
+######*/
+
+enum
+{
+    SAY_MOR_CHALLENGE               = -1000623,
+    SAY_MOR_SCARED                  = -1000624,
+
+    QUEST_CHALLENGE_MOROKK          = 1173,
+
+    FACTION_MOR_HOSTILE             = 168,
+    FACTION_MOR_RUNNING             = 35
+};
+
+
+class npc_morokk : public CreatureScript
+{
+public:
+	npc_morokk() : CreatureScript("npc_morokk") { }
+
+	CreatureAI* GetAI(Creature* pCreature) const
+	{
+		return new npc_morokkAI(pCreature);
+	}
+
+	bool OnQuestAccept(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+	{
+		if (pQuest->GetQuestId() == QUEST_CHALLENGE_MOROKK)
+		{
+			if (npc_morokkAI* pEscortAI = CAST_AI(npc_morokkAI, pCreature->AI()))
+				pEscortAI->Start(true, true, pPlayer->GetGUID(), pQuest);
+
+			return true;
+		}
+
+		return false;
+	}
+
+	struct npc_morokkAI : public npc_escortAI
+	{
+		npc_morokkAI(Creature* pCreature) : npc_escortAI(pCreature)
+		{
+			m_bIsSuccess = false;
+			Reset();
+		}
+
+		bool m_bIsSuccess;
+
+		void Reset() {}
+
+		void WaypointReached(uint32 uiPointId)
+		{
+			switch(uiPointId)
+			{
+			case 0:
+				SetEscortPaused(true);
+				break;
+			case 1:
+				if (m_bIsSuccess)
+					DoScriptText(SAY_MOR_SCARED, me);
+				else
+				{
+					me->setDeathState(JUST_DIED);
+					me->Respawn();
+				}
+				break;
+			}
+		}
+
+		void AttackedBy(Unit* pAttacker)
+		{
+			if (me->getVictim())
+				return;
+
+			if (me->IsFriendlyTo(pAttacker))
+				return;
+
+			AttackStart(pAttacker);
+		}
+
+		void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+		{
+			if (HasEscortState(STATE_ESCORT_ESCORTING))
+			{
+				if(HealthBelowPct(30))
+				{
+					if (Player* pPlayer = GetPlayerForEscort())
+						pPlayer->GroupEventHappens(QUEST_CHALLENGE_MOROKK, me);
+
+					me->setFaction(FACTION_MOR_RUNNING);
+
+					m_bIsSuccess = true;
+					EnterEvadeMode();
+
+					uiDamage = 0;
+				}
+			}
+		}
+
+		void UpdateEscortAI(const uint32 uiDiff)
+		{
+			if (!UpdateVictim())
+			{
+				if (HasEscortState(STATE_ESCORT_PAUSED))
+				{
+					if (Player* pPlayer = GetPlayerForEscort())
+					{
+						m_bIsSuccess = false;
+						DoScriptText(SAY_MOR_CHALLENGE, me, pPlayer);
+						me->setFaction(FACTION_MOR_HOSTILE);
+						AttackStart(pPlayer);
+					}
+
+					SetEscortPaused(false);
+				}
+
+				return;
+			}
+
+			DoMeleeAttackIfReady();
+		}
+	};
+};
+
 void AddSC_dustwallow_marsh()
 {
     new mobs_risen_husk_spirit();
@@ -723,5 +848,6 @@ void AddSC_dustwallow_marsh()
     new npc_zelfrax();
     new npc_stinky();
     new npc_theramore_guard();
+    new npc_morokk();
     new npc_deserter_agitator();
 }

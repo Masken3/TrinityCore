@@ -487,7 +487,9 @@ enum PlayerExtraFlags
     PLAYER_EXTRA_HAS_310_FLYER      = 0x0040,               // Marks if player already has 310% speed flying mount
 
     // other states
-    PLAYER_EXTRA_PVP_DEATH          = 0x0100                // store PvP death status until corpse creating.
+    PLAYER_EXTRA_PVP_DEATH          = 0x0100,                // store PvP death status until corpse creating.
+
+		PLAYER_EXTRA_GM_ICAST           = 0x1000,
 };
 
 // 2^n values
@@ -1076,6 +1078,8 @@ class Player : public Unit, public GridObject<Player>
         bool Has310Flyer(bool checkAllSpells, uint32 excludeSpellId = 0);
         void SetHas310Flyer(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_HAS_310_FLYER; else m_ExtraFlags &= ~PLAYER_EXTRA_HAS_310_FLYER; }
         void SetPvPDeath(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
+				bool HasGMiCast() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ICAST; }
+				void SetGMiCast(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_GM_ICAST; else m_ExtraFlags &= ~PLAYER_EXTRA_GM_ICAST; }
 
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
         void GiveLevel(uint8 level);

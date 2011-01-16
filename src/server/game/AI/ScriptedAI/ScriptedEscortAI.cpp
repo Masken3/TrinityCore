@@ -338,6 +338,10 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
     }
     else
     {
+			if(CurrentWP == WaypointList.end()) {
+				sLog->outError("TSCR ERROR: waypoint out of bounds (%u)", uiPointId);
+				return;
+			}
         //Make sure that we are still on the right waypoint
         if (CurrentWP->id != uiPointId)
         {

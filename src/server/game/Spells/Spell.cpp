@@ -3041,6 +3041,10 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const * triggere
     m_casttime = GetSpellCastTime(m_spellInfo, this);
     //m_caster->ModSpellCastTime(m_spellInfo, m_casttime, this);
 
+		if (m_caster->GetTypeId() == TYPEID_PLAYER)
+			if(m_caster->ToPlayer()->HasGMiCast())
+				m_casttime = 0;
+
     // don't allow channeled spells / spells with cast time to be casted while moving
     // (even if they are interrupted on moving, spells with almost immediate effect get to have their effect processed before movement interrupter kicks in)
     if ((IsChanneledSpell(m_spellInfo) || m_casttime)
@@ -5323,14 +5327,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (res != SPELL_CAST_OK)
                     return res;
 
-                // chance for fail at orange mining/herb/LockPicking gathering attempt
+                // chance for fail at orange LockPicking attempt
                 // second check prevent fail at rechecks
                 if (skillId != SKILL_NONE && (!m_selfContainer || ((*m_selfContainer) != this)))
                 {
-                    bool canFailAtMax = skillId != SKILL_HERBALISM && skillId != SKILL_MINING;
+									// Patch 3.1.0 (2009-04-14): You can no longer fail when Mining, Herbing, and Skinning.
+									if(skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_SKINNING)
+										break;
 
-                    // chance for failure in orange gather / lockpick (gathering skill can't fail at maxskill)
-                    if ((canFailAtMax || skillValue < sWorld->GetConfigMaxSkillValue()) && reqSkillValue > irand(skillValue - 25, skillValue + 37))
+                    // chance for failure in orange lockpick
+                    if (reqSkillValue > irand(skillValue - 25, skillValue + 37))
                         return SPELL_FAILED_TRY_AGAIN;
                 }
                 break;

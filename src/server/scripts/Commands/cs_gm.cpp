@@ -40,6 +40,7 @@ public:
             { "ingame",         SEC_PLAYER,         true,  &HandleGMListIngameCommand,        "", NULL },
             { "list",           SEC_ADMINISTRATOR,  true,  &HandleGMListFullCommand,          "", NULL },
             { "visible",        SEC_MODERATOR,      false, &HandleGMVisibleCommand,           "", NULL },
+            { "icast",          SEC_ADMINISTRATOR,  false, &HandleGMiCastCommand,             "", NULL },
             { "",               SEC_MODERATOR,      false, &HandleGMCommand,                  "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
@@ -50,6 +51,28 @@ public:
         };
         return commandTable;
     }
+
+		static bool HandleGMiCastCommand(ChatHandler* handler, const char* args) {
+			if (!*args)
+				return false;
+
+			Player *target = handler->getSelectedPlayer();
+			if (!target)
+				target = handler->GetSession()->GetPlayer();
+
+			if (strncmp(args, "on", 3) == 0)
+				target->SetGMiCast(true);
+			else if (strncmp(args, "off", 4) == 0)
+				target->SetGMiCast(false);
+			else
+			{
+				handler->SendSysMessage(LANG_USE_BOL);
+				return false;
+			}
+			handler->PSendSysMessage("%s's instant cast turned %s",
+				handler->GetNameLink(target).c_str(), args);
+			return true;
+		}
 
     // Enables or disables hiding of the staff badge
     static bool HandleGMChatCommand(ChatHandler* handler, const char* args)

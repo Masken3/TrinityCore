@@ -38,7 +38,7 @@ using G3D::Vector3;
 namespace VMAP
 {
 
-    class MapRayCallback
+	class MapRayCallback
     {
         public:
             MapRayCallback(ModelInstance *val): prims(val), hit(false) {}

@@ -53,6 +53,7 @@
 #include "TemporarySummon.h"
 #include "Vehicle.h"
 #include "Transport.h"
+#include "eliteFactor.h"
 
 #include <math.h>
 
@@ -509,6 +510,26 @@ bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint
             if (iterSpellProto->SpellFamilyName == familyName && iterSpellProto->SpellFamilyFlags[0] & familyFlags)
                 return true;
     return false;
+}
+
+static void applyEliteFactor(Unit& self, uint32& damage) {
+	if(self.GetTypeId() != TYPEID_UNIT)
+		return;
+	Creature* c = self.ToCreature();
+	if(!c) {
+		sLog->outError("TYPEID_UNIT, yet not a Creature?!?");
+		return;
+	}
+	if(!c->IsHostileToPlayers() && !c->IsNeutralToAll()) {
+		// basically friendly. Don't nerf.
+		return;
+	}
+	if(c->m_eliteFactor != 1.0f) {
+		int32 newDamage = int32(damage / EF_FORMULA(c->m_eliteFactor, DMG_FACTOR));
+		sLog->outDetail("Nerfed damage from %i to %i.",
+			damage, newDamage);
+		damage = newDamage;
+	}
 }
 
 void Unit::DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb)
@@ -1047,8 +1068,10 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     // Calculate absorb resist
     if (damage > 0)
     {
-        CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, damage, &damageInfo->absorb, &damageInfo->resist, spellInfo);
-        damage -= damageInfo->absorb + damageInfo->resist;
+					uint32 temp = damage;
+					CalcAbsorbResist(pVictim, damageSchoolMask, SPELL_DIRECT_DAMAGE, temp, &damageInfo->absorb, &damageInfo->resist, spellInfo);
+					damage = temp;
+					damage -= damageInfo->absorb + damageInfo->resist;
     }
     else
         damage = 0;
@@ -1543,11 +1566,12 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage, SpellEnt
     return (newdamage > 1) ? newdamage : 1;
 }
 
-void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, SpellEntry const *spellInfo)
+void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, uint32& damage, uint32 *absorb, uint32 *resist, SpellEntry const *spellInfo)
 {
     if (!pVictim || !pVictim->isAlive() || !damage)
         return;
 
+		applyEliteFactor(*this, damage);
     DamageInfo dmgInfo = DamageInfo(this, pVictim, damage, spellInfo, schoolMask, damagetype);
 
     // Magic damage, check for resists

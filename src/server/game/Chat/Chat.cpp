@@ -437,7 +437,10 @@ ChatCommand * ChatHandler::getCommandTable()
         { "bindsight",      SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleBindSightCommand>,           "", NULL },
         { "unbindsight",    SEC_ADMINISTRATOR,  false, OldHandler<&ChatHandler::HandleUnbindSightCommand>,         "", NULL },
         { "playall",        SEC_GAMEMASTER,  false, OldHandler<&ChatHandler::HandlePlayAllCommand>,             "", NULL },
-        { NULL,             0,                  false, NULL,                                           "", NULL }
+
+				{ "nerf", SEC_ADMINISTRATOR, false, OldHandler<&ChatHandler::HandleNerfCommand>, "Nerfs the target creature type", NULL },
+
+				{ NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
     // cache for commands, needed because some commands are loaded dynamically through ScriptMgr

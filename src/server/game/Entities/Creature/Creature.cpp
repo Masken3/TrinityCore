@@ -46,6 +46,7 @@
 #include "CreatureGroups.h"
 #include "Vehicle.h"
 #include "SpellAuraEffects.h"
+#include "eliteFactor.h"
 #include "Group.h"
 // apply implementation of the singletons
 
@@ -160,6 +161,7 @@ m_formation(NULL)
 
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
     m_CombatDistance = 0;//MELEE_RANGE;
+		m_eliteFactor = 1.0f;	//default
 
     ResetLootMode(); // restore default loot mode
     TriggerJustRespawned = false;
@@ -768,6 +770,29 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 Entry, 
 
     if (bResult)
     {
+			// fix eliteFactor for instance creatures
+			{
+				CreatureInfo* info = (CreatureInfo*)GetCreatureInfo();
+				if(map->IsDungeon()) {
+					if(info->eliteFactor == 1.0f) {
+						InstanceMap* im = (InstanceMap*)map;
+						info->eliteFactor = (float)im->GetMaxPlayers();
+					}
+					m_eliteFactor = info->eliteFactor / map->GetPlayers().getSize();
+				} else {
+					m_eliteFactor = info->eliteFactor;
+				}
+				if(m_eliteFactor != 1.0f) {
+					sLog->outDetail("Creature %i (%s) bEF %f, eEF %f",
+						info->Entry, info->Name, info->eliteFactor, m_eliteFactor);
+					UpdateAllStats();
+					SetHealth(GetMaxHealth());
+					ResetPlayerDamageReq();
+					sLog->outDetail("MaxHealth: %i, MaxDamage: %i", GetMaxHealth(),
+						GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE));
+				}
+			}
+
         switch (GetCreatureInfo()->rank)
         {
             case CREATURE_ELITE_RARE:
@@ -1181,7 +1206,7 @@ void Creature::SelectLevel(const CreatureInfo *cinfo)
     SetFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE,cinfo->maxrangedmg * damagemod);
 
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, cinfo->attackpower * damagemod);
-
+		UpdateAllStats();
 }
 
 float Creature::_GetHealthMod(int32 Rank)

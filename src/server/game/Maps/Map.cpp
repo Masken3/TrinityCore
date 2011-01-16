@@ -30,6 +30,7 @@
 #include "MapManager.h"
 #include "ObjectMgr.h"
 #include "Group.h"
+#include "Chat.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -2372,10 +2373,74 @@ bool InstanceMap::Add(Player *player)
     // this will acquire the same mutex so it cannot be in the previous block
     Map::Add(player);
 
+		UpdateEliteFactors(player);
+
     if (i_data)
         i_data->OnPlayerEnter(player);
 
     return true;
+}
+
+
+class IMRespawn {
+private:
+	const uint32 mnPlayers;
+	mutable uint32 mCount;
+public:
+	IMRespawn(uint32 nPlayers) : mnPlayers(nPlayers), mCount(0) {}
+	void operator()(Creature* u) const {
+		if(!u->isAlive())
+			return;
+		float newFactor = u->GetCreatureInfo()->eliteFactor / mnPlayers;
+		if(u->m_eliteFactor == newFactor)
+			return;
+		u->m_eliteFactor = newFactor;
+		u->UpdateAllStats();
+		u->Respawn();
+		mCount++;
+	}
+	void operator()(GameObject* u) const {}
+	void operator()(DynamicObject* u) const {}
+	void operator()(Corpse* u) const {}
+	uint32 count() const { return mCount; }
+};
+
+#define MSG_COLOR_LIGHTRED       "|cffff6060"
+#define MSG_COLOR_LIGHTBLUE      "|cff00ccff"
+
+// reset eliteFactors of all remaining creatures.
+void InstanceMap::UpdateEliteFactors(Player* player) {
+	if(!IsDungeon())
+		return;
+	Map* map = player->GetMap();
+	if(!map) {
+		sLog->outDetail("Not updating elite factors; player has no map. Probably logging out...");
+		return;
+	}
+
+	uint32 numPlayers = GetPlayers().getSize();
+	Group* group = player->GetGroup();
+	if(group) {
+		if(numPlayers < group->GetMembersCount()) {
+			numPlayers = group->GetMembersCount();
+		}
+	}
+
+	CellPair p(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+	Cell cell(p);
+	cell.data.Part.reserved = ALL_DISTRICT;
+	cell.SetNoCreate();
+
+	IMRespawn u_do(numPlayers);
+	Trinity::WorldObjectWorker<IMRespawn> worker(player, u_do);
+
+	TypeContainerVisitor<Trinity::WorldObjectWorker<IMRespawn>,
+		GridTypeMapContainer> obj_worker(worker);
+	cell.Visit(p, obj_worker, *map);
+	ChatHandler ch(player);
+	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "eliteFactor of instance %i retuned for %i players.|r",
+		i_InstanceId, numPlayers);
+	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "%i creatures respawned.|r", u_do.count());
 }
 
 void InstanceMap::Update(const uint32& t_diff)
@@ -2395,6 +2460,8 @@ void InstanceMap::Remove(Player *player, bool remove)
     Map::Remove(player, remove);
     // for normal instances schedule the reset after all players have left
     SetResetSchedule(true);
+
+		UpdateEliteFactors(player);
 }
 
 void InstanceMap::CreateInstanceData(bool load)

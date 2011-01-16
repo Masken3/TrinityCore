@@ -53,6 +53,7 @@
 #include "SpellAuraEffects.h"
 #include "DBCEnums.h"
 #include "ConditionMgr.h"
+#include "eliteFactor.h"
 #include "DisableMgr.h"
 #include "Transport.h"
 #include "WeatherMgr.h"
@@ -4705,4 +4706,93 @@ bool ChatHandler::HandleUnbindSightCommand(const char * /*args*/)
 
     m_session->GetPlayer()->StopCastingBindSight();
     return true;
+}
+
+// TODO: respawn only creatures that are still alive.
+// TODO: take advantage of pre-existing mod variables.
+#define MSG_COLOR_LIGHTRED       "|cffff6060"
+#define MSG_COLOR_LIGHTBLUE      "|cff00ccff"
+
+class NerfRespawn {
+private:
+	uint32 mEntry;
+	mutable uint32 mCount;
+public:
+	NerfRespawn(uint32 entry) : mEntry(entry), mCount(0) {}
+	void operator()(Creature* u) const {
+		if(u->isAlive() && u->GetEntry() == mEntry) {
+			u->m_eliteFactor = u->GetCreatureInfo()->eliteFactor;
+			u->UpdateAllStats();
+			u->Respawn();
+			mCount++;
+		}
+	}
+	void operator()(GameObject* u) const {}
+	void operator()(DynamicObject* u) const {}
+	void operator()(Corpse* u) const {}
+	uint32 count() const { return mCount; }
+};
+
+bool ChatHandler::HandleNerfCommand(const char* args)
+{
+	Creature* crt = getSelectedCreature();
+	if(!crt)
+		return false;
+
+	// hack away the const, since we're gonna change the info.
+	CreatureInfo* info = (CreatureInfo*)crt->GetCreatureInfo();
+	if(info == NULL) {
+		PSendSysMessage(MSG_COLOR_LIGHTRED "Creature has no info!|r");
+		return false;
+	}
+
+	uint32 entry = info->Entry;
+
+	if(strlen(args) == 0) {
+		PSendSysMessage(MSG_COLOR_LIGHTBLUE "base eliteFactor of creature %i (%s) is: %f|r",
+			entry, info->Name, info->eliteFactor);
+		PSendSysMessage(MSG_COLOR_LIGHTBLUE "effective eliteFactor of creature %i (%s) is: %f|r",
+			entry, info->Name, crt->m_eliteFactor);
+		return true;
+	}
+
+	float newFactor = (float)atof(args);
+	PSendSysMessage(MSG_COLOR_LIGHTBLUE "Setting eliteFactor of creature %i (%s) to %f...|r",
+		entry, info->Name, newFactor);
+	if(info->eliteFactor == newFactor) {
+		PSendSysMessage(MSG_COLOR_LIGHTBLUE "eliteFactor unchanged.|r");
+		return true;
+	}
+	if(newFactor < 0.1f) {
+		PSendSysMessage(MSG_COLOR_LIGHTRED "Invalid factor.|r");
+		return false;
+	}
+	WorldDatabase.PExecute(
+		"UPDATE creature_template SET eliteFactor = %f WHERE entry = %i", newFactor, entry);
+
+	//set the proto values
+	info->eliteFactor = newFactor;
+
+	//update all active spawns.
+	// assumes each creature type appears on only the current map.
+	Player* player = m_session->GetPlayer();
+	if(player == NULL) {
+		PSendSysMessage(MSG_COLOR_LIGHTRED "No player?!?|r");
+		return false;
+	}
+	CellPair p(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+	Cell cell(p);
+	cell.data.Part.reserved = ALL_DISTRICT;
+	cell.SetNoCreate();
+
+	NerfRespawn u_do(entry);
+	Trinity::WorldObjectWorker<NerfRespawn> worker(player, u_do);
+
+	TypeContainerVisitor<Trinity::WorldObjectWorker<NerfRespawn>,
+		GridTypeMapContainer> obj_worker(worker);
+	// I hope this is enough.
+	cell.Visit(p, obj_worker, *player->GetMap(), 1000, 0, 0);
+	PSendSysMessage(MSG_COLOR_LIGHTBLUE "%i creatures respawned.|r", u_do.count());
+
+	return true;
 }

@@ -140,6 +140,9 @@ struct CreatureInfo
     uint32  MechanicImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
+		uint32 dbVerified;
+		float eliteFactor;
+
     uint32  GetRandomValidModelId() const;
     uint32  GetFirstValidModelId() const;
 
@@ -657,7 +660,7 @@ class Creature : public Unit, public GridObject<Creature>
             if (m_PlayerDamageReq)
                 m_PlayerDamageReq > unDamage ? m_PlayerDamageReq -= unDamage : m_PlayerDamageReq = 0;
         }
-        void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
+        void ResetPlayerDamageReq() { m_PlayerDamageReq = GetMaxHealth() / 2; }
         uint32 m_PlayerDamageReq;
 
         void SetOriginalEntry(uint32 entry) { m_originalEntry = entry; }
@@ -665,6 +668,8 @@ class Creature : public Unit, public GridObject<Creature>
         static float _GetDamageMod(int32 Rank);
 
         float m_SightDistance, m_CombatDistance;
+
+				float m_eliteFactor;
 
         void SetGUIDTransport(uint32 guid) { guid_transport=guid; }
         uint32 GetGUIDTransport() { return guid_transport; }
