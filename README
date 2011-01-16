@@ -1,3 +1,16 @@
+This is a fork of TrinityCore.
+
+Enemies originally intended for multiple players are nerfed (weakened),
+so that a single player can handle them.
+
+Most world bosses and 5-player dungeons work fine, but many 25-player raids
+have mechanics too advanced for a single player to handle.
+
+User accounts will require GM rights, to work around broken quests and
+game-objects.
+
+
+
 = TrinityCore -- General information =
 
 Copyright (C) TrinityCore (http://www.trinitycore.org)

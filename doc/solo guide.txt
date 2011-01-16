@@ -70,15 +70,15 @@ Useful spells:
 .die				// Kills targeted NPC. You don't get credit unless you've dealt enough damage.
 
 .quest
-.quest start <qid>		// Starts a quest, if possible.
-.quest complete <qid>		// Finishes a quest, if you haven't already done it. You still have to turn it in.
+.quest add <qid>		// Starts a quest, if possible.
+.quest complete <qid>		// Finishes a quest, if you haven't already done it. You'll still have to turn it in.
 
 .npc
 .npc info			// Shows info about selected NPC.
 .respawn			// Respawns ALL nearby creatures AND objects. Or, if you have a selected NPC, just that NPC is respawned.
 .npc tempadd <creatureid>	// Spawns a temporary clone NPC at your position. It does not leave a corpse when killed, so no loot.
 .npc add <creatureid>		// Spawns a new clone NPC at your position. WARNING: This is permanent. Clean up with .npc del.
-.npc del			// Deletes selected NPC permanently. Works on corpses and tempadds, too.
+.npc del			// Deletes selected NPC permanently. Works on corpses, summons and tempadds, too.
 
 .list creature <creatureid>	// Shows a list of all creatures of the specified type on your current map. Useful for finding that rare spawn.
 
