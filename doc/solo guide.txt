@@ -47,6 +47,7 @@ Note: trainer spell IDs can be difficult to find, as the spells have different n
 Useful spells:
 .cast 22700			// Summon Repairbot. This bot will repair your gear, and buy any item. Useful on long treks and in dungeons, when your bags are full.
 .cast 47883			// Soulstone Resurrection. For 15 minutes, you can self-resurrect in case of death. Beware, however: if you resurrect close to an enemy, they will attack you again!
+.cast 130 triggered		// Slow Fall. Useful if you like to jump off high cliffs.
 
 .unaura <spellid>		// Remove an aura(buff/debuff) from yourself. Useful if you get stuck with something like "Compelled" (48714).
 
@@ -95,5 +96,5 @@ Useful spells:
 
 
 For game-masters:
-.namego <name>			// Teleports character <name> to your position. Also resurrects the dead.
-.goname <name>			// Teleports you to character <name>. If character is dead, teleports you to her ghost, although you cannot see ghosts if you're alive, unless GM mode is on.
+.summon <name>			// Teleports character <name> to your position. Also resurrects the dead.
+.appear <name>			// Teleports you to character <name>. If character is dead, teleports you to her ghost, although you cannot see ghosts if you're alive, unless GM mode is on.
