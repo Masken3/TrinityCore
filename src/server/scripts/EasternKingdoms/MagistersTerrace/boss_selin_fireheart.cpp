@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -75,7 +75,7 @@ public:
                 for (uint8 i = 0; i < size; ++i)
                 {
                     uint64 guid = pInstance->GetData64(DATA_FEL_CRYSTAL);
-                    sLog->outDebug("TSCR: Selin: Adding Fel Crystal " UI64FMTD " to list", guid);
+                    sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Selin: Adding Fel Crystal " UI64FMTD " to list", guid);
                     Crystals.push_back(guid);
                 }
             }
@@ -253,7 +253,7 @@ public:
                 {
                     if (DrainLifeTimer <= diff)
                     {
-                        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DRAIN_LIFE);
+                        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_DRAIN_LIFE);
                         DrainLifeTimer = 10000;
                     } else DrainLifeTimer -= diff;
 
@@ -262,7 +262,7 @@ public:
                     {
                         if (DrainManaTimer <= diff)
                         {
-                            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 1), SPELL_DRAIN_MANA);
+                            DoCast(SelectTarget(SELECT_TARGET_RANDOM, 1), SPELL_DRAIN_MANA);
                             DrainManaTimer = 10000;
                         } else DrainManaTimer -= diff;
                     }

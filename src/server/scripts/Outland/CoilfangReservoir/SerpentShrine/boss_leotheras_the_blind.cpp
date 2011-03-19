@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -338,7 +338,7 @@ public:
                         Creature* pCreature = Unit::GetCreature((*me), InnderDemon[i]);
                         if (pCreature && pCreature->isAlive())
                         {
-                            pCreature->ForcedDespawn();
+                            pCreature->DespawnOrUnsummon();
                         }
                         InnderDemon[i] = 0;
                 }
@@ -390,7 +390,7 @@ public:
             if (Demon)
             {
                 if (Creature* pDemon = Unit::GetCreature(*me, Demon))
-                    pDemon->ForcedDespawn();
+                    pDemon->DespawnOrUnsummon();
             }
             if (pInstance)
                 pInstance->SetData(DATA_LEOTHERASTHEBLINDEVENT, DONE);
@@ -420,7 +420,7 @@ public:
             {
                 if (Whirlwind_Timer <= diff)
                 {
-                    Unit *newTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Unit *newTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (newTarget)
                     {
                         DoResetThreat();
@@ -760,7 +760,7 @@ public:
             if (Mindblast_Timer <= diff)
             {
                 Unit *pTarget = NULL;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
                 if (pTarget)DoCast(pTarget, SPELL_MINDBLAST);
 

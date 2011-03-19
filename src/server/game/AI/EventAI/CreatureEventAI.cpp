@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -813,7 +813,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         }
         case ACTION_T_FORCE_DESPAWN:
         {
-            me->ForcedDespawn(action.forced_despawn.msDelay);
+            me->DespawnOrUnsummon(action.forced_despawn.msDelay);
             break;
         }
         case ACTION_T_SET_INVINCIBILITY_HP_LEVEL:
@@ -1231,8 +1231,8 @@ void CreatureEventAI::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, flo
     cell.Visit(p, grid_creature_searcher, *me->GetMap());
 }
 
-//*********************************
-//*** Functions used globally ***
+// *********************************
+// *** Functions used globally ***
 
 void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
 {
@@ -1256,7 +1256,7 @@ void CreatureEventAI::DoScriptText(int32 textEntry, WorldObject* pSource, Unit* 
         return;
     }
 
-    sLog->outDebug("CreatureEventAI: DoScriptText: text entry=%i, Sound=%u, Type=%u, Language=%u, Emote=%u",textEntry,(*i).second.SoundId,(*i).second.Type,(*i).second.Language,(*i).second.Emote);
+    sLog->outDebug(LOG_FILTER_DATABASE_AI, "CreatureEventAI: DoScriptText: text entry=%i, Sound=%u, Type=%u, Language=%u, Emote=%u",textEntry,(*i).second.SoundId,(*i).second.Type,(*i).second.Language,(*i).second.Emote);
 
     if ((*i).second.SoundId)
     {
@@ -1356,7 +1356,7 @@ void CreatureEventAI::ReceiveEmote(Player* pPlayer, uint32 text_emote)
 
             if (cond.Meets(pPlayer))
             {
-                sLog->outDebug("CreatureEventAI: ReceiveEmote CreatureEventAI: Condition ok, processing");
+                sLog->outDebug(LOG_FILTER_DATABASE_AI, "CreatureEventAI: ReceiveEmote CreatureEventAI: Condition ok, processing");
                 ProcessEvent(*itr, pPlayer);
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,9 +47,15 @@ public:
         PrepareAuraScript(spell_sha_astral_shift_AuraScript);
 
         uint32 absorbPct;
-        void CalculateAmount(AuraEffect const * /*aurEff*/, int32 & amount, bool & canBeRecalculated)
+
+        bool Load()
         {
-            absorbPct = amount;
+            absorbPct = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), EFFECT_0, GetCaster());
+            return true;
+        }
+
+        void CalculateAmount(AuraEffect const * /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+        {
             // Set absorbtion amount to unlimited
             amount = -1;
         }
@@ -96,24 +102,33 @@ public:
             return true;
         }
 
+        SpellCastResult CheckFireTotem()
+        {
+            // fire totem
+            if (!GetCaster()->m_SummonSlot[1])
+            {
+                SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_HAVE_FIRE_TOTEM);
+                return SPELL_FAILED_CUSTOM_ERROR;
+            }
+
+            return SPELL_CAST_OK;
+        }
+
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
-            if (Unit* caster = GetCaster())
+            Unit* caster = GetCaster();
+            uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
+            if (uint32 spellId = sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank))
             {
-                uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                uint32 spellId = sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank);
-                // fire slot
-                if (spellId && caster->m_SummonSlot[1])
-                {
-                    Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]);
-                    if (totem && totem->isTotem())
-                        totem->CastSpell(totem, spellId, true);
-                }
+                Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]);
+                if (totem && totem->isTotem())
+                    totem->CastSpell(totem, spellId, true);
             }
         }
 
         void Register()
         {
+            OnCheckCast += SpellCheckCastFn(spell_sha_fire_nova_SpellScript::CheckFireTotem);
             OnEffect += SpellEffectFn(spell_sha_fire_nova_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
         }
     };

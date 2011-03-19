@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -300,7 +300,7 @@ public:
             {
                 if (uiSearingLightTimer <= diff)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         DoCast(pTarget, RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25));
                         uiSearingLightTarget = pTarget->GetGUID();
@@ -313,7 +313,7 @@ public:
 
                 if (uiGravityBombTimer <= diff)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         DoCast(pTarget, RAID_MODE(SPELL_GRAVITY_BOMB_10,SPELL_GRAVITY_BOMB_25));
                         uiGravityBombTarget = pTarget->GetGUID();
@@ -616,7 +616,7 @@ public:
                     pXT002->ModifyHealth(int32(pXT002->CountPctFromMaxHealth(1)));
 
                     // Despawns the scrapbot
-                    me->ForcedDespawn();
+                    me->DespawnOrUnsummon();
                 }
             }
         }
@@ -739,7 +739,7 @@ public:
                     DoCast(me, SPELL_BOOM);
 
                     //Despawns the boombot
-                    me->ForcedDespawn();
+                    me->DespawnOrUnsummon();
                 }
             }
         }

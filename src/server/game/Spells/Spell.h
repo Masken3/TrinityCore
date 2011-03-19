@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -470,7 +470,7 @@ class Spell
         void CheckSrc() { if (!m_targets.HasSrc()) m_targets.setSrc(*m_caster); }
         void CheckDst() { if (!m_targets.HasDst()) m_targets.setDst(*m_caster); }
 
-        static void  SendCastResult(Player* caster, SpellEntry const* spellInfo, uint8 cast_count, SpellCastResult result);
+        static void SendCastResult(Player* caster, SpellEntry const* spellInfo, uint8 cast_count, SpellCastResult result, SpellCustomErrors customError = SPELL_CUSTOM_ERROR_NONE);
         void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
@@ -503,6 +503,7 @@ class Spell
         uint32 m_preCastSpell;
         SpellCastTargets m_targets;
         int8 m_comboPointGain;
+        SpellCustomErrors m_customError;
 
         UsedSpellMods m_appliedMods;
 
@@ -543,6 +544,9 @@ class Spell
 
         void SetSpellValue(SpellValueMod mod, int32 value);
     protected:
+        bool HasGlobalCooldown();
+        void TriggerGlobalCooldown();
+        void CancelGlobalCooldown();
 
         void SendLoot(uint64 guid, LootType loottype);
 
@@ -606,17 +610,17 @@ class Spell
         int32 m_damage;           // Damge   in effects count here
         int32 m_healing;          // Healing in effects count here
 
-        //******************************************
+        // ******************************************
         // Spell trigger system
-        //******************************************
+        // ******************************************
         uint32 m_procAttacker;                // Attacker trigger flags
         uint32 m_procVictim;                  // Victim   trigger flags
         uint32 m_procEx;
         void   prepareDataForTriggerSystem(AuraEffect const * triggeredByAura);
 
-        //*****************************************
+        // *****************************************
         // Spell target subsystem
-        //*****************************************
+        // *****************************************
         // Targets store structures and data
         struct TargetInfo
         {
@@ -684,11 +688,13 @@ class Spell
 
         // Scripting system
         void LoadScripts();
+        SpellCastResult CallScriptCheckCastHandlers();
         void PrepareScriptHitHandlers();
         bool CallScriptEffectHandlers(SpellEffIndex effIndex);
         void CallScriptBeforeHitHandlers();
         void CallScriptOnHitHandlers();
         void CallScriptAfterHitHandlers();
+        void CallScriptAfterUnitTargetSelectHandlers(std::list<Unit*>& unitTargets, SpellEffIndex effIndex);
         std::list<SpellScript *> m_loadedScripts;
 
         // effect helpers

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -167,7 +167,7 @@ public:
                 if (Creature* pTemp = Unit::GetCreature(*me, *itr))
                 {
                     if (pTemp->isAlive())
-                        pTemp->ForcedDespawn();
+                        pTemp->DespawnOrUnsummon();
                 }
             }
             m_lCollapsingStarGUIDList.clear();
@@ -177,7 +177,7 @@ public:
         {
             if (pSummoned->GetEntry() == CREATURE_COLLAPSING_STAR)
             {
-                Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (me->getVictim())
                     pSummoned->AI()->AttackStart(pTarget ? pTarget : me->getVictim());
                 m_lCollapsingStarGUIDList.push_back(pSummoned->GetGUID());
@@ -288,7 +288,7 @@ public:
 
                 if (CosmicSmash_Timer <= diff)
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH,H_SPELL_COSMIC_SMASH), true);
+                    DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), RAID_MODE(SPELL_COSMIC_SMASH,H_SPELL_COSMIC_SMASH), true);
 
                     CosmicSmash_Timer = urand(30000, 60000);
                 } else CosmicSmash_Timer -= diff;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -1045,10 +1045,10 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_INSTANT_LOGOUT] = sConfig->GetIntDefault("InstantLogout", SEC_MODERATOR);
 
     m_int_configs[CONFIG_GUILD_EVENT_LOG_COUNT] = sConfig->GetIntDefault("Guild.EventLogRecordsCount", GUILD_EVENTLOG_MAX_RECORDS);
-    if (m_int_configs[CONFIG_GUILD_EVENT_LOG_COUNT] < GUILD_EVENTLOG_MAX_RECORDS)
+    if (m_int_configs[CONFIG_GUILD_EVENT_LOG_COUNT] > GUILD_EVENTLOG_MAX_RECORDS)
         m_int_configs[CONFIG_GUILD_EVENT_LOG_COUNT] = GUILD_EVENTLOG_MAX_RECORDS;
     m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = sConfig->GetIntDefault("Guild.BankEventLogRecordsCount", GUILD_BANKLOG_MAX_RECORDS);
-    if (m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] < GUILD_BANKLOG_MAX_RECORDS)
+    if (m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] > GUILD_BANKLOG_MAX_RECORDS)
         m_int_configs[CONFIG_GUILD_BANK_EVENT_LOG_COUNT] = GUILD_BANKLOG_MAX_RECORDS;
 
     //visibility on continents
@@ -1171,6 +1171,9 @@ void World::LoadConfigSettings(bool reload)
     // DBC_ItemAttributes
     m_bool_configs[CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES] = sConfig->GetBoolDefault("DBC.EnforceItemAttributes", true);
 
+    // Max instances per hour
+    m_int_configs[CONFIG_MAX_INSTANCES_PER_HOUR] = sConfig->GetIntDefault("AccountInstancesPerHour", 5);
+
     // AutoBroadcast
     m_bool_configs[CONFIG_AUTOBROADCAST] = sConfig->GetBoolDefault("AutoBroadcast.On", false);
     m_int_configs[CONFIG_AUTOBROADCAST_CENTER] = sConfig->GetIntDefault("AutoBroadcast.Center", 0);
@@ -1215,6 +1218,12 @@ void World::SetInitialWorldSettings()
         exit(1);
     }
 
+    ///- Initialize pool manager
+    sPoolMgr->Initialize();
+
+    ///- Initialize game event manager
+    sGameEventMgr->Initialize();
+
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
     sLog->outString();
     sLog->outString("Loading Trinity strings...");
@@ -1250,9 +1259,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading SkillLineAbilityMultiMap Data...");
     sSpellMgr->LoadSkillLineAbilityMap();
 
-    ///- Clean up and pack instances
-    sLog->outString("Cleaning up and packing instances...");
-    sInstanceSaveMgr->CleanupAndPackInstances();                // must be called before `creature_respawn`/`gameobject_respawn` tables
+    // Must be called before `creature_respawn`/`gameobject_respawn` tables
+    sLog->outString("Loading instances...");
+    sInstanceSaveMgr->LoadInstances();
 
     sLog->outString("Loading Localization strings...");
     uint32 oldMSTime = getMSTime();
@@ -1360,9 +1369,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Creature Template Addon Data...");
     sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
 
-    sLog->outString("Loading Vehicle Accessories...");
-    sObjectMgr->LoadVehicleAccessories();                        // must be after LoadCreatureTemplates()
-
     sLog->outString("Loading Creature Respawn Data...");         // must be after PackInstances()
     sObjectMgr->LoadCreatureRespawnTimes();
 
@@ -1373,10 +1379,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGameobjectRespawnTimes();
 
     sLog->outString("Loading Creature Linked Respawn...");
-    sObjectMgr->LoadLinkedRespawn();                     // must be after LoadCreatures(), LoadGameObjects()
-
-    sLog->outString("Loading Objects Pooling Data...");          // TODOLEAK: scope
-    sPoolMgr->LoadFromDB();
+    sObjectMgr->LoadLinkedRespawn();                             // must be after LoadCreatures(), LoadGameObjects()
 
     sLog->outString("Loading Weather Data...");
     sWeatherMgr->LoadWeatherData();
@@ -1393,20 +1396,26 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Quests Relations...");
     sObjectMgr->LoadQuestRelations();                            // must be after quest load
 
-    sLog->outString("Loading Quest Pooling Data...");
-    sPoolMgr->LoadQuestPools();
+    sLog->outString("Loading Objects Pooling Data...");
+    sPoolMgr->LoadFromDB();
 
     sLog->outString("Loading Game Event Data...");               // must be after loading pools fully
-    sGameEventMgr->LoadFromDB();                                 // TODOLEAK: add scopes
+    sGameEventMgr->LoadFromDB();
+
+    sLog->outString("Loading UNIT_NPC_FLAG_SPELLCLICK Data..."); // must be after LoadQuests
+    sObjectMgr->LoadNPCSpellClickSpells();
+
+    sLog->outString("Loading Vehicle Template Accessories...");
+    sObjectMgr->LoadVehicleTemplateAccessories();                // must be after LoadCreatureTemplates() and LoadNPCSpellClickSpells()
+
+    sLog->outString("Loading Vehicle Accessories...");
+    sObjectMgr->LoadVehicleAccessories();                       // must be after LoadCreatureTemplates() and LoadNPCSpellClickSpells()
 
     sLog->outString("Loading Dungeon boss data...");
-    sLFGMgr->LoadDungeonEncounters();
+    sObjectMgr->LoadInstanceEncounters();
 
     sLog->outString("Loading LFG rewards...");
     sLFGMgr->LoadRewards();
-
-    sLog->outString("Loading UNIT_NPC_FLAG_SPELLCLICK Data...");
-    sObjectMgr->LoadNPCSpellClickSpells();
 
     sLog->outString("Loading SpellArea Data...");                // must be after quest load
     sSpellMgr->LoadSpellAreas();
@@ -1468,7 +1477,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadMailLevelRewards();
 
     // Loot tables
-    LoadLootTables();                                               //TODOLEAK: untangle that shit
+    LoadLootTables();
 
     sLog->outString("Loading Skill Discovery Table...");
     LoadSkillDiscoveryTable();
@@ -1517,9 +1526,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Loading GameTeleports...");
     sObjectMgr->LoadGameTele();
-
-    sLog->outString("Loading Npc Text Id...");
-    sObjectMgr->LoadNpcTextId();                                 // must be after load Creature and NpcText
 
     sObjectMgr->LoadGossipScripts();                             // must be before gossip menu options
 
@@ -1602,7 +1608,7 @@ void World::SetInitialWorldSettings()
     sCreatureTextMgr->LoadCreatureTexts();
 
     sLog->outString("Initializing Scripts...");
-    sScriptMgr->Initialize();                            //LEAKTODO
+    sScriptMgr->Initialize();
 
     sLog->outString("Validating spell scripts...");
     sObjectMgr->ValidateSpellScripts();
@@ -1611,7 +1617,7 @@ void World::SetInitialWorldSettings()
     sSmartScriptMgr->LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
-    sLog->outDebug("DEBUG:: Initialize game time and timers");
+    sLog->outString("Initialize game time and timers");
     m_gameTime = time(NULL);
     m_startTime=m_gameTime;
 
@@ -1648,7 +1654,7 @@ void World::SetInitialWorldSettings()
     mail_timer = ((((localtime(&m_gameTime)->tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
     mail_timer_expires = ((DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
-    sLog->outDebug("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
+    sLog->outDetail("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
@@ -1659,7 +1665,7 @@ void World::SetInitialWorldSettings()
     sMapMgr->Initialize();
 
     sLog->outString("Starting Game Event system...");
-    uint32 nextGameEvent = sGameEventMgr->Initialize();
+    uint32 nextGameEvent = sGameEventMgr->StartSystem();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
     // Delete all characters which have been deleted X days before
@@ -1693,9 +1699,6 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Deleting expired bans...");
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate <= UNIX_TIMESTAMP() AND unbandate<>bandate");
-
-    sLog->outString("Starting objects Pooling system...");
-    sPoolMgr->Initialize();
 
     sLog->outString("Calculate next daily quest reset time...");
     InitDailyQuestResetTime();
@@ -2521,7 +2524,7 @@ void World::ProcessCliCommands()
     CliCommandHolder* command;
     while (cliCmdQueue.next(command))
     {
-        sLog->outDebug("CLI command under processing...");
+        sLog->outDetail("CLI command under processing...");
         zprint = command->m_print;
         callbackArg = command->m_callbackArg;
         CliHandler handler(callbackArg, zprint);
@@ -2562,9 +2565,9 @@ void World::SendAutoBroadcast()
         WorldPacket data(SMSG_NOTIFICATION, (msg.size()+1));
         data << msg;
         sWorld->SendGlobalMessage(&data);
-
     }
-    sLog->outDebug("AutoBroadcast: '%s'",msg.c_str());
+
+    sLog->outDetail("AutoBroadcast: '%s'",msg.c_str());
 }
 
 void World::UpdateRealmCharCount(uint32 accountId)
@@ -2600,7 +2603,7 @@ void World::InitDailyQuestResetTime()
     if (result)
     {
         Field *fields = result->Fetch();
-        mostRecentQuestTime = (time_t)fields[0].GetUInt64();
+        mostRecentQuestTime = time_t(fields[0].GetUInt32());
     }
     else
         mostRecentQuestTime = 0;
@@ -2772,7 +2775,7 @@ void World::LoadWorldStates()
     do
     {
         Field *fields = result->Fetch();
-        m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt64();
+        m_worldstates[fields[0].GetUInt32()] = fields[1].GetUInt32();
         ++count;
     }
     while (result->NextRow());

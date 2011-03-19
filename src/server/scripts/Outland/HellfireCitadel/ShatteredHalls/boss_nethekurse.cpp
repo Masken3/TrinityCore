@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -277,7 +277,7 @@ class boss_grand_warlock_nethekurse : public CreatureScript
                 {
                     if (ShadowFissure_Timer <= diff)
                     {
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                             DoCast(pTarget, SPELL_SHADOW_FISSURE);
                         ShadowFissure_Timer = urand(7500,15000);
                     }
@@ -286,7 +286,7 @@ class boss_grand_warlock_nethekurse : public CreatureScript
 
                     if (DeathCoil_Timer <= diff)
                     {
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                             DoCast(pTarget, SPELL_DEATH_COIL);
                         DeathCoil_Timer = urand(15000,20000);
                     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,6 +27,7 @@
 #include "BattlegroundMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
+#include "BattlegroundIC.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -399,7 +400,7 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
                 break;
             case POWER_RUNE:
             case POWER_RUNIC_POWER:
-                sLog->outDebug("CalculateManaCost: Not implemented yet!");
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Not implemented yet!");
                 break;
             default:
                 sLog->outError("CalculateManaCost: Unknown power type '%d' in spell %d", spellInfo->powerType, spellInfo->Id);
@@ -765,6 +766,9 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case SPELLFAMILY_MAGE:
             // Amplify Magic, Dampen Magic
             if (spellproto->SpellFamilyFlags[0] == 0x00002000)
+                return true;
+            // Ignite
+            if (spellproto->SpellIconID == 45)
                 return true;
             break;
         case SPELLFAMILY_PRIEST:
@@ -1219,7 +1223,7 @@ void SpellMgr::LoadSpellTargetPositions()
         if (found)
         {
 //            if (!sSpellMgr->GetSpellTargetPosition(i))
-//                sLog->outDebug("Spell (ID: %u) does not have record in `spell_target_position`", i);
+//                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell (ID: %u) does not have record in `spell_target_position`", i);
         }
     }
 
@@ -2335,7 +2339,7 @@ void SpellMgr::LoadPetDefaultSpells()
         }
     }
 
-    
+
     sLog->outString(">> Loaded %u summonable creature templates in %u ms", countCreature, GetMSTimeDiffToNow(oldMSTime));
     sLog->outString();
 }
@@ -3084,15 +3088,32 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     switch(spellId)
     {
         case 58600: // No fly Zone - Dalaran
-            if (!player)
-                return false;
+            {
+                if (!player)
+                    return false;
 
-            AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
-            if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                AreaTableEntry const* pArea = GetAreaEntryByAreaID(player->GetAreaId());
+                if (!(pArea && pArea->flags & AREA_FLAG_NO_FLY_ZONE))
+                    return false;
+                if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
+                    return false;
+                break;
+            }
+        case SPELL_OIL_REFINERY: // Oil Refinery - Isle of Conquest.
+        case SPELL_QUARRY: // Quarry - Isle of Conquest.
+            {
+                if (player->GetBattlegroundTypeId() != BATTLEGROUND_IC || !player->GetBattleground())
+                    return false;
+
+                uint8 nodeType = spellId == SPELL_OIL_REFINERY ? NODE_TYPE_REFINERY : NODE_TYPE_QUARRY;
+                uint8 nodeState = player->GetTeamId() == TEAM_ALLIANCE ? NODE_STATE_CONTROLLED_A : NODE_STATE_CONTROLLED_H;
+
+                BattlegroundIC* pIC = static_cast<BattlegroundIC*>(player->GetBattleground());
+                if (pIC->GetNodeState(nodeType) == nodeState)
+                    return true;
+
                 return false;
-            if (!player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY))
-                return false;
-            break;
+            }
     }
 
     return true;
@@ -3154,6 +3175,34 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
                     break;
             }
         }
+    }
+
+    bool isVehicleAura1 = false;
+    bool isVehicleAura2 = false;
+    uint8 i = 0;
+    while (i < MAX_SPELL_EFFECTS && !(isVehicleAura1 && isVehicleAura2))
+    {
+        if (spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura1 = true;
+        if (spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura2 = true;
+
+        ++i;
+    }
+
+    if (isVehicleAura1 && isVehicleAura2)
+    {
+        Vehicle* veh = NULL;
+        if (aura1->GetOwner()->ToUnit())
+            veh = aura1->GetOwner()->ToUnit()->GetVehicleKit();
+
+        if (!veh)           // We should probably just let it stack. Vehicle system will prevent undefined behaviour later
+            return true;
+
+        if (!veh->GetAvailableSeatCount())
+            return false;   // No empty seat available
+
+        return true;        // Empty seat available (skip rest)
     }
 
     uint32 spellId_1 = GetLastSpellInChain(spellInfo_1->Id);
@@ -3567,6 +3616,26 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 36350: //They Must Burn Bomb Aura (self)
+            spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
+            count++;
+            break;
+        case 49838: // Stop Time
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
+            count++;
+            break;
+        case 61407: // Energize Cores
+        case 62136: // Energize Cores
+        case 54069: // Energize Cores
+        case 56251: // Energize Cores
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENTRY_SRC;
+            count++;
+            break;
+        case 50785: // Energize Cores
+        case 59372: // Energize Cores
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_AREA_ENEMY_SRC;
+            count++;
+            break;
         // Bind
         case 3286:
             spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
@@ -3607,6 +3676,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
+        case 70461: // Coldflame Trap
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_CONE_LINE;
             count++;
             break;
@@ -3642,6 +3712,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 69538: case 69553: case 69610:     // Ooze Combine
         case 71447: case 71481:                 // Bloodbolt Splash
         case 71482: case 71483:                 // Bloodbolt Splash
+        case 71390:                             // Pact of the Darkfallen
             mSpellCustomAttr[i] |= SPELL_ATTR0_CU_EXCLUDE_SELF;
             count++;
             break;
@@ -3761,6 +3832,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectSpellClassMask[1][0] |= 2;
             count++;
             break;
+        case 49305:
+            spellInfo->EffectImplicitTargetB[0] = 1;
+            count++;
+            break;
         case 51852:    // The Eye of Acherus (no spawn in phase 2 in db)
             spellInfo->EffectMiscValue[0] |= 1;
             count++;
@@ -3853,18 +3928,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
             count++;
             break;
-        case 69055:     // Saber Lash
-        case 70814:     // Saber Lash
-            spellInfo->EffectRadiusIndex[0] = 8;
-            count++;
-            break;
-        case 69075:     // Bone Storm
-        case 70834:     // Bone Storm
-        case 70835:     // Bone Storm
-        case 70836:     // Bone Storm
-            spellInfo->EffectRadiusIndex[0] = 12;
-            count++;
-            break;
         case 18500: // Wing Buffet
         case 33086: // Wild Bite
         case 49749: // Piercing Blow
@@ -3888,21 +3951,12 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->StackAmount = 4;
             count++;
             break;
-        // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
-        // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
-        // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)
-        case 70781: // Light's Hammer Teleport
-        case 70856: // Oratory of the Damned Teleport
-        case 70857: // Rampart of Skulls Teleport
-        case 70858: // Deathbringer's Rise Teleport
-        case 70859: // Upper Spire Teleport
-        case 70860: // Frozen Throne Teleport
-        case 70861: // Sindragosa's Lair Teleport
-            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_DB;
-            count++;
-            break;
         case 63675: // Improved Devouring Plague
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+            count++;
+            break;
+        case 33206: // Pain Suppression
+            spellInfo->AttributesEx5 &= ~SPELL_ATTR5_USABLE_WHILE_STUNNED;
             count++;
             break;
         case 53241: // Marked for Death (Rank 1)
@@ -3911,11 +3965,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 53245: // Marked for Death (Rank 4)
         case 53246: // Marked for Death (Rank 5)
             spellInfo->EffectSpellClassMask[0] = flag96(423937, 276955137, 2049);
-            count++;
-            break;
-        // this is here until targetAuraSpell and alike support SpellDifficulty.dbc
-        case 70459: // Ooze Eruption Search Effect
-            spellInfo->targetAuraSpell = 0;
             count++;
             break;
         case 70728: // Exploit Weakness
@@ -3929,61 +3978,139 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_MASTER;
             count++;
             break;
-        case 71413: // Green Ooze Summon
-        case 71414: // Orange Ooze Summon
+        // ULDUAR SPELLS
+        //
+        case 63342: // Focused Eyebeam Summon Trigger
+            spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        // ENDOF ULDUAR SPELLS
+        //
+        // ICECROWN CITADEL SPELLS
+        //
+        // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
+        // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
+        // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)
+        case 70781: // Light's Hammer Teleport
+        case 70856: // Oratory of the Damned Teleport
+        case 70857: // Rampart of Skulls Teleport
+        case 70858: // Deathbringer's Rise Teleport
+        case 70859: // Upper Spire Teleport
+        case 70860: // Frozen Throne Teleport
+        case 70861: // Sindragosa's Lair Teleport
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_DB;
+            count++;
+            break;
+        case 69055: // Saber Lash (Lord Marrowgar)
+        case 70814: // Saber Lash (Lord Marrowgar)
+            spellInfo->EffectRadiusIndex[0] = 8;
+            count++;
+            break;
+        case 69075: // Bone Storm (Lord Marrowgar)
+        case 70834: // Bone Storm (Lord Marrowgar)
+        case 70835: // Bone Storm (Lord Marrowgar)
+        case 70836: // Bone Storm (Lord Marrowgar)
+        case 72864: // Death Plague (Rotting Frost Giant)
+        case 72378: // Blood Nova (Deathbringer Saurfang)
+        case 73058: // Blood Nova (Deathbringer Saurfang)
+            spellInfo->EffectRadiusIndex[0] = 12;
+            count++;
+            break;
+        case 72385: // Boiling Blood (Deathbringer Saurfang)
+        case 72441: // Boiling Blood (Deathbringer Saurfang)
+        case 72442: // Boiling Blood (Deathbringer Saurfang)
+        case 72443: // Boiling Blood (Deathbringer Saurfang)
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ENEMY;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            count++;
+            break;
+        case 70460: // Coldflame Jets (Traps after Saurfang)
+            spellInfo->DurationIndex = 1;   // 10 seconds
+            count++;
+            break;
+        case 71413: // Green Ooze Summon (Professor Putricide)
+        case 71414: // Orange Ooze Summon (Professor Putricide)
             spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
             count++;
             break;
+            // this is here until targetAuraSpell and alike support SpellDifficulty.dbc
+        case 70459: // Ooze Eruption Search Effect (Professor Putricide)
+            spellInfo->targetAuraSpell = 0;
+            count++;
+            break;
         // THIS IS HERE BECAUSE COOLDOWN ON CREATURE PROCS IS NOT IMPLEMENTED
-        case 71604: // Mutated Strength
-        case 72673: // Mutated Strength
-        case 72674: // Mutated Strength
-        case 72675: // Mutated Strength
+        case 71604: // Mutated Strength (Professor Putricide)
+        case 72673: // Mutated Strength (Professor Putricide)
+        case 72674: // Mutated Strength (Professor Putricide)
+        case 72675: // Mutated Strength (Professor Putricide)
             spellInfo->Effect[1] = 0;
             count++;
             break;
-        case 70447: // Volatile Ooze Adhesive
-        case 72836: // Volatile Ooze Adhesive
-        case 72837: // Volatile Ooze Adhesive
-        case 72838: // Volatile Ooze Adhesive
-        case 70672: // Gaseous Bloat
-        case 72455: // Gaseous Bloat
-        case 72832: // Gaseous Bloat
-        case 72833: // Gaseous Bloat
+        case 70447: // Volatile Ooze Adhesive (Professor Putricide)
+        case 72836: // Volatile Ooze Adhesive (Professor Putricide)
+        case 72837: // Volatile Ooze Adhesive (Professor Putricide)
+        case 72838: // Volatile Ooze Adhesive (Professor Putricide)
+        case 70672: // Gaseous Bloat (Professor Putricide)
+        case 72455: // Gaseous Bloat (Professor Putricide)
+        case 72832: // Gaseous Bloat (Professor Putricide)
+        case 72833: // Gaseous Bloat (Professor Putricide)
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetB[1] = TARGET_UNIT_TARGET_ENEMY;
             spellInfo->EffectImplicitTargetB[2] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
-        case 70911: // Unbound Plague
-        case 72854: // Unbound Plague
-        case 72855: // Unbound Plague
-        case 72856: // Unbound Plague
+        case 70911: // Unbound Plague (Professor Putricide)
+        case 72854: // Unbound Plague (Professor Putricide)
+        case 72855: // Unbound Plague (Professor Putricide)
+        case 72856: // Unbound Plague (Professor Putricide)
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
-        case 71518: // Unholy Infusion Quest Credit
-        case 72934: // Blood Infusion Quest Credit
-        case 72289: // Frost Infusion Quest Credit
+        case 71518: // Unholy Infusion Quest Credit (Professor Putricide)
+        case 72934: // Blood Infusion Quest Credit (Blood-Queen Lana'thel)
+        case 72289: // Frost Infusion Quest Credit (Sindragosa)
             spellInfo->EffectRadiusIndex[0] = 28;   // another missing radius
             count++;
             break;
-        case 71708: // Empowered Flare
-        case 72785: // Empowered Flare
-        case 72786: // Empowered Flare
-        case 72787: // Empowered Flare
+        case 71708: // Empowered Flare (Blood Prince Council)
+        case 72785: // Empowered Flare (Blood Prince Council)
+        case 72786: // Empowered Flare (Blood Prince Council)
+        case 72787: // Empowered Flare (Blood Prince Council)
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
             count++;
             break;
-        case 71340: // Pact of the Darkfallen
+        case 71340: // Pact of the Darkfallen (Blood-Queen Lana'thel)
             spellInfo->DurationIndex = 21;
+            count++;
+            break;
+        case 71266: // Swarming Shadows
+            spellInfo->AreaGroupId = 0;
+            count++;
+            break;
+        case 71357: // Order Whelp
+            spellInfo->EffectRadiusIndex[0] = 22;
+            count++;
+            break;
+        case 70598: // Sindragosa's Fury
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DST_CASTER;
+            count++;
+            break;
+        case 69846: // Frost Bomb
+            spellInfo->speed = 10;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_TARGET_ANY;
+            spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_TARGET_ANY;
+            spellInfo->Effect[1] = 0;
+            count++;
+            break;
+        case 51590: // Toss Ice Boulder
+            spellInfo->MaxAffectedTargets = 1;
             count++;
             break;
         default:
             break;
         }
 
-        switch(spellInfo->SpellFamilyName)
+        switch (spellInfo->SpellFamilyName)
         {
             case SPELLFAMILY_WARRIOR:
                 // Shout

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -124,7 +124,7 @@ public:
             //Arcane Discharge
             if (ArcaneDischarge_Timer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 DoCast(pTarget, SPELL_ARCANE_DISCHARGE);
                 ArcaneDischarge_Timer = 20000+rand()%10000;
             } else ArcaneDischarge_Timer -= diff;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,7 +28,7 @@ class WorldDatabaseConnection : public MySQLConnection
         WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) {}
         WorldDatabaseConnection(ACE_Activation_Queue* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) {}
 
-        //- Loads databasetype specific prepared statements
+        //- Loads database type specific prepared statements
         bool Open();
 };
 
@@ -48,6 +48,7 @@ enum WorldDatabaseStatements
     WORLD_LOAD_CRETEXT,
     WORLD_LOAD_SMART_SCRIPTS,
     WORLD_LOAD_SMARTAI_WP,
+
     MAX_WORLDDATABASE_STATEMENTS,
 };
 

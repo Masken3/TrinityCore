@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -108,7 +108,7 @@ class boss_jindo : public CreatureScript
                 //Casting the delusion curse with a shade. So shade will attack the same target with the curse.
                 if (Delusions_Timer <= diff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     {
                         DoCast(pTarget, SPELL_DELUSIONSOFJINDO);
 
@@ -124,7 +124,7 @@ class boss_jindo : public CreatureScript
                 if (Teleport_Timer <= diff)
                 {
                     Unit *pTarget = NULL;
-                    pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
                     {
                         DoTeleportPlayer(pTarget, -11583.7783f,-1249.4278f,77.5471f,4.745f);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -91,5 +91,6 @@ void WorldRunnable::run()
     sWorldSocketMgr->StopNetwork();
 
     sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
-
+    sObjectAccessor->UnloadAll();             // unload 'i_player2corpse' storage and remove from world
+    sScriptMgr->Unload();
 }

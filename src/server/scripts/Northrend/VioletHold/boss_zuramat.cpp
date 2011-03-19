@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -133,7 +133,7 @@ public:
 
             if (SpellVoidShiftTimer <= diff)
             {
-                 if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                 if (Unit* pUnit = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pUnit, SPELL_VOID_SHIFT);
                 SpellVoidShiftTimer = 20000;
             } else SpellVoidShiftTimer -=diff;

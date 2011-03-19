@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -73,7 +73,7 @@ public:
 
             hasTaunted = false;
 
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
             {
                 Position pos;
 
@@ -115,7 +115,7 @@ public:
             events.ScheduleEvent(EVENT_LOCUST, 90000);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
 
-            if (getDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
+            if (GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
                 events.ScheduleEvent(EVENT_SPAWN_GUARDIAN_NORMAL, urand(15000,20000));
         }
 
@@ -156,7 +156,7 @@ public:
                         //Cast Impale on a random target
                         //Do NOT cast it when we are afflicted by locust swarm
                         if (!me->HasAura(RAID_MODE(SPELL_LOCUST_SWARM_10,SPELL_LOCUST_SWARM_25)))
-                            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(pTarget, RAID_MODE(SPELL_IMPALE_10,SPELL_IMPALE_25));
                         events.ScheduleEvent(EVENT_IMPALE, urand(10000,20000));
                         break;

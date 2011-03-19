@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -186,7 +186,7 @@ public:
                 //PsychicScream
                 if (m_uiPsychicScream_Timer <= uiDiff)
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         DoCast(pTarget, SPELL_PSYCHICSCREAM);
 
                     m_uiPsychicScream_Timer = 20000;
@@ -195,7 +195,7 @@ public:
                 //DeepSleep
                 if (m_uiDeepSleep_Timer <= uiDiff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         DoCast(pTarget, SPELL_SLEEP);
 
                     m_uiDeepSleep_Timer = 15000;

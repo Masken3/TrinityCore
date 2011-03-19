@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,17 +21,6 @@
 #include "icecrown_citadel.h"
 #include "Spell.h"
 
-enum eSpellAction
-{
-    LIGHT_S_HAMMER_TELEPORT         = 70781,
-    ORATORY_OF_THE_DAMNED_TELEPORT  = 70856,
-    RAMPART_OF_SKULLS_TELEPORT      = 70857,
-    DEATHBRINGER_S_RISE_TELEPORT    = 70858,
-    UPPER_SPIRE_TELEPORT            = 70859,
-    FROZEN_THRONE_TELEPORT          = 70860,
-    SINDRAGOSA_S_LAIR_TELEPORT      = 70861
-};
-
 #define GOSSIP_SENDER_ICC_PORT 631
 
 class icecrown_citadel_teleport : public GameObjectScript
@@ -50,7 +39,7 @@ class icecrown_citadel_teleport : public GameObjectScript
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport to the Rampart of Skulls.", GOSSIP_SENDER_ICC_PORT, RAMPART_OF_SKULLS_TELEPORT);
                 if (instance->GetBossState(DATA_GUNSHIP_EVENT) == DONE)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport to the Deathbringer's Rise.", GOSSIP_SENDER_ICC_PORT, DEATHBRINGER_S_RISE_TELEPORT);
-                if (instance->GetBossState(DATA_DEATHBRINGER_SAURFANG) == DONE)
+                if (instance->GetData(DATA_COLDFLAME_JETS) == DONE)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport to the Upper Spire.", GOSSIP_SENDER_ICC_PORT, UPPER_SPIRE_TELEPORT);
                 if (instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Teleport to the Sindragosa's Lair", GOSSIP_SENDER_ICC_PORT, SINDRAGOSA_S_LAIR_TELEPORT);

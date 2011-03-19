@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -96,7 +96,7 @@ class boss_toravon : public CreatureScript
                             events.ScheduleEvent(EVENT_WHITEOUT, 38000);
                             break;
                         case EVENT_FREEZING_GROUND:
-                            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                 DoCast(target, SPELL_FREEZING_GROUND);
                             events.ScheduleEvent(EVENT_FREEZING_GROUND, 20000);
                             break;
@@ -207,7 +207,7 @@ public:
             if (killTimer <= diff)
             {
                 if (!UpdateVictim())
-                    me->ForcedDespawn();
+                    me->DespawnOrUnsummon();
                 killTimer = 10000;
             }
             else

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -118,7 +118,7 @@ public:
                 }
             }
 
-            sLog->outDebug("TSCR: Instance Utgarde Keep: GetPlayerInMap, but PlayerList is empty!");
+            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Instance Utgarde Keep: GetPlayerInMap, but PlayerList is empty!");
             return NULL;
         }
 

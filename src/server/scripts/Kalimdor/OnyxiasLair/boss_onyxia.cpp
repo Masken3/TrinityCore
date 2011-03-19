@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -144,7 +144,7 @@ public:
 
         void Reset()
         {
-            if (!IsCombatMovement())
+            if (!IsCombatMovementAllowed())
                 SetCombatMovement(true);
 
             m_uiPhase = PHASE_START;
@@ -200,7 +200,7 @@ public:
         void JustSummoned(Creature *pSummoned)
         {
             pSummoned->SetInCombatWithZone();
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                 pSummoned->AI()->AttackStart(pTarget);
 
             switch (pSummoned->GetEntry())
@@ -457,7 +457,7 @@ public:
                 {
                     if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_FIREBALL);
 
                         m_uiFireballTimer = 8000;

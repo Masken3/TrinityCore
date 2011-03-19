@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -2375,7 +2375,7 @@ bool ChatHandler::HandleChangeWeather(const char *args)
         return false;
     }
 
-    //*Change the weather of a cell
+    // *Change the weather of a cell
     char* px = strtok((char*)args, " ");
     char* py = strtok(NULL, " ");
 
@@ -2491,9 +2491,9 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
     if (!extractPlayerTarget((char*)args,&target))
         return false;
 
+    target->SetHonorPoints(0);
     target->SetUInt32Value(PLAYER_FIELD_KILLS, 0);
     target->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 0);
-    target->SetHonorPoints(0);
     target->SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, 0);
     target->SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0);
     target->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
@@ -3145,12 +3145,12 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char *args)
     do
     {
         Field* fields = result->Fetch();
-        time_t unbandate = time_t(fields[3].GetUInt64());
+        time_t unbandate = time_t(fields[3].GetUInt32());
         bool active = false;
-        if (fields[2].GetUInt8() && (!fields[1].GetUInt64() || unbandate >= time(NULL)))
+        if (fields[2].GetUInt8() && (!fields[1].GetUInt32() || unbandate >= time(NULL)))
             active = true;
-        bool permanent = (fields[1].GetUInt64() == uint64(0));
-        std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt64(), true);
+        bool permanent = (fields[1].GetUInt32() == uint32(0));
+        std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt32(), true);
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
             fields[0].GetCString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES) : GetTrinityString(LANG_BANINFO_NO), fields[4].GetCString(), fields[5].GetCString());
     }
@@ -3274,10 +3274,10 @@ bool ChatHandler::HandleBanListCharacterCommand(const char *args)
                 Field* banFields = banInfo->Fetch();
                 do
                 {
-                    time_t t_ban = banFields[0].GetUInt64();
+                    time_t t_ban = time_t(banFields[0].GetUInt32());
                     tm* aTm_ban = localtime(&t_ban);
 
-                    if (banFields[0].GetUInt64() == banFields[1].GetUInt64())
+                    if (banFields[0].GetUInt32() == banFields[1].GetUInt32())
                     {
                         PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|   permanent  |%-15.15s|%-15.15s|",
                             char_name.c_str(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
@@ -3285,7 +3285,7 @@ bool ChatHandler::HandleBanListCharacterCommand(const char *args)
                     }
                     else
                     {
-                        time_t t_unban = banFields[1].GetUInt64();
+                        time_t t_unban = time_t(banFields[1].GetUInt32());
                         tm* aTm_unban = localtime(&t_unban);
                         PSendSysMessage("|%-15.15s|%02d-%02d-%02d %02d:%02d|%02d-%02d-%02d %02d:%02d|%-15.15s|%-15.15s|",
                             char_name.c_str(), aTm_ban->tm_year%100, aTm_ban->tm_mon+1, aTm_ban->tm_mday, aTm_ban->tm_hour, aTm_ban->tm_min,
@@ -4123,8 +4123,11 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char *args)
     uint16 MapId = 0;
 
     if (strcmp(pMap, "all"))
-        if (!(MapId = uint16(atoi(pMap))))
+    {
+        MapId = uint16(atoi(pMap));
+        if (!MapId)
             return false;
+    }
 
     for(uint8 i = 0; i < MAX_DIFFICULTY; ++i)
     {
@@ -4429,14 +4432,20 @@ bool ChatHandler::HandleChannelSetOwnership(const char *args)
     {
         if(chn)
             chn->SetOwnership(true);
-        CharacterDatabase.PExecute("UPDATE channels SET m_ownership = 1 WHERE m_name LIKE '%s'", channel);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SET_CHANNEL_OWNERSHIP);
+        stmt->setUInt8 (0, 1);
+        stmt->setString(1, channel);
+        CharacterDatabase.Execute(stmt);
         PSendSysMessage(LANG_CHANNEL_ENABLE_OWNERSHIP, channel);
     }
     else if (strcmp(argstr, "off") == 0)
     {
         if(chn)
             chn->SetOwnership(false);
-        CharacterDatabase.PExecute("UPDATE channels SET m_ownership = 0 WHERE m_name LIKE '%s'", channel);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SET_CHANNEL_OWNERSHIP);
+        stmt->setUInt8 (0, 0);
+        stmt->setString(1, channel);
+        CharacterDatabase.Execute(stmt);
         PSendSysMessage(LANG_CHANNEL_DISABLE_OWNERSHIP, channel);
     }
     else
@@ -4635,7 +4644,10 @@ bool ChatHandler::HandleGroupLeaderCommand(const char *args)
 
     if (GetPlayerGroupAndGUIDByName(cname, plr, group, guid))
         if (group && group->GetLeaderGUID() != guid)
+        {
             group->ChangeLeader(guid);
+            group->SendUpdate();
+        }
 
     return true;
 }

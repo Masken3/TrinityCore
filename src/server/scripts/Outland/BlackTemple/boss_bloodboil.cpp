@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -228,7 +228,7 @@ public:
                 {
                     DoCast(me->getVictim(), SPELL_BEWILDERING_STRIKE);
                     float mt_threat = DoGetThreat(me->getVictim());
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO, 1))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
                         me->AddThreat(pTarget, mt_threat);
                     BewilderingStrikeTimer = 20000;
                 } else BewilderingStrikeTimer -= diff;
@@ -277,7 +277,7 @@ public:
             {
                 if (Phase1)
                 {
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (pTarget && pTarget->isAlive())
                     {
                         Phase1 = false;

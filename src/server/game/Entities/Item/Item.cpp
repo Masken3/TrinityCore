@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -281,12 +281,21 @@ bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
     return true;
 }
 
+// Returns true if Item is a bag AND it is not empty.
+// Returns false if Item is not a bag OR it is an empty bag.
+bool Item::IsNotEmptyBag() const
+{
+    if (const Bag* pBag = ToBag())
+        return !pBag->IsEmpty();
+    return false;
+}
+
 void Item::UpdateDuration(Player* owner, uint32 diff)
 {
     if (!GetUInt32Value(ITEM_FIELD_DURATION))
         return;
 
-    sLog->outDebug("Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)",GetEntry(),GetUInt32Value(ITEM_FIELD_DURATION),diff);
+    sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)",GetEntry(),GetUInt32Value(ITEM_FIELD_DURATION),diff);
 
     if (GetUInt32Value(ITEM_FIELD_DURATION) <= diff)
     {
@@ -420,12 +429,12 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
 
     std::string enchants = fields[6].GetString();
     _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
-    SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt32());
+    SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt16());
     // recalculate suffix factor
     if (GetItemRandomPropertyId() < 0)
         UpdateItemSuffixFactor();
 
-    uint32 durability = fields[8].GetUInt32();
+    uint32 durability = fields[8].GetUInt16();
     SetUInt32Value(ITEM_FIELD_DURABILITY, durability);
     // update max durability (and durability) if need
     SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability);
@@ -451,18 +460,30 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
     return true;
 }
 
-void Item::DeleteFromDB(SQLTransaction& trans)
+/*static*/
+void Item::DeleteFromDB(SQLTransaction& trans, uint32 itemGuid)
 {
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
-    stmt->setUInt32(0, GetGUIDLow());
+    stmt->setUInt32(0, itemGuid);
+    trans->Append(stmt);
+}
+
+void Item::DeleteFromDB(SQLTransaction& trans)
+{
+    DeleteFromDB(trans, GetGUIDLow());
+}
+
+/*static*/
+void Item::DeleteFromInventoryDB(SQLTransaction& trans, uint32 itemGuid)
+{
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVENTORY_ITEM);
+    stmt->setUInt32(0, itemGuid);
     trans->Append(stmt);
 }
 
 void Item::DeleteFromInventoryDB(SQLTransaction& trans)
 {
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_INVENTORY_ITEM);
-    stmt->setUInt32(0, GetGUIDLow());
-    trans->Append(stmt);
+    DeleteFromInventoryDB(trans, GetGUIDLow());
 }
 
 ItemPrototype const *Item::GetProto() const
@@ -680,7 +701,7 @@ void Item::AddToUpdateQueueOf(Player *player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        sLog->outDebug("Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
         return;
     }
 
@@ -700,7 +721,7 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        sLog->outDebug("Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
+        sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GUID_LOPART(GetOwnerGUID()), player->GetGUIDLow());
         return;
     }
 

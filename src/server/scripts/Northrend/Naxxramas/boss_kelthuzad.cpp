@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -430,7 +430,7 @@ public:
                             events.ScheduleEvent(EVENT_DETONATE, urand(30000,40000));
                             events.ScheduleEvent(EVENT_FISSURE, urand(10000,30000));
                             events.ScheduleEvent(EVENT_BLAST, urand(60000,120000));
-                            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+                            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
                                 events.ScheduleEvent(EVENT_CHAIN, urand(30000,60000));
                             Phase = 2;
                             break;
@@ -614,7 +614,7 @@ public:
                             break;
                         }
                         case EVENT_FISSURE:
-                            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                                 DoCast(pTarget, SPELL_SHADOW_FISURE);
                             events.RepeatEvent(urand(10000,45000));
                             break;

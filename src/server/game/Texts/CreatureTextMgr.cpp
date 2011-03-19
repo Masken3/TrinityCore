@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -306,8 +306,8 @@ void CreatureTextMgr::BuildMonsterChat(WorldPacket *data, WorldObject* source, C
     {
         sLog->outError("CreatureTextMgr: WorldObject(%s) TypeId %u GuidLow %u sent WHISPER msg to Non-Player target. Ignoring.",source->GetName(), uint32(source->GetTypeId()), source->GetGUIDLow());
         return;
-        //*data << (uint32)1;                                 // target name length
-        //*data << (uint8)0;                                  // target name
+        // *data << (uint32)1;                                 // target name length
+        // *data << (uint8)0;                                  // target name
     }
     *data << (uint32)(strlen(text)+1);
     *data << text;
@@ -417,14 +417,14 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
     CreatureTextMap::const_iterator sList = mTextMap.find(sourceEntry);
     if (sList == mTextMap.end())
     {
-        sLog->outDebug("CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
+        sLog->outDebug(LOG_FILTER_UNITS, "CreatureTextMgr::TextExist: Could not find Text for Creature (entry %u) in 'creature_text' table.", sourceEntry);
         return false;
     }
     CreatureTextHolder TextHolder = (*sList).second;
     CreatureTextHolder::const_iterator itr = TextHolder.find(textGroup);
     if (itr == TextHolder.end())
     {
-        sLog->outDebug("CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
+        sLog->outDebug(LOG_FILTER_UNITS, "CreatureTextMgr::TextExist: Could not find TextGroup %u for Creature (entry %u).",uint32(textGroup), sourceEntry);
         return false;
     }
     return true;

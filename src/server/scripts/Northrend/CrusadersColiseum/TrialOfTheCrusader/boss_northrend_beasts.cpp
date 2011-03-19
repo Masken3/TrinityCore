@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -140,8 +140,8 @@ public:
             m_uiStaggeringStompTimer = 15*IN_MILLISECONDS;
             m_uiSummonTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);;
 
-            if (getDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ||
-                getDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ||
+                GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
                 m_uiSummonCount = 5;
             else
                 m_uiSummonCount = 4;
@@ -159,7 +159,7 @@ public:
         {
             if (m_pInstance)
                 m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* /*pWho*/)
@@ -188,6 +188,7 @@ public:
             if (summon->GetEntry() == NPC_SNOBOLD_VASSAL)
                 if (summon->isAlive())
                     ++m_uiSummonCount;
+            Summons.Despawn(summon);
         }
 
         void UpdateAI(const uint32 uiDiff)
@@ -197,13 +198,13 @@ public:
 
             if (m_uiImpaleTimer <= uiDiff)
             {
-                DoCast(me->getVictim(), SPELL_IMPALE);
+                DoCastVictim(SPELL_IMPALE);
                 m_uiImpaleTimer = urand(8*IN_MILLISECONDS, 10*IN_MILLISECONDS);
             } else m_uiImpaleTimer -= uiDiff;
 
             if (m_uiStaggeringStompTimer <= uiDiff)
             {
-                DoCast(me->getVictim(), SPELL_STAGGERING_STOMP);
+                DoCastVictim(SPELL_STAGGERING_STOMP);
                 m_uiStaggeringStompTimer = urand(20*IN_MILLISECONDS, 25*IN_MILLISECONDS);
             } else m_uiStaggeringStompTimer -= uiDiff;
 
@@ -286,7 +287,7 @@ public:
             {
                 case 0: // JUMP!? Fuck! THAT'S BEEZARR! Would someone PLEASE make MotionMaster->Move* work better?
                     if (m_bTargetDied)
-                        me->ForcedDespawn();
+                        me->DespawnOrUnsummon();
                     break;
             }
         }
@@ -306,29 +307,30 @@ public:
                 return;
 
             if (Unit* pTarget = Unit::GetPlayer(*me, m_uiTargetGUID))
+            {
                 if (!pTarget->isAlive())
+                {
                     if (m_pInstance)
-                        if (Unit* pGormok = Unit::GetCreature(*me, m_pInstance->GetData64(NPC_GORMOK)))
+                    {
+                        Unit* gormok = ObjectAccessor::GetCreature(*me, m_pInstance->GetData64(NPC_GORMOK));
+                        if (gormok && gormok->isAlive())
                         {
-                            if (pGormok->isAlive())
-                            {
-                                SetCombatMovement(false);
-                                m_bTargetDied = true;
-                                me->GetMotionMaster()->MoveJump(pGormok->GetPositionX(), pGormok->GetPositionY(), pGormok->GetPositionZ(), 15.0f, 15.0f);
-                            }
-                            else
-                            {
-                                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                                {
-                                    m_uiTargetGUID = pTarget->GetGUID();
-                                    me->GetMotionMaster()->MoveJump(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 15.0f, 15.0f);
-                                }
-                            }
+                            SetCombatMovement(false);
+                            m_bTargetDied = true;
+                            me->GetMotionMaster()->MoveJump(gormok->GetPositionX(), gormok->GetPositionY(), gormok->GetPositionZ(), 15.0f, 15.0f);
                         }
+                        else if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        {
+                            m_uiTargetGUID = target->GetGUID();
+                            me->GetMotionMaster()->MoveJump(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 15.0f, 15.0f);
+                        }
+                    }
+                }
+            }
 
             if (m_uiFireBombTimer < uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_FIRE_BOMB);
                 m_uiFireBombTimer = 20000;
             }
@@ -385,15 +387,8 @@ struct boss_jormungarAI : public ScriptedAI
                 {
                     instanceScript->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
 
-                    if (TempSummon* summ = me->ToTempSummon())
-                        summ->UnSummon();
-                    else
-                        me->ForcedDespawn();
-
-                    if (TempSummon* summ = otherWorm->ToTempSummon())
-                        summ->UnSummon();
-                    else
-                        otherWorm->ForcedDespawn();
+                    me->DespawnOrUnsummon();
+                    otherWorm->DespawnOrUnsummon();
                 }
                 else
                     instanceScript->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
@@ -406,10 +401,7 @@ struct boss_jormungarAI : public ScriptedAI
         if (instanceScript && instanceScript->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
             instanceScript->SetData(TYPE_NORTHREND_BEASTS, FAIL);
 
-        if (TempSummon* summ = me->ToTempSummon())
-            summ->UnSummon();
-        else
-            me->ForcedDespawn();
+        me->DespawnOrUnsummon();
     }
 
     void KilledUnit(Unit *pWho)
@@ -471,8 +463,7 @@ struct boss_jormungarAI : public ScriptedAI
                 if (slimePoolTimer <= uiDiff)
                 {
                     /* Spell summon has only 30s duration */
-                    //DoCast(SUMMON_SLIME_POOL);
-                    me->SummonCreature(NPC_SLIME_POOL, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0);
+                    DoCast(me, SUMMON_SLIME_POOL);
                     slimePoolTimer = 30*IN_MILLISECONDS;
                 } else slimePoolTimer -= uiDiff;
 
@@ -511,7 +502,7 @@ struct boss_jormungarAI : public ScriptedAI
             case 4: // Stationary
                 if (sprayTimer <= uiDiff)
                 {
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, spraySpell);
                     sprayTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
                 } else sprayTimer -= uiDiff;
@@ -667,7 +658,6 @@ public:
         {
             casted = false;
             me->SetReactState(REACT_PASSIVE);
-            me->ForcedDespawn(60*IN_MILLISECONDS);
         }
 
         void UpdateAI(const uint32 /*uiDiff*/)
@@ -768,7 +758,7 @@ public:
         {
             if (m_pInstance)
                 m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void KilledUnit(Unit *pWho)
@@ -815,7 +805,7 @@ public:
 
                     if (m_uiArticBreathTimer <= uiDiff)
                     {
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_ARCTIC_BREATH);
                         m_uiArticBreathTimer = urand(25*IN_MILLISECONDS, 40*IN_MILLISECONDS);
                     } else m_uiArticBreathTimer -= uiDiff;
@@ -840,7 +830,7 @@ public:
                     m_uiStage = 2;
                     break;
                 case 2:
-                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                     {
                         m_uiTrampleTargetGUID = pTarget->GetGUID();
                         me->SetUInt64Value(UNIT_FIELD_TARGET, m_uiTrampleTargetGUID);

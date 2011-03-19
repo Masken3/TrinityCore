@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -1049,7 +1049,7 @@ public:
             if (uiSpawnFiendTimer <= diff)
             {
                 if (Creature* pFiend = DoSpawnCreature(CREATURE_VOLATILE_FELFIRE_FIEND, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 20000))
-                    pFiend->AddThreat(SelectUnit(SELECT_TARGET_RANDOM,0), 100000.0f);
+                    pFiend->AddThreat(SelectTarget(SELECT_TARGET_RANDOM,0), 100000.0f);
                 uiSpawnFiendTimer = urand(4000,8000);
             } else uiSpawnFiendTimer -= diff;
         }
@@ -1424,7 +1424,7 @@ public:
                     DoMeleeAttackIfReady();
                     break;
                 }
-                sLog->outDebug("Sinister-Timer");
+                sLog->outDebug(LOG_FILTER_TSCR, "Sinister-Timer");
                 for (uint8 i = 0; i < 3; ++i)
                     uiTimer[i] -= diff;
             }

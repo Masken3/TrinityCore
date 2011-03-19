@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,19 +18,10 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
-enum eGameObjects
+static const DoorData doorData[] =
 {
-    GO_KOLOGARN_CHEST_HERO  = 195047,
-    GO_KOLOGARN_CHEST       = 195046,
-    GO_THORIM_CHEST_HERO    = 194315,
-    GO_THORIM_CHEST         = 194314,
-    GO_HODIR_CHEST_HERO     = 194308,
-    GO_HODIR_CHEST          = 194307,
-    GO_FREYA_CHEST_HERO     = 194325,
-    GO_FREYA_CHEST          = 194324,
-    GO_LEVIATHAN_DOOR       = 194905,
-    GO_LEVIATHAN_GATE       = 194630,
-    GO_VEZAX_DOOR           = 194750,
+    {GO_LEVIATHAN_DOOR, TYPE_LEVIATHAN, DOOR_TYPE_ROOM,     BOUNDARY_S},
+    {0,                 0,              DOOR_TYPE_ROOM,     BOUNDARY_NONE}
 };
 
 class instance_ulduar : public InstanceMapScript
@@ -45,7 +36,7 @@ public:
 
     struct instance_ulduar_InstanceMapScript : public InstanceScript
     {
-        instance_ulduar_InstanceMapScript(Map* pMap) : InstanceScript(pMap) { Initialize(); };
+        instance_ulduar_InstanceMapScript(InstanceMap* map) : InstanceScript(map) { Initialize(); };
 
         uint32 uiEncounter[MAX_ENCOUNTER];
         std::string m_strInstData;
@@ -58,6 +49,8 @@ public:
         uint64 uiXT002GUID;
         uint64 uiAssemblyGUIDs[3];
         uint64 uiKologarnGUID;
+        uint64 uiLeftArmGUID;
+        uint64 uiRightArmGUID;
         uint64 uiAuriayaGUID;
         uint64 uiMimironGUID;
         uint64 uiHodirGUID;
@@ -66,42 +59,49 @@ public:
         uint64 uiVezaxGUID;
         uint64 uiYoggSaronGUID;
         uint64 uiAlgalonGUID;
-        uint64 uiLeviathanDoor[7];
         uint64 uiLeviathanGateGUID;
         uint64 uiVezaxDoorGUID;
 
         uint64 uiKologarnChestGUID;
+        uint64 uiKologarnBridgeGUID;
+        uint64 uiKologarnDoorGUID;
         uint64 uiThorimChestGUID;
         uint64 uiHodirChestGUID;
         uint64 uiFreyaChestGUID;
 
+        std::set<uint64> mRubbleSpawns;
+
         void Initialize()
         {
             SetBossNumber(MAX_ENCOUNTER);
-            uiIgnisGUID           = 0;
-            uiRazorscaleGUID      = 0;
-            uiExpCommanderGUID    = 0;
-            uiXT002GUID           = 0;
-            uiKologarnGUID        = 0;
-            uiAuriayaGUID         = 0;
-            uiMimironGUID         = 0;
-            uiHodirGUID           = 0;
-            uiThorimGUID          = 0;
-            uiFreyaGUID           = 0;
-            uiVezaxGUID           = 0;
-            uiYoggSaronGUID       = 0;
-            uiAlgalonGUID         = 0;
-            uiKologarnChestGUID   = 0;
-            uiThorimChestGUID     = 0;
-            uiHodirChestGUID      = 0;
-            uiFreyaChestGUID      = 0;
-            uiLeviathanGateGUID   = 0;
-            uiVezaxDoorGUID       = 0;
-            flag                  = 0;
+            LoadDoorData(doorData);
+            uiIgnisGUID             = 0;
+            uiRazorscaleGUID        = 0;
+            uiExpCommanderGUID      = 0;
+            uiXT002GUID             = 0;
+            uiKologarnGUID          = 0;
+            uiLeftArmGUID           = 0;
+            uiRightArmGUID          = 0;
+            uiAuriayaGUID           = 0;
+            uiMimironGUID           = 0;
+            uiHodirGUID             = 0;
+            uiThorimGUID            = 0;
+            uiFreyaGUID             = 0;
+            uiVezaxGUID             = 0;
+            uiYoggSaronGUID         = 0;
+            uiAlgalonGUID           = 0;
+            uiKologarnChestGUID     = 0;
+            uiKologarnBridgeGUID    = 0;
+            uiKologarnChestGUID     = 0;
+            uiThorimChestGUID       = 0;
+            uiHodirChestGUID        = 0;
+            uiFreyaChestGUID        = 0;
+            uiLeviathanGateGUID     = 0;
+            uiVezaxDoorGUID         = 0;
+            flag                    = 0;
 
             memset(&uiEncounter, 0, sizeof(uiEncounter));
             memset(&uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
-            memset(&uiLeviathanDoor, 0, sizeof(uiLeviathanDoor));
         }
 
         bool IsEncounterInProgress() const
@@ -146,9 +146,27 @@ public:
                     uiAssemblyGUIDs[2] = creature->GetGUID();
                     break;
 
+                // Kologarn
                 case NPC_KOLOGARN:
                     uiKologarnGUID = creature->GetGUID();
                     break;
+                case NPC_KOLOGARN_BRIDGE:
+                    // The below hacks are courtesy of the grid/visibilitysystem
+                    if (GetBossState(TYPE_KOLOGARN) == DONE)
+                    {
+                        creature->SetDeadByDefault(true);
+                        creature->setDeathState(CORPSE);
+                        creature->DestroyForNearbyPlayers();
+                        creature->UpdateObjectVisibility(true);
+                    }
+                    else
+                    {
+                        creature->SetDeadByDefault(false);
+                        creature->setDeathState(CORPSE);
+                        creature->RemoveCorpse(true);
+                    }
+                    break;
+
                 case NPC_AURIAYA:
                     uiAuriayaGUID = creature->GetGUID();
                     break;
@@ -185,6 +203,14 @@ public:
                 case GO_KOLOGARN_CHEST:
                     uiKologarnChestGUID = go->GetGUID();
                     break;
+                case GO_KOLOGARN_BRIDGE:
+                    uiKologarnBridgeGUID = go->GetGUID();
+                    if (GetBossState(TYPE_KOLOGARN) == DONE)
+                        HandleGameObject(0, false, go);
+                    break;
+                case GO_KOLOGARN_DOOR:
+                    uiKologarnDoorGUID = go->GetGUID();
+                    break;
                 case GO_THORIM_CHEST_HERO:
                 case GO_THORIM_CHEST:
                     uiThorimChestGUID =go->GetGUID();
@@ -198,15 +224,12 @@ public:
                     uiFreyaChestGUID = go->GetGUID();
                     break;
                 case GO_LEVIATHAN_DOOR:
-                    uiLeviathanDoor[flag] = go->GetGUID();
-                    HandleGameObject(NULL, true, go);
-                    flag++;
-                    if (flag == 7)
-                        flag =0;
+                    AddDoor(go, true);
                     break;
                 case GO_LEVIATHAN_GATE:
                     uiLeviathanGateGUID = go->GetGUID();
-                    HandleGameObject(NULL, false, go);
+                    if (GetBossState(TYPE_LEVIATHAN) == DONE)
+                        go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                     break;
                 case GO_VEZAX_DOOR:
                     uiVezaxDoorGUID = go->GetGUID();
@@ -215,13 +238,25 @@ public:
             }
         }
 
-        void ProcessEvent(GameObject* /*go*/, uint32 uiEventId)
+        void OnGameObjectRemove(GameObject* go)
+        {
+            switch (go->GetEntry())
+            {
+                case GO_LEVIATHAN_DOOR:
+                    AddDoor(go, false);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void ProcessEvent(GameObject* /*go*/, uint32 eventId)
         {
             // Flame Leviathan's Tower Event triggers
            Creature* pFlameLeviathan = instance->GetCreature(uiLeviathanGUID);
 
             if (pFlameLeviathan && pFlameLeviathan->isAlive()) //No leviathan, no event triggering ;)
-                switch(uiEventId)
+                switch(eventId)
                 {
                     case EVENT_TOWER_OF_STORM_DESTROYED:
                         pFlameLeviathan->AI()->DoAction(1);
@@ -238,6 +273,10 @@ public:
                 }
         }
 
+        void ProcessEvent(Unit* /*unit*/, uint32 /*eventId*/)
+        {
+        }
+
         bool SetBossState(uint32 type, EncounterState state)
         {
             if (!InstanceScript::SetBossState(type, state))
@@ -246,13 +285,6 @@ public:
             switch (type)
             {
                 case TYPE_LEVIATHAN:
-                    if (state == IN_PROGRESS)
-                        for (uint8 uiI = 0; uiI < 7; ++uiI)
-                            HandleGameObject(uiLeviathanDoor[uiI],false);
-                    else
-                        for (uint8 uiI = 0; uiI < 7; ++uiI)
-                            HandleGameObject(uiLeviathanDoor[uiI],true);
-                    break;
                 case TYPE_IGNIS:
                 case TYPE_RAZORSCALE:
                 case TYPE_XT002:
@@ -267,8 +299,15 @@ public:
                     break;
                 case TYPE_KOLOGARN:
                     if (state == DONE)
+                    {
                         if (GameObject* go = instance->GetGameObject(uiKologarnChestGUID))
                             go->SetRespawnTime(go->GetRespawnDelay());
+                        HandleGameObject(uiKologarnBridgeGUID, false);
+                    }
+                    if (state == IN_PROGRESS)
+                        HandleGameObject(uiKologarnDoorGUID, false);
+                    else
+                        HandleGameObject(uiKologarnDoorGUID, true);
                     break;
                 case TYPE_HODIR:
                     if (state == DONE)
@@ -310,6 +349,19 @@ public:
             }
         }
 
+        void SetData64(uint32 type, uint64 data)
+        {
+            switch (type)
+            {
+                case DATA_LEFT_ARM:
+                    uiLeftArmGUID = data;
+                    break;
+                case DATA_RIGHT_ARM:
+                    uiRightArmGUID = data;
+                    break;
+            }
+        }
+
         uint64 GetData64(uint32 data)
         {
             switch(data)
@@ -319,6 +371,8 @@ public:
                 case TYPE_RAZORSCALE:           return uiRazorscaleGUID;
                 case TYPE_XT002:                return uiXT002GUID;
                 case TYPE_KOLOGARN:             return uiKologarnGUID;
+                case DATA_LEFT_ARM:             return uiLeftArmGUID;
+                case DATA_RIGHT_ARM:            return uiRightArmGUID;
                 case TYPE_AURIAYA:              return uiAuriayaGUID;
                 case TYPE_MIMIRON:              return uiMimironGUID;
                 case TYPE_HODIR:                return uiHodirGUID;

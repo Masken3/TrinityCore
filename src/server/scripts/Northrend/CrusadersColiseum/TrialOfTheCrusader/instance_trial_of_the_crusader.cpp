@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -123,17 +123,6 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                     player->SendUpdateWorldState(UPDATE_STATE_UI_SHOW, 1);
                     player->SendUpdateWorldState(UPDATE_STATE_UI_COUNT, GetData(TYPE_COUNTER));
                 }
-            }
-
-            bool IsRaidWiped()
-            {
-                Map::PlayerList const &players = instance->GetPlayers();
-                for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-                    if (Player* player = i->getSource())
-                        if (player->isAlive())
-                            return false;
-
-                return true;
             }
 
             void OpenDoor(uint64 guid)
@@ -417,12 +406,9 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                     sLog->outDetail("[ToCr] EncounterStatus[type %u] %u = data %u;", type, EncounterStatus[type], data);
                     if (data == FAIL)
                     {
-                        if (IsRaidWiped())
-                        {
-                            --TrialCounter;
-                            NeedSave = true;
-                            EventStage = (type == TYPE_BEASTS ? 666 : 0);
-                        }
+                        --TrialCounter;
+                        NeedSave = true;
+                        EventStage = (type == TYPE_BEASTS ? 666 : 0);
                         data = NOT_STARTED;
                     }
 

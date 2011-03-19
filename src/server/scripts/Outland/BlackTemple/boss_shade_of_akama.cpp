@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -331,7 +331,7 @@ public:
             if (reseting)
                 return;
 
-            sLog->outDebug("TSCR: Increasing Death Count for Shade of Akama encounter");
+            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Increasing Death Count for Shade of Akama encounter");
             ++DeathCount;
             me->RemoveAuraFromStack(SPELL_SHADE_SOUL_CHANNEL_2);
             if (guid)
@@ -371,7 +371,7 @@ public:
                     {
                         Spawn->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                         Spawn->GetMotionMaster()->MovePoint(0, AGGRO_X, AGGRO_Y, AGGRO_Z);
-                        Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                        Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
                         Spawn->AI()->AttackStart(pTarget);
                     }
                 }
@@ -389,7 +389,7 @@ public:
                 {
                     CAST_AI(mob_ashtongue_channeler::mob_ashtongue_channelerAI, (*itr)->AI())->ShadeGUID = me->GetGUID();
                     Channelers.push_back((*itr)->GetGUID());
-                    sLog->outDebug("TSCR: Shade of Akama Grid Search found channeler " UI64FMTD ". Adding to list", (*itr)->GetGUID());
+                    sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Shade of Akama Grid Search found channeler " UI64FMTD ". Adding to list", (*itr)->GetGUID());
                 }
             }
             else sLog->outError("SD2 ERROR: Grid Search was unable to find any channelers. Shade of Akama encounter will be buggy");

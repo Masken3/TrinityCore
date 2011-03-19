@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,9 +26,67 @@
 
 enum PriestSpells
 {
-    PRIEST_SPELL_PENANCE_R1                      = 47540,
-    PRIEST_SPELL_PENANCE_R1_DAMAGE               = 47758,
-    PRIEST_SPELL_PENANCE_R1_HEAL                 = 47757,
+    PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL           = 48153,
+    PRIEST_SPELL_PENANCE_R1                     = 47540,
+    PRIEST_SPELL_PENANCE_R1_DAMAGE              = 47758,
+    PRIEST_SPELL_PENANCE_R1_HEAL                = 47757,
+    PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
+    PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
+};
+
+// Guardian Spirit
+class spell_pri_guardian_spirit : public SpellScriptLoader
+{
+    public:
+        spell_pri_guardian_spirit() : SpellScriptLoader("spell_pri_guardian_spirit") { }
+
+        class spell_pri_guardian_spirit_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_guardian_spirit_AuraScript);
+
+            uint32 healPct;
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return sSpellStore.LookupEntry(PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL) != NULL;
+            }
+
+            bool Load()
+            {
+                healPct = SpellMgr::CalculateSpellEffectAmount(GetSpellProto(), EFFECT_1);
+                return true;
+            }
+
+            void CalculateAmount(AuraEffect const * /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                // Set absorbtion amount to unlimited
+                amount = -1;
+            }
+
+            void Absorb(AuraEffect * /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                Unit * target = GetTarget();
+                if (dmgInfo.GetDamage() < target->GetHealth())
+                    return;
+
+                int32 healAmount = int32(target->CountPctFromMaxHealth(healPct));
+                // remove the aura now, we don't want 40% healing bonus
+                Remove(AURA_REMOVE_BY_ENEMY_SPELL);
+                target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, true);
+                absorbAmount = dmgInfo.GetDamage();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_guardian_spirit_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_pri_guardian_spirit_AuraScript::Absorb, EFFECT_1);
+            }
+        };
+
+        AuraScript *GetAuraScript() const
+        {
+            return new spell_pri_guardian_spirit_AuraScript();
+        }
 };
 
 class spell_pri_mana_burn : public SpellScriptLoader
@@ -38,15 +96,11 @@ class spell_pri_mana_burn : public SpellScriptLoader
 
         class spell_pri_mana_burn_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_pri_mana_burn_SpellScript)
-            bool Validate(SpellEntry const * /*spellEntry*/)
-            {
-                return true;
-            }
+            PrepareSpellScript(spell_pri_mana_burn_SpellScript);
 
             void HandleAfterHit()
             {
-                Unit * unitTarget = GetHitUnit();
+                Unit* unitTarget = GetHitUnit();
                 if (!unitTarget)
                     return;
 
@@ -65,6 +119,32 @@ class spell_pri_mana_burn : public SpellScriptLoader
         }
 };
 
+class spell_pri_mind_sear : public SpellScriptLoader
+{
+    public:
+        spell_pri_mind_sear() : SpellScriptLoader("spell_pri_mind_sear") { }
+
+        class spell_pri_mind_sear_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_mind_sear_SpellScript);
+
+            void FilterTargets(std::list<Unit*>& unitList)
+            {
+                unitList.remove(GetTargetUnit());
+            }
+
+            void Register()
+            {
+                OnUnitTargetSelect += SpellUnitTargetFn(spell_pri_mind_sear_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_AREA_ENEMY_DST);
+            }
+        };
+
+        SpellScript *GetSpellScript() const
+        {
+            return new spell_pri_mind_sear_SpellScript();
+        }
+};
+
 class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
 {
     public:
@@ -73,7 +153,8 @@ class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
         // 47948 Pain and Suffering (proc)
         class spell_pri_pain_and_suffering_proc_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_pri_pain_and_suffering_proc_SpellScript)
+            PrepareSpellScript(spell_pri_pain_and_suffering_proc_SpellScript);
+
             void HandleEffectScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 // Refresh Shadow Word: Pain on target
@@ -101,7 +182,8 @@ class spell_pri_penance : public SpellScriptLoader
 
         class spell_pri_penance_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_pri_penance_SpellScript)
+            PrepareSpellScript(spell_pri_penance_SpellScript);
+
             bool Validate(SpellEntry const * spellEntry)
             {
                 if (!sSpellStore.LookupEntry(PRIEST_SPELL_PENANCE_R1))
@@ -148,9 +230,54 @@ class spell_pri_penance : public SpellScriptLoader
         }
 };
 
+// Reflective Shield
+class spell_pri_reflective_shield_trigger : public SpellScriptLoader
+{
+    public:
+        spell_pri_reflective_shield_trigger() : SpellScriptLoader("spell_pri_reflective_shield_trigger") { }
+
+        class spell_pri_reflective_shield_trigger_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_reflective_shield_trigger_AuraScript);
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                return sSpellStore.LookupEntry(PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED) && sSpellStore.LookupEntry(PRIEST_SPELL_REFLECTIVE_SHIELD_R1);
+            }
+
+            void Trigger(AuraEffect * aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            {
+                Unit * target = GetTarget();
+                if (dmgInfo.GetAttacker() == target)
+                    return;
+                Unit * caster = GetCaster();
+                if (!caster)
+                    return;
+                if (AuraEffect * talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
+                {
+                    int32 bp = CalculatePctN(absorbAmount, talentAurEff->GetAmount());
+                    target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+                }
+            }
+
+            void Register()
+            {
+                 AfterEffectAbsorb += AuraEffectAbsorbFn(spell_pri_reflective_shield_trigger_AuraScript::Trigger, EFFECT_0);
+            }
+        };
+
+        AuraScript *GetAuraScript() const
+        {
+            return new spell_pri_reflective_shield_trigger_AuraScript();
+        }
+};
+
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_guardian_spirit();
     new spell_pri_mana_burn;
     new spell_pri_pain_and_suffering_proc;
     new spell_pri_penance;
+    new spell_pri_reflective_shield_trigger();
+    new spell_pri_mind_sear();
 }

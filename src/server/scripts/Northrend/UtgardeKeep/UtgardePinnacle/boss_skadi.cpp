@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -258,12 +258,12 @@ public:
                 case CREATURE_YMIRJAR_HARPOONER:
                     pSummoned->setActive(true);
                     pSummoned->SetInCombatWithZone();
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         pSummoned->AI()->AttackStart(pTarget);
                     break;
                 case CREATURE_TRIGGER:
                     pSummoned->CastSpell((Unit*)NULL, SPELL_FREEZING_CLOUD, true);
-                    pSummoned->ForcedDespawn(10*IN_MILLISECONDS);
+                    pSummoned->DespawnOrUnsummon(10*IN_MILLISECONDS);
                     break;
             }
             Summons.Summon(pSummoned);

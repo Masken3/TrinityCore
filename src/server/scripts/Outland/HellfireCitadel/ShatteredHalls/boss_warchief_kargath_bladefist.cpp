@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -120,7 +120,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                     case MOB_HEARTHEN_GUARD:
                     case MOB_SHARPSHOOTER_GUARD:
                     case MOB_REAVER_GUARD:
-                        summoned->AI()->AttackStart(SelectUnit(SELECT_TARGET_RANDOM,0));
+                        summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM,0));
                         adds.push_back(summoned->GetGUID());
                         break;
                     case MOB_SHATTERED_ASSASSIN:
@@ -267,7 +267,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                     {
                         if (Charge_timer <= diff)
                         {
-                            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), H_SPELL_CHARGE);
+                            DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), H_SPELL_CHARGE);
                             Charge_timer = 0;
                         }
                         else

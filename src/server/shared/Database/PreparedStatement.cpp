@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -328,6 +328,56 @@ void MySQLPreparedStatement::setValue(MYSQL_BIND* param, enum_field_types type, 
     param->is_unsigned = isUnsigned;
 
     memcpy(param->buffer, value, len);
+}
+
+std::string MySQLPreparedStatement::getQueryString(const char *query)
+{
+    std::string queryString = query;
+
+    uint32 pos = 0;
+    for (uint32 i = 0; i < m_stmt->statement_data.size(); i++)
+    {
+        pos = queryString.find("?", pos);
+        std::stringstream replace;
+
+        replace << "'";
+
+        switch (m_stmt->statement_data[i].type)
+        {
+        case TYPE_BOOL:
+            replace << m_stmt->statement_data[i].data.boolean ? "1" : "0";
+            break;
+        case TYPE_UI8:
+        case TYPE_UI16:
+        case TYPE_UI32:
+            replace << m_stmt->statement_data[i].data.ui32;
+            break;
+        case TYPE_I8:
+        case TYPE_I16:
+        case TYPE_I32:
+            replace << m_stmt->statement_data[i].data.i32;
+            break;
+        case TYPE_UI64:
+            replace << m_stmt->statement_data[i].data.ui64;
+            break;
+        case TYPE_I64:
+            replace << m_stmt->statement_data[i].data.i64;
+            break;
+        case TYPE_FLOAT:
+            replace << m_stmt->statement_data[i].data.f;
+            break;
+        case TYPE_DOUBLE:
+            replace << m_stmt->statement_data[i].data.d;
+            break;
+        case TYPE_STRING:
+            replace << m_stmt->statement_data[i].str;
+            break;
+        }
+        replace << "'";
+        queryString.replace(pos,1, replace.str());
+    }
+
+    return queryString;
 }
 
 //- Execution

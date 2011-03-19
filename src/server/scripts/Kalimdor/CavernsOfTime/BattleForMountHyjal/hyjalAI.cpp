@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -563,7 +563,7 @@ void hyjalAI::SummonNextWave(const Wave wave[18], uint32 Count, float Base[4][3]
         else
         {
             NextWaveTimer = 15000;
-            sLog->outDebug("TSCR: HyjalAI: debug mode is enabled. Next Wave in 15 seconds");
+            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: HyjalAI: debug mode is enabled. Next Wave in 15 seconds");
         }
     }
     else
@@ -895,7 +895,7 @@ void hyjalAI::UpdateAI(const uint32 diff)
                 switch(Spells[i].TargetType)
                 {
                     case TARGETTYPE_SELF: pTarget = me; break;
-                    case TARGETTYPE_RANDOM: pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0); break;
+                    case TARGETTYPE_RANDOM: pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0); break;
                     case TARGETTYPE_VICTIM: pTarget = me->getVictim(); break;
                 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -78,7 +78,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget)
         return;
     }
 
-    sLog->outDebug("TSCR: DoScriptText: text entry=%i, Sound=%u, Type=%u, Language=%u, Emote=%u", iTextEntry, pData->uiSoundId, pData->uiType, pData->uiLanguage, pData->uiEmote);
+    sLog->outDebug(LOG_FILTER_TSCR, "TSCR: DoScriptText: text entry=%i, Sound=%u, Type=%u, Language=%u, Emote=%u", iTextEntry, pData->uiSoundId, pData->uiType, pData->uiLanguage, pData->uiEmote);
 
     if (pData->uiSoundId)
     {
@@ -141,6 +141,25 @@ ScriptMgr::ScriptMgr()
 
 ScriptMgr::~ScriptMgr()
 {
+}
+
+void ScriptMgr::Initialize()
+{
+    uint32 oldMSTime = getMSTime();
+
+    LoadDatabase();
+
+    sLog->outString("Loading C++ scripts");
+
+    FillSpellSummary();
+    AddScripts();
+
+    sLog->outString(">> Loaded %u C++ scripts in %u ms", GetScriptCount(), GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
+void ScriptMgr::Unload()
+{
     #define SCR_CLEAR(T) \
         FOR_SCRIPTS(T, itr, end) \
             delete itr->second; \
@@ -173,21 +192,6 @@ ScriptMgr::~ScriptMgr()
     SCR_CLEAR(GroupScript);
 
     #undef SCR_CLEAR
-}
-
-void ScriptMgr::Initialize()
-{
-    uint32 oldMSTime = getMSTime();
-
-    LoadDatabase();
-
-    sLog->outString("Loading C++ scripts");
-    
-    FillSpellSummary();
-    AddScripts();
-
-    sLog->outString(">> Loaded %u C++ scripts in %u ms", GetScriptCount(), GetMSTimeDiffToNow(oldMSTime));
-    sLog->outString();
 }
 
 void ScriptMgr::LoadDatabase()
@@ -952,15 +956,6 @@ void ScriptMgr::OnUninstall(Vehicle* veh)
 
     GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
     tmpscript->OnUninstall(veh);
-}
-
-void ScriptMgr::OnDie(Vehicle* veh)
-{
-    ASSERT(veh);
-    ASSERT(veh->GetBase()->GetTypeId() == TYPEID_UNIT);
-
-    GET_SCRIPT(VehicleScript, veh->GetBase()->ToCreature()->GetScriptId(), tmpscript);
-    tmpscript->OnDie(veh);
 }
 
 void ScriptMgr::OnReset(Vehicle* veh)

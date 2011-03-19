@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -75,7 +75,7 @@ public:
 
         void JustSummoned(Creature* pSummoned)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 pSummoned->AI()->AttackStart(pTarget);
         }
 
@@ -87,7 +87,7 @@ public:
             //Sleep_Timer
             if (m_uiSleep_Timer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_SLEEP);
 
                 m_uiSleep_Timer = 8000 + rand()%7000;
@@ -107,7 +107,7 @@ public:
             //Tailsweep every 2 seconds
             if (m_uiTailSweep_Timer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_TAILSWEEP);
 
                 m_uiTailSweep_Timer = 2000;
@@ -119,7 +119,7 @@ public:
             if (m_uiLightningWave_Timer <= uiDiff)
             {
                 //Cast LIGHTNINGWAVE on a Random target
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_LIGHTNINGWAVE);
 
                 m_uiLightningWave_Timer = 7000 + rand()%5000;

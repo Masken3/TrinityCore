@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -59,7 +59,7 @@ class CreatureGroup
     public:
         //Group cannot be created empty
         explicit CreatureGroup(uint32 id) : m_leader(NULL), m_groupID(id), m_Formed(false) {}
-        ~CreatureGroup() { sLog->outDebug("Destroying group"); }
+        ~CreatureGroup() { sLog->outDebug(LOG_FILTER_UNITS, "Destroying group"); }
 
         Creature* getLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }

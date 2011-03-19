@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -172,6 +172,9 @@ public:
             uiChargeTimer = 5000;
             uiShieldBreakerTimer = 8000;
             uiBuffTimer = urand(30000,60000);
+
+            if (me->GetVehicleKit())
+                me->GetVehicleKit()->Reset();
         }
 
         void SetData(uint32 uiType, uint32 /*uiData*/)
@@ -538,7 +541,7 @@ public:
 
             if (uiPolymorphTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget, SPELL_POLYMORPH);
                 uiPolymorphTimer = 8000;
             } else uiPolymorphTimer -= uiDiff;
@@ -670,7 +673,7 @@ public:
 
             if (uiChainLightningTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_CHAIN_LIGHTNING);
 
                 uiChainLightningTimer = 16000;
@@ -977,7 +980,7 @@ public:
 
             if (uiPosionBottleTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     DoCast(pTarget,SPELL_POISON_BOTTLE);
                 uiPosionBottleTimer = 19000;
             } else uiPosionBottleTimer -= uiDiff;

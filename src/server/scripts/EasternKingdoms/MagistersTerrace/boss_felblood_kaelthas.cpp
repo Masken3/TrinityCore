@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -302,7 +302,7 @@ public:
                     if (PhoenixTimer <= diff)
                     {
 
-                        Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,1);
+                        Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,1);
 
                         uint8 random = urand(1,2);
                         float x = KaelLocations[random][0];
@@ -396,7 +396,7 @@ public:
                                 for (uint8 i = 0; i < 3; ++i)
                                 {
                                     Unit *pTarget = NULL;
-                                    pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                                    pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
                                     Creature* Orb = DoSpawnCreature(CREATURE_ARCANE_SPHERE, 5, 5, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
                                     if (Orb && pTarget)

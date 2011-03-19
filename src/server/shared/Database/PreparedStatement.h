@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -128,6 +128,7 @@ class MySQLPreparedStatement
         PreparedStatement* m_stmt;
         void ClearParameters();
         bool CheckValidIndex(uint8 index);
+        std::string getQueryString(const char *query);
 
     private:
         void setValue(MYSQL_BIND* param, enum_field_types type, const void* value, uint32 len, bool isUnsigned);

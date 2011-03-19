@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,7 +27,7 @@ class spell_generic_quest_update_entry_SpellScript : public SpellScript
 {
     PrepareSpellScript(spell_generic_quest_update_entry_SpellScript)
 private:
-    uint32 _spellEffect;
+    uint16 _spellEffect;
     uint8 _effIndex;
     uint32 _originalEntry;
     uint32 _newEntry;
@@ -35,21 +35,21 @@ private:
     uint32 _despawnTime;
 
 public:
-    spell_generic_quest_update_entry_SpellScript(uint32 spellEffect, uint8 effIndex, uint32 originalEntry, uint32 newEntry, bool shouldAttack, uint32 despawnTime = 0) :
+    spell_generic_quest_update_entry_SpellScript(uint16 spellEffect, uint8 effIndex, uint32 originalEntry, uint32 newEntry, bool shouldAttack, uint32 despawnTime = 0) :
         SpellScript(), _spellEffect(spellEffect), _effIndex(effIndex), _originalEntry(originalEntry),
         _newEntry(newEntry), _shouldAttack(shouldAttack), _despawnTime(despawnTime) { }
 
     void HandleDummy(SpellEffIndex /*effIndex*/)
     {
-        if (Creature* pCreatureTarget = GetHitCreature())
-            if (!pCreatureTarget->isPet() && pCreatureTarget->GetEntry() == _originalEntry)
+        if (Creature* creatureTarget = GetHitCreature())
+            if (!creatureTarget->isPet() && creatureTarget->GetEntry() == _originalEntry)
             {
-                pCreatureTarget->UpdateEntry(_newEntry);
-                if (_shouldAttack && pCreatureTarget->IsAIEnabled)
-                    pCreatureTarget->AI()->AttackStart(GetCaster());
+                creatureTarget->UpdateEntry(_newEntry);
+                if (_shouldAttack && creatureTarget->IsAIEnabled)
+                    creatureTarget->AI()->AttackStart(GetCaster());
 
                 if (_despawnTime)
-                    pCreatureTarget->ForcedDespawn(_despawnTime);
+                    creatureTarget->DespawnOrUnsummon(_despawnTime);
             }
     }
 
@@ -166,7 +166,7 @@ public:
                         if (uiNewEntry)
                         {
                             pCreatureTarget->UpdateEntry(uiNewEntry);
-                            pCreatureTarget->ForcedDespawn(DESPAWN_TIME);
+                            pCreatureTarget->DespawnOrUnsummon(DESPAWN_TIME);
                         }
                     }
         }
@@ -460,7 +460,7 @@ public:
             }
             pCaster->CastSpell(pCaster, spellId, true, castItem);
             pCaster->CastSpell(pCaster, SPELL_ROBOT_KILL_CREDIT, true);
-            pTarget->ForcedDespawn();
+            pTarget->DespawnOrUnsummon();
         }
 
         void Register()
@@ -619,6 +619,66 @@ public:
     }
 };
 
+// http://www.wowhead.com/quest=12851 Going Bearback
+// 54798 FLAMING Arrow Triggered Effect
+enum eQuest12851Data
+{
+    NPC_FROSTGIANT = 29351,
+    NPC_FROSTWORG  = 29358,
+    SPELL_FROSTGIANT_CREDIT = 58184,
+    SPELL_FROSTWORG_CREDIT  = 58183,
+    SPELL_IMMOLATION        = 54690,
+    SPELL_ABLAZE            = 54683,
+};
+
+class spell_q12851_going_bearback : public SpellScriptLoader
+{
+public:
+    spell_q12851_going_bearback() : SpellScriptLoader("spell_q12851_going_bearback") { }
+
+    class spell_q12851_going_bearback_AuraScript : public AuraScript
+    {
+    public:
+        PrepareAuraScript(spell_q12851_going_bearback_AuraScript)
+        void HandleEffectApply(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (Player* player = caster->GetCharmerOrOwnerPlayerOrPlayerItself())
+                    {
+                        switch(target->GetEntry())
+                        {
+                            case NPC_FROSTWORG:
+                                target->CastSpell(player, SPELL_FROSTWORG_CREDIT, true);
+                                target->CastSpell(target, SPELL_IMMOLATION, true);
+                                target->CastSpell(target, SPELL_ABLAZE, true);
+                                break;
+                            case NPC_FROSTGIANT:
+                                target->CastSpell(player, SPELL_FROSTGIANT_CREDIT, true);
+                                target->CastSpell(target, SPELL_IMMOLATION, true);
+                                target->CastSpell(target, SPELL_ABLAZE, true);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnEffectApply += AuraEffectApplyFn(spell_q12851_going_bearback_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_q12851_going_bearback_AuraScript();
+    }
+};
+
 // http://www.wowhead.com/quest=12937 Relief for the Fallen
 // 55804 Healing Finished
 enum eQuest12937Data
@@ -652,7 +712,7 @@ public:
                 {
                     pPlayer->CastSpell(pPlayer, SPELL_TRIGGER_AID_OF_THE_EARTHEN, true, NULL);
                     pPlayer->KilledMonsterCredit(NPC_FALLEN_EARTHEN_DEFENDER, 0);
-                    pTarget->ForcedDespawn();
+                    pTarget->DespawnOrUnsummon();
                 }
             }
         }
@@ -667,6 +727,53 @@ public:
     {
         return new spell_q12937_relief_for_the_fallen_SpellScript();
     }
+};
+
+enum eWhoarethey
+{
+    SPELL_QUESTGIVER = 48917,
+
+    SPELL_MALE_DISGUISE = 38080,
+    SPELL_FEMALE_DISGUISE = 38081,
+    SPELL_GENERIC_DISGUISE = 32756
+};
+
+class spell_q10041_q10040_who_are_they : public SpellScriptLoader
+{
+    public:
+        spell_q10041_q10040_who_are_they() : SpellScriptLoader("spell_q10041_q10040_who_are_they") { }
+
+        class spell_q10041_q10040_who_are_they_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_q10041_q10040_who_are_they_SpellScript);
+
+            bool Validate(SpellEntry const * /*spellEntry*/)
+            {
+                if (!sSpellStore.LookupEntry(SPELL_QUESTGIVER))
+                    return false;
+                return true;
+            }
+
+            void HandleScript(SpellEffIndex effIndex)
+            {
+                PreventHitDefaultEffect(effIndex);
+                if (!GetHitUnit() || !GetHitUnit()->ToPlayer())
+                    return;
+
+                GetHitUnit()->CastSpell(GetHitUnit(), GetHitUnit()->getGender() == GENDER_MALE ? SPELL_MALE_DISGUISE : SPELL_FEMALE_DISGUISE, true);
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_GENERIC_DISGUISE, true);
+            }
+
+            void Register()
+            {
+                OnEffect += SpellEffectFn(spell_q10041_q10040_who_are_they_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_q10041_q10040_who_are_they_SpellScript();
+        }
 };
 
 void AddSC_quest_spell_scripts()
@@ -684,5 +791,7 @@ void AddSC_quest_spell_scripts()
     new spell_q12459_seeds_of_natures_wrath();
     new spell_q12634_despawn_fruit_tosser();
     new spell_q12683_take_sputum_sample();
+    new spell_q12851_going_bearback();
     new spell_q12937_relief_for_the_fallen();
+    new spell_q10041_q10040_who_are_they();
 }

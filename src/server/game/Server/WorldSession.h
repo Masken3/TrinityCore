@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -278,23 +278,20 @@ class WorldSession
 
         // Account Data
         AccountData *GetAccountData(AccountDataType type) { return &m_accountData[type]; }
-        void SetAccountData(AccountDataType type, time_t time_, std::string data);
+        void SetAccountData(AccountDataType type, time_t tm, std::string data);
         void SendAccountDataTimes(uint32 mask);
         void LoadGlobalAccountData();
         void LoadAccountData(PreparedQueryResult result, uint32 mask);
+
         void LoadTutorialsData();
         void SendTutorialsData();
         void SaveTutorialsData(SQLTransaction& trans);
-        uint32 GetTutorialInt(uint32 intId)
+        uint32 GetTutorialInt(uint8 index) { return m_Tutorials[index]; }
+        void SetTutorialInt(uint8 index, uint32 value)
         {
-            return m_Tutorials[intId];
-        }
-
-        void SetTutorialInt(uint32 intId, uint32 value)
-        {
-            if (m_Tutorials[intId] != value)
+            if (m_Tutorials[index] != value)
             {
-                m_Tutorials[intId] = value;
+                m_Tutorials[index] = value;
                 m_TutorialsChanged = true;
             }
         }
@@ -754,6 +751,7 @@ class WorldSession
         void HandleWhoisOpcode(WorldPacket& recv_data);
         void HandleResetInstancesOpcode(WorldPacket& recv_data);
         void HandleHearthAndResurrect(WorldPacket& recv_data);
+        void HandleInstanceLockResponse(WorldPacket& recvPacket);
 
         // Looking for Dungeon/Raid
         void HandleLfgSetCommentOpcode(WorldPacket & recv_data);
@@ -881,7 +879,7 @@ class WorldSession
         void moveItems(Item* myItems[], Item* hisItems[]);
 
         // logging helper
-        void LogUnexpectedOpcode(WorldPacket *packet, const char * reason);
+        void LogUnexpectedOpcode(WorldPacket *packet, const char* status, const char *reason);
         void LogUnprocessedTail(WorldPacket *packet);
 
         uint32 m_GUIDLow;                                   // set loggined or recently logout player (while m_playerRecentlyLogout set)
@@ -903,7 +901,7 @@ class WorldSession
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
-        uint32 m_Tutorials[MAX_CHARACTER_TUTORIAL_VALUES];
+        uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;
         uint32 recruiterId;

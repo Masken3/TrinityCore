@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -191,7 +191,8 @@ class SmartScript
 
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder &e, uint32 entry);
-        Unit* mLastInvoker;
+        Unit* GetLastInvoker();
+        uint64 mLastInvoker;
 
     private:
         void IncPhase(int32 p = 1) {

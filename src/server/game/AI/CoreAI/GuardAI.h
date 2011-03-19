@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -19,12 +19,12 @@
 #ifndef TRINITY_GUARDAI_H
 #define TRINITY_GUARDAI_H
 
-#include "CreatureAI.h"
+#include "ScriptedCreature.h"
 #include "Timer.h"
 
 class Creature;
 
-class GuardAI : public CreatureAI
+class GuardAI : public ScriptedAI
 {
     enum GuardState
     {
@@ -39,7 +39,7 @@ class GuardAI : public CreatureAI
         void MoveInLineOfSight(Unit *);
         void EnterEvadeMode();
         void JustDied(Unit *);
-        bool IsVisible(Unit *) const;
+        bool CanSeeAlways(WorldObject const* obj);
 
         void UpdateAI(const uint32);
         static int Permissible(const Creature *);

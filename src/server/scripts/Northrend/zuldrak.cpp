@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -647,7 +647,7 @@ public:
 
             if (uiFishyScentTimer <= uiDiff)
             {
-                if (Unit *pAffected = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pAffected = SelectTarget(SELECT_TARGET_RANDOM,0))
                 {
                     DoCast(pAffected, SPELL_FISHY_SCENT);
                     AffectedGUID = pAffected->GetGUID();
@@ -768,14 +768,14 @@ public:
 
             if (uiUppercutTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_NEAREST, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
                     DoCast(pTarget, SPELL_UPPERCUT);
                 uiUppercutTimer = 12000;
             } else uiUppercutTimer -= uiDiff;
 
             if (uiChargeTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_FARTHEST, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 0))
                     DoCast(pTarget, SPELL_CHARGE);
                 uiChargeTimer = 15000;
             } else uiChargeTimer -= uiDiff;
@@ -985,7 +985,7 @@ public:
 
             if (uiKnockAwayTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget, SPELL_KNOCK_AWAY);
@@ -995,7 +995,7 @@ public:
 
             if (uiStinkyBeardTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget, SPELL_STINKY_BEARD);
@@ -1153,10 +1153,8 @@ public:
         {
             if (!SummonList.empty())
                 for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
-                {
                     if (Creature* pTemp = Unit::GetCreature(*me, *itr))
-                        pTemp->ForcedDespawn();
-                }
+                        pTemp->DespawnOrUnsummon();
 
             if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
                 pPlayer->GetCharmerOrOwnerPlayerOrPlayerItself()->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND, pKiller);

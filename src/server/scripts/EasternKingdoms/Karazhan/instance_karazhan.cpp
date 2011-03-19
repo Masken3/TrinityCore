@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -138,7 +138,11 @@ public:
                     break;
                 case TYPE_MAIDEN:               m_auiEncounter[2] = uiData; break;
                 case TYPE_OPTIONAL_BOSS:        m_auiEncounter[3] = uiData; break;
-                case TYPE_OPERA:                m_auiEncounter[4] = uiData; break;
+                case TYPE_OPERA:
+                    m_auiEncounter[4] = uiData;
+                    if (uiData == DONE)
+                        UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, 16812, NULL);
+                    break;
                 case TYPE_CURATOR:              m_auiEncounter[5] = uiData; break;
                 case TYPE_ARAN:                 m_auiEncounter[6] = uiData; break;
                 case TYPE_TERESTIAN:            m_auiEncounter[7] = uiData; break;

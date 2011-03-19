@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -216,7 +216,7 @@ public:
                     else
                     {
                         me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
-                        //sLog->outDebug("npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
+                        //sLog->outDebug(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
                         phase = PHASE_EQUIPING;
                         wait_timer = 0;
                     }
@@ -579,7 +579,7 @@ public:
                         Phase = 3;
                         break;
                     case 3:
-                        me->ForcedDespawn();
+                        me->DespawnOrUnsummon();
                         break;
                     default:
                         break;
@@ -887,7 +887,7 @@ public:
         npc_scarlet_miner_cartAI(Creature *c) : PassiveAI(c), minerGUID(0)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
-            me->SetDisplayId(me->GetCreatureInfo()->Modelid2); // Modelid1 is a horse.
+            me->SetDisplayId(me->GetCreatureInfo()->Modelid1); // Modelid2 is a horse.
         }
 
         uint64 minerGUID;

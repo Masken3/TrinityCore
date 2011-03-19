@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -347,7 +347,7 @@ public:
 
             if (uiOldWoundsTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget, SPELL_OLD_WOUNDS);
@@ -363,7 +363,7 @@ public:
 
             if (uiShadowPastTimer <= uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                 {
                     if (pTarget && pTarget->isAlive())
                         DoCast(pTarget,SPELL_SHADOWS_PAST);

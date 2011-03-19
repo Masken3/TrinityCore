@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -168,6 +168,7 @@ class CreatureAI : public UnitAI
 
         virtual void PassengerBoarded(Unit * /*who*/, int8 /*seatId*/, bool /*apply*/) {}
 
+        virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
     protected:
         virtual void MoveInLineOfSight(Unit *);
 

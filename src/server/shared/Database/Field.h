@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -249,7 +249,7 @@ class Field
             uint32 length;          // Length (prepared strings only)
             void* value;            // Actual data in memory
             enum_field_types type;  // Field type
-            bool raw;               // Raw bytes? (Prepared statement or adhoc)            
+            bool raw;               // Raw bytes? (Prepared statement or ad hoc)
          } data;
         #if defined(__GNUC__)
         #pragma pack()

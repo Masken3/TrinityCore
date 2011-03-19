@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -60,9 +60,9 @@ struct ScriptAction
     ScriptInfo const* script;                               // pointer to static script data
 };
 
-//******************************************
+// ******************************************
 // Map file format defines
-//******************************************
+// ******************************************
 #define MAP_MAGIC             'SPAM'
 #define MAP_VERSION_MAGIC     '1.1v'
 #define MAP_AREA_MAGIC        'AERA'
@@ -595,7 +595,7 @@ class InstanceMap : public Map
         void UnloadAll();
         bool CanEnter(Player* player);
         void SendResetWarnings(uint32 timeLeft) const;
-        void SetResetSchedule(bool on);
+        void SetResetSchedule(bool on, Player* player);
 
         uint32 GetMaxPlayers() const;
         uint32 GetMaxResetDelay() const;

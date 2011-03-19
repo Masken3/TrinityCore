@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -163,7 +163,7 @@ void StartEncounter(InstanceScript* pInstance, Creature* me, Unit* /*target*/)
 {
     if (pInstance->GetBossState(TYPE_ASSEMBLY) == IN_PROGRESS)
         return;     // Prevent recursive calls
-    
+
     pInstance->SetBossState(TYPE_ASSEMBLY, IN_PROGRESS);
 
     for (uint8 i = 0; i < 3; ++i)
@@ -173,7 +173,7 @@ void StartEncounter(InstanceScript* pInstance, Creature* me, Unit* /*target*/)
             continue;
 
         if (Creature *boss = Unit::GetCreature(*me, guid))
-                boss->SetInCombatWithZone();          
+                boss->SetInCombatWithZone();
     }
 }
 
@@ -235,7 +235,7 @@ public:
             DoAction(EVENT_UPDATEPHASE);
         }
 
-        void DoAction(uint32 action)
+        void DoAction(const int32 action)
         {
             switch (action)
             {
@@ -381,7 +381,7 @@ public:
             DoAction(EVENT_UPDATEPHASE);
         }
 
-        void DoAction(uint32 action)
+        void DoAction(const int32 action)
         {
             switch (action)
             {
@@ -511,7 +511,7 @@ public:
             me->setFaction(16); // Same faction as bosses
             DoCast(SPELL_RUNE_OF_POWER);
 
-            me->ForcedDespawn(60000);
+            me->DespawnOrUnsummon(60000);
         }
     };
 };
@@ -554,7 +554,7 @@ public:
         {
             me->AddAura(SPELL_RUNE_OF_SUMMONING_VIS, me);
             summonCount = 0;
-            summonTimer = 2000;                         
+            summonTimer = 2000;
         }
 
         uint32 summonCount;
@@ -572,7 +572,7 @@ public:
         {
             me->CastSpell(me, SPELL_RUNE_OF_SUMMONING_SUMMON, false);
             if (++summonCount == 10)                        // TODO: Find out if this amount is right
-                me->ForcedDespawn();
+                me->DespawnOrUnsummon();
             else
                 summonTimer = 2000;                         // TODO: Find out of timer is right
         }
@@ -622,7 +622,7 @@ public:
             DoAction(EVENT_UPDATEPHASE);
         }
 
-        void DoAction(uint32 action)
+        void DoAction(const int32 action)
         {
             switch (action)
             {
@@ -705,7 +705,7 @@ public:
                         DoCast(SPELL_BERSERK);
                         break;
                     case EVENT_CHAIN_LIGHTNING:
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                             DoCast(pTarget, RAID_MODE(SPELL_CHAIN_LIGHTNING_N , SPELL_CHAIN_LIGHTNING_H));
                         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9000,17000));
                         break;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -315,11 +315,13 @@ public:
             switch(type)
             {
                 case DATA_1ST_BOSS_EVENT:
+                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_EREKEM, NULL);
                     m_auiEncounter[0] = data;
                     if (data == DONE)
                         SaveToDB();
                     break;
                 case DATA_2ND_BOSS_EVENT:
+                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_MORAGG, NULL);
                     m_auiEncounter[1] = data;
                     if (data == DONE)
                         SaveToDB();
@@ -796,16 +798,19 @@ public:
 
         void ProcessEvent(GameObject* /*pGO*/, uint32 uiEventId)
         {
-            switch(uiEventId)
+            switch (uiEventId)
             {
                 case EVENT_ACTIVATE_CRYSTAL:
                     bCrystalActivated = true; // Activation by player's will throw event signal
                     ActivateCrystal();
                     break;
             }
-    }
+        }
 
-};
+        void ProcessEvent(Unit* /*unit*/, uint32 /*eventId*/)
+        {
+        }
+    };
 };
 
 

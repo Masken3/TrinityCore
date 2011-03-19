@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -397,6 +397,8 @@ void AddSC_boss_keristrasza();
 void AddSC_instance_nexus();
 void AddSC_boss_drakos();                //The Nexus The Oculus
 void AddSC_boss_urom();
+void AddSC_boss_varos();
+void AddSC_boss_eregos();
 void AddSC_instance_oculus();
 void AddSC_oculus();
 void AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -471,8 +473,10 @@ void AddSC_boss_rotface();
 void AddSC_boss_professor_putricide();
 void AddSC_boss_blood_prince_council();
 void AddSC_boss_blood_queen_lana_thel();
+void AddSC_boss_sindragosa();
 void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
+void AddSC_icecrown_citadel();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -484,6 +488,7 @@ void AddSC_sholazar_basin();
 void AddSC_storm_peaks();
 void AddSC_zuldrak();
 void AddSC_crystalsong_forest();
+void AddSC_isle_of_conquest();
 
 //outland
 void AddSC_boss_exarch_maladaar();           //Auchindoun Auchenai Crypts
@@ -1083,6 +1088,8 @@ void AddNorthrendScripts()
     AddSC_instance_nexus();
     AddSC_boss_drakos();                //The Nexus The Oculus
     AddSC_boss_urom();
+    AddSC_boss_varos();
+    AddSC_boss_eregos();
     AddSC_instance_oculus();
     AddSC_oculus();
     AddSC_boss_sartharion();            //Obsidian Sanctum
@@ -1157,8 +1164,10 @@ void AddNorthrendScripts()
     AddSC_boss_professor_putricide();
     AddSC_boss_blood_prince_council();
     AddSC_boss_blood_queen_lana_thel();
+    AddSC_boss_sindragosa();
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
+    AddSC_icecrown_citadel();
 
     AddSC_dalaran();
     AddSC_borean_tundra();
@@ -1170,6 +1179,7 @@ void AddNorthrendScripts()
     AddSC_storm_peaks();
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
+    AddSC_isle_of_conquest();
 #endif
 }
 

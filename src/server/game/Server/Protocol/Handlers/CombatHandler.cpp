@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -47,8 +47,6 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket & recv_data)
 
     if (!_player->canAttack(pEnemy))
     {
-        sLog->outError("WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
-
         // stop attack state at client
         SendAttackStop(pEnemy);
         return;
@@ -67,7 +65,7 @@ void WorldSession::HandleSetSheathedOpcode(WorldPacket & recv_data)
     uint32 sheathed;
     recv_data >> sheathed;
 
-    //sLog->outDebug("WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed);
+    //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed);
 
     if (sheathed >= MAX_SHEATH_STATE)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -138,7 +138,7 @@ public:
                         if (GetData(TYPE_MEKGINEER_STEAMRIGGER) == SPECIAL)
                             HandleGameObject(MainChambersDoor, true);
 
-                        sLog->outDebug("TSCR: Instance Steamvault: Access panel used.");
+                        sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Instance Steamvault: Access panel used.");
                     }
                     m_auiEncounter[0] = data;
                     break;
@@ -150,7 +150,7 @@ public:
                         if (GetData(TYPE_HYDROMANCER_THESPIA) == SPECIAL)
                             HandleGameObject(MainChambersDoor, true);
 
-                        sLog->outDebug("TSCR: Instance Steamvault: Access panel used.");
+                        sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Instance Steamvault: Access panel used.");
                     }
                     m_auiEncounter[1] = data;
                     break;

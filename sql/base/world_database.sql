@@ -566,11 +566,11 @@ INSERT INTO `command` VALUES
 ('reload all achievement',3,'Syntax: .reload all achievement\r\n\r\nReload achievement_reward, achievement_criteria_data tables.'),
 ('reload all area',3,'Syntax: .reload all area\r\n\r\nReload areatrigger_teleport, areatrigger_tavern, game_graveyard_zone tables.'),
 ('reload all eventai',3,'Syntax: .reload all eventai\r\n\r\nReload creature_ai_scripts, creature_ai_summons, creature_ai_texts tables.'),
-('reload all gossips',3,'Syntax: .reload all gossips\nReload gossip_menu, gossip_menu_option, gossip_scripts, npc_gossip, points_of_interest tables.'),
+('reload all gossips',3,'Syntax: .reload all gossips\nReload gossip_menu, gossip_menu_option, gossip_scripts, points_of_interest tables.'),
 ('reload all item',3,'Syntax: .reload all item\nReload page_text, item_enchantment_table tables.'),
 ('reload all locales',3,'Syntax: .reload all locales\r\n\r\nReload all `locales_*` tables with reload support added and that can be _safe_ reloaded.'),
 ('reload all loot',3,'Syntax: .reload all loot\r\n\r\nReload all `*_loot_template` tables. This can be slow operation with lags for server run.'),
-('reload all npc',3,'Syntax: .reload all npc\nReload npc_gossip, npc_option, npc_trainer, npc vendor, points of interest tables.'),
+('reload all npc',3,'Syntax: .reload all npc\nReload npc_option, npc_trainer, npc vendor, points of interest tables.'),
 ('reload all quest',3,'Syntax: .reload all quest\r\n\r\nReload all quest related tables if reload support added for this table and this table can be _safe_ reloaded.'),
 ('reload all scripts',3,'Syntax: .reload all scripts\nReload gameobject_scripts, event_scripts, quest_end_scripts, quest_start_scripts, spell_scripts, db_script_string, waypoint_scripts tables.'),
 ('reload all spell',3,'Syntax: .reload all spell\r\n\r\nReload all `spell_*` tables with reload support added and that can be _safe_ reloaded.'),
@@ -606,7 +606,6 @@ INSERT INTO `command` VALUES
 ('reload item_enchantment_template',3,'Syntax: .reload item_enchantment_template\nReload item_enchantment_template table.'),
 ('reload item_loot_template',3,'Syntax: .reload item_loot_template\nReload item_loot_template table.'),
 ('reload item_set_names',3,'Syntax: .reload item_set_names\nReload item_set_names table.'),
-('reload lfg_dungeon_encounters',3,'Syntax: .reload lfg_dungeon_encounters\nReload lfg_dungeon_encounters table.'),
 ('reload lfg_dungeon_rewards',3,'Syntax: .reload lfg_dungeon_rewards\nReload lfg_dungeon_rewards table.'),
 ('reload locales_creature',3,'Syntax: .reload locales_creature\nReload locales_creature table.'),
 ('reload locales_gameobject',3,'Syntax: .reload locales_gameobject\nReload locales_gameobject table.'),
@@ -620,7 +619,6 @@ INSERT INTO `command` VALUES
 ('reload mail_level_reward',3,'Syntax: .reload mail_level_reward\nReload mail_level_reward table.'),
 ('reload mail_loot_template',3,'Syntax: .reload mail_loot_template\nReload mail_loot_template table.'),
 ('reload milling_loot_template',3,'Syntax: .reload milling_loot_template\nReload milling_loot_template table.'),
-('reload npc_gossip',3,'Syntax: .reload npc_gossip\nReload npc_gossip table.'),
 ('reload npc_trainer',3,'Syntax: .reload npc_trainer\nReload npc_trainer table.'),
 ('reload npc_vendor',3,'Syntax: .reload npc_vendor\nReload npc_vendor table.'),
 ('reload page_text',3,'Syntax: .reload page_text\nReload page_text table.'),
@@ -652,6 +650,8 @@ INSERT INTO `command` VALUES
 ('reload spell_target_position',3,'Syntax: .reload spell_target_position\nReload spell_target_position table.'),
 ('reload spell_threats',3,'Syntax: .reload spell_threats\nReload spell_threats table.'),
 ('reload trinity_string',3,'Syntax: .reload trinity_string\nReload trinity_string table.'),
+('reload vehicle_accessory', 3, 'Syntax: .reload vehicle_accessory\n\nReloads GUID-based vehicle accessory definitions from the database.'),
+('reload vehicle_template_accessory', 3, 'Syntax: .reload vehicle_template_accessory\n\nReloads entry-based vehicle accessory definitions from the database.'),
 ('reload waypoint_scripts',3,'Syntax: .reload waypoint_scripts\nReload waypoint_scripts table.'),
 ('repairitems',2,'Syntax: .repairitems\r\n\r\nRepair all selected player''s items.'),
 ('reset',3,'Syntax: .reset $subcommand\nType .reset to see the list of possible subcommands or .help reset $subcommand to see info on subcommands'),
@@ -2781,6 +2781,32 @@ LOCK TABLES `gossip_menu_option` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `instance_encounters`
+--
+
+DROP TABLE IF EXISTS `instance_encounters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `instance_encounters` (
+  `entry` int(10) unsigned NOT NULL COMMENT 'Unique entry from DungeonEncounter.dbc',
+  `creditType` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `creditEntry` int(10) unsigned NOT NULL DEFAULT '0',
+  `lastEncounterDungeon` smallint(5) unsigned NOT NULL DEFAULT '0' COMMENT 'If not 0, LfgDungeon.dbc entry for the instance it is last encounter in',
+  `comment` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`entry`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `instance_encounters`
+--
+
+LOCK TABLES `instance_encounters` WRITE;
+/*!40000 ALTER TABLE `instance_encounters` DISABLE KEYS */;
+/*!40000 ALTER TABLE `instance_encounters` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `instance_template`
 --
 
@@ -3072,26 +3098,6 @@ CREATE TABLE `item_template` (
 LOCK TABLES `item_template` WRITE;
 /*!40000 ALTER TABLE `item_template` DISABLE KEYS */;
 /*!40000 ALTER TABLE `item_template` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `lfg_dungeon_encounters`
---
-
-DROP TABLE IF EXISTS `lfg_dungeon_encounters`;
-CREATE TABLE `lfg_dungeon_encounters` (
-  `achievementId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Achievement marking final boss completion',
-  `dungeonId` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Dungeon entry from dbc',
-  PRIMARY KEY (`achievementId`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
---
--- Dumping data for table `lfg_dungeon_encounters`
---
-
-LOCK TABLES `lfg_dungeon_encounters` WRITE;
-/*!40000 ALTER TABLE `lfg_dungeon_encounters` DISABLE KEYS */;
-/*!40000 ALTER TABLE `lfg_dungeon_encounters` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -3770,29 +3776,6 @@ CREATE TABLE `milling_loot_template` (
 LOCK TABLES `milling_loot_template` WRITE;
 /*!40000 ALTER TABLE `milling_loot_template` DISABLE KEYS */;
 /*!40000 ALTER TABLE `milling_loot_template` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `npc_gossip`
---
-
-DROP TABLE IF EXISTS `npc_gossip`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `npc_gossip` (
-  `npc_guid` int(10) unsigned NOT NULL DEFAULT '0',
-  `textid` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`npc_guid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `npc_gossip`
---
-
-LOCK TABLES `npc_gossip` WRITE;
-/*!40000 ALTER TABLE `npc_gossip` DISABLE KEYS */;
-/*!40000 ALTER TABLE `npc_gossip` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -16749,6 +16732,55 @@ LOCK TABLES `skinning_loot_template` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `smart_scripts`
+--
+
+DROP TABLE IF EXISTS `smart_scripts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `smart_scripts` (
+  `entryorguid` int(11) NOT NULL,
+  `source_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `id` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `link` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `event_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_phase_mask` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_chance` tinyint(3) unsigned NOT NULL DEFAULT '100',
+  `event_flags` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `event_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param3` int(10) unsigned NOT NULL DEFAULT '0',
+  `event_param4` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `action_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param3` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param4` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param5` int(10) unsigned NOT NULL DEFAULT '0',
+  `action_param6` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `target_param1` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_param2` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_param3` int(10) unsigned NOT NULL DEFAULT '0',
+  `target_x` float NOT NULL DEFAULT '0',
+  `target_y` float NOT NULL DEFAULT '0',
+  `target_z` float NOT NULL DEFAULT '0',
+  `target_o` float NOT NULL DEFAULT '0',
+  `comment` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'Event Comment',
+  PRIMARY KEY (`entryorguid`,`source_type`,`id`,`link`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `smart_scripts`
+--
+
+LOCK TABLES `smart_scripts` WRITE;
+/*!40000 ALTER TABLE `smart_scripts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `smart_scripts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `spell_area`
 --
 
@@ -16853,6 +16885,7 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (61391, 0.193, -1, -1, -1, 'Druid - Typhoon'),
 (48438, -1, 0.11505, -1, -1, 'Druid - Wild Growth'),
 (5176, 0.5714, -1, -1, -1, 'Druid - Wrath'),
+(70691,0,0,0,0, 'Druid - Rejuvenation T10 4P proc'),
 (3044, -1, -1, 0.15, -1, 'Hunter - Arcane Shot'),
 (3674, -1, -1, -1, 0.02, 'Hunter - Black Arrow($RAP*0.1 / number of ticks)'),
 (19306, -1, -1, 0.2, -1, 'Hunter - Counterattack'),
@@ -17255,7 +17288,17 @@ INSERT INTO `spell_dbc` (`Id`,`Dispel`,`Mechanic`,`Attributes`,`AttributesEx`,`A
 (70878,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Creature 40160 creature_addon serverside spell'),
 (38406,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Quest 10721 RewSpellCast serverside spell'),
 (44805,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Aura used in creature_addon - serverside spell'),
-(3617,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NPC 32958 suicide spell');
+(3617,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'NPC 32958 suicide spell'),
+(58630,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Mal''ganis credit marker'),
+(68572,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Grand Champions credit marker'),
+(68574,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Argent Champion credit marker'),
+(59046,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Tribunal of Ages credit marker'),
+(68184,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Faction Champions credit marker'),
+(59450,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'The Four Horsemen credit marker'),
+(65195,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'The Iron Council credit marker'),
+(64899,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Hodir credit marker'),
+(64985,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Thorim credit marker'),
+(65074,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Freya credit marker');
 /*!40000 ALTER TABLE `spell_dbc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -17978,6 +18021,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 17851, 54501, 2, 'Consume Shadows - Rank 3'),
 ( 17850, 54501, 2, 'Consume Shadows - Rank 2'),
 ( 17767, 54501, 2, 'Consume Shadows - Rank 1'),
+(-11129,-28682, 0, 'Combustion'),
 (-5143, -36032, 0, 'Arcane Missiles Rank 1'),
 (-5144, -36032, 0, 'Arcane Missiles Rank 2'),
 (-5145, -36032, 0, 'Arcane Missiles Rank 3'),
@@ -18022,8 +18066,21 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 45524, 55095, 0, 'Chains of Ice - Frost Fever'),
 ( 20066,-61840, 0, 'Repentance'),
 ( 66235, 66233, 0, 'Ardent Defender Visuals'),
-( 58875, 58876, 0, 'Spirit Walk'),
+( 58875, 58876, 1, 'Spirit Walk'),
+-- Misc
+( 55428, 55475, 0, 'Lifeblood (Rank 1)'),
+( 55480, 55475, 0, 'Lifeblood (Rank 2)'),
+( 55500, 55475, 0, 'Lifeblood (Rank 3)'),
+( 55501, 55475, 0, 'Lifeblood (Rank 4)'),
+( 55502, 55475, 0, 'Lifeblood (Rank 5)'),
+( 55503, 55475, 0, 'Lifeblood (Rank 6)'),
 -- Quest
+( 26286, 44430, 0, 'Small Red Rocket - questcredit'),
+( 26292, 44430, 0, 'Small Green Rocket - questcredit'),
+( 26291, 44430, 0, 'Small Blue Rocket - questcredit'),
+( 26327, 44429, 0, 'Red Firework Cluster - questcredit'),
+( 26325, 44429, 0, 'Green Firework Cluster - questcredit'),
+( 26304, 44429, 0, 'Blue Firework Cluster - questcredit'),
 ( 40214, 40216, 2, 'Dragonmaw Illusion'),
 ( 40214, 42016, 2, 'Dragonmaw Illusion'),
 ( 66744, 66747, 0, 'Totem of the earthen ring'),
@@ -18094,6 +18151,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 (-59743, 54343, 0, 'Void Shift (Heroic) - Void Shifted'),
 -- Gundrak
 ( 54850, 54851, 1, 'Emerge - Emerge Summon'),
+( 55814, 55817, 1, 'Eck Residue'),
 -- Trial of the Champion
 ( 66680, 66547, 0, 'Confess - Confess'),
 ( 66889,-66865, 0, 'Remove Vengeance'),
@@ -18104,6 +18162,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 67623,-67620, 1, 'Remove Paralytic Toxin when hit by Burning Bite'),
 (-66683, 68667, 0, 'Icehowl - Surge of Adrenaline'),
 (-67661, 68667, 0, 'Icehowl - Surge of Adrenaline'),
+( 65940, 65941, 0, 'Trial of the Crusader: Shattering Throw'),
 -- Forge of Souls
 (-68839, 68846, 0, 'Bronjahm: Corrupt Soul Summon'),
 -- Icecrown Citadel
@@ -18129,7 +18188,12 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 71479, 71482, 1, 'Blood-Queen: Bloodbolt Splash'),
 ( 71480, 71483, 1, 'Blood-Queen: Bloodbolt Splash'),
 ( 71952, 70995, 1, 'Blood-Queen: Presence of the Darkfallen'),
-( 71390, 71341, 0, 'Blood-Queen: Pact of the Darkfallen'),
+( 70157, 69700, 2, 'Sindragosa - Ice Tomb resistance'),
+-- Isle of Conquest
+( 66548, 66550, 0, 'Isle of Conquest (IN>OUT)'),
+( 66549, 66551, 0, 'Isle of Conquest (OUT>IN)'),
+( 66551, -66548, 2, 'Isle of Conquest Teleport (OUT>IN) Debuff limit'),
+( 66550, -66549, 2, 'Isle of Conquest Teleport (IN>OUT) Debuff limit'),
 -- Warsong Gulch
 ( 54861,-23335, 0, 'Drop Flag on Nitro Boost WSG'),
 ( 54861,-23333, 0, 'Drop Flag on Nitro Boost WSG'),
@@ -18316,6 +18380,11 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 11180, 0x10,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Winter's Chill (Rank 1)
 ( 11185, 0x00,   3, 0x00000080, 0x00000000, 0x00000000, 0x00050000, 0x00000000,   0,   0,   0), -- Improved Blizzard (Rank 1)
 ( 11255, 0x00,   3, 0x00004000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Improved Counterspell (Rank 1)
+( 11213, 0x00,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Arcane Concentration (Rank 1)
+( 12574, 0x00,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Arcane Concentration (Rank 2)
+( 12575, 0x00,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Arcane Concentration (Rank 3)
+( 12576, 0x00,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Arcane Concentration (Rank 4)
+( 12577, 0x00,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Arcane Concentration (Rank 5)
 ( 12169, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000040,   0,   0,   0), -- Shield Block
 ( 12289, 0x00,   4, 0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Improved Hamstring (Rank 1)
 ( 12298, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000070,   0,   0,   0), -- Shield Specialization (Rank 1)
@@ -19021,6 +19090,8 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 53671, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Judgements of the Pure (Rank 1)
 ( 53672, 0x00,  10, 0x00200000, 0x00010000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Infusion of Light
 ( 53673, 0x00,  10, 0x00800000, 0x00000000, 0x00000000, 0x00000000, 0x00040000,   0,   0,   0), -- Judgements of the Pure (Rank 2)
+( 53695, 0x00,  10, 0x00800000, 0x00000000, 0x00000008, 0x00000000, 0x00000000,   0,   0,   0), -- Judgements of the Just (Rank 1)
+( 53696, 0x00,  10, 0x00800000, 0x00000000, 0x00000008, 0x00000000, 0x00000000,   0,   0,   0), -- Judgements of the Just (Rank 2)
 ( 53709, 0x02,  10, 0x00004000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Shield of the templar
 ( 53710, 0x02,  10, 0x00004000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Shield of the templar
 ( 53711, 0x02,  10, 0x00004000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Shield of the templar
@@ -19033,6 +19104,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54488, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 3)
 ( 54489, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 4)
 ( 54490, 0x00,   0, 0x20000021, 0x00009000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Missile Barrage (Rank 5)
+( 54646, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Focus Magic
 ( 54695, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Item - Death Knight's Anguish Base
 ( 54707, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Sonic Awareness (DND)
 ( 54738, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,  45), -- Star of Light
@@ -19053,6 +19125,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 55640, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Lightweave Embroidery
 ( 55677, 0x00,   6, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Dispel Magic
 ( 55680, 0x00,   6, 0x00000200, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Prayer of Healing
+( 55681, 0x00,   6, 0x00008000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Shadow Word: Pain
 ( 55689, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Glyph of Shadow
 ( 55747, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Argent Fury
 ( 55768, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Darkglow Embroidery
@@ -19295,6 +19368,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 67702, 0x01,   0, 0x00000000, 0x00000000, 0x00000000, 0x00851154, 0x00000003,   0,  35,  45), -- Item - Coliseum Melee Trinket 25men
 ( 70652, 0x00,  15, 0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Death Knight T10 Tank 4P Bonus
 ( 70656, 0x00,  15, 0x00000000, 0x00000000, 0x00000000, 0x00014000, 0x00000000,   0,   0,   0), -- Item - Death Knight T10 Melee 4P Bonus
+( 70664, 0x00,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Druid T10 Restoration 4P Bonus (Rejuvenation)
 ( 70727, 0x00,   9, 0x00000000, 0x00000000, 0x00000000, 0x00000040, 0x00000000,   0,   0,   0), -- Item - Hunter T10 2P Bonus
 ( 70730, 0x00,   9, 0x00004000, 0x00001000, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Item - Hunter T10 4P Bonus
 ( 70748, 0x00,   3, 0x00000000, 0x00200000, 0x00000000, 0x00000400, 0x00000000,   0,   0,   0), -- Item - Mage T10 4P Bonus
@@ -19327,6 +19401,8 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 71640, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  30), -- Corpse Tongue Coin (Heroic)
 ( 71642, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Althor's Abacus (Heroic)
 ( 71645, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object (Heroic)
+( 71880, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce
+( 71892, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce (Heroic)
 ( 72417, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Caster Trigger
 ( 72413, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Melee
 ( 72419, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Healer Trigger
@@ -19334,6 +19410,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 71564, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Nevermelting Ice Crystal
 ( 71545, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,  50,   0), -- Tiny Abomination in a Jar (Heroic)
 ( 71406, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,  50,   0), -- Tiny Abomination in a Jar
+( 71585, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Purified Lunar Dust
 ( 71903, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,  20,   0), -- Item - Shadowmourne Legendary
 ( 70215, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000004, 0x00000000,   0, 100,   0), -- Gaseous Bloat
 ( 72858, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000004, 0x00000000,   0, 100,   0), -- Gaseous Bloat
@@ -26733,239 +26810,6 @@ CREATE TABLE `spell_script_names` (
 
 LOCK TABLES `spell_script_names` WRITE;
 /*!40000 ALTER TABLE `spell_script_names` DISABLE KEYS */;
-INSERT INTO `spell_script_names` (`spell_id`,`ScriptName`) VALUES
--- generic
-(  6962, 'spell_gen_pet_summoned'),
-( 10848, 'spell_gen_shroud_of_death'),
-( 24750, 'spell_gen_trick'),
-( 24751, 'spell_gen_trick_or_treat'),
-( 29266, 'spell_creature_permanent_feign_death'),
-( 31261, 'spell_creature_permanent_feign_death'),
-( 41337, 'spell_gen_aura_of_anger'),
-( 45472, 'spell_gen_parachute'),
-( 46394, 'spell_gen_burn_brutallus'),
-( 57685, 'spell_creature_permanent_feign_death'),
-( 58601, 'spell_gen_remove_flight_auras'),
-( 66118, 'spell_gen_leeching_swarm'),
-( 58951, 'spell_creature_permanent_feign_death'),
-( 70592, 'spell_creature_permanent_feign_death'),
-( 70628, 'spell_creature_permanent_feign_death'),
-( 74490, 'spell_creature_permanent_feign_death'),
-( 72752, 'spell_pvp_trinket_wotf_shared_cd'),
-( 72757, 'spell_pvp_trinket_wotf_shared_cd'),
-( 46221, 'spell_gen_animal_blood'),
--- instances
--- Forge of Souls
-( 68793, 'spell_bronjahm_magic_bane'),
-( 69050, 'spell_bronjahm_magic_bane'),
-( 68861, 'spell_bronjahm_consume_soul'),
-( 69008, 'spell_bronjahm_soulstorm_channel'),
-( 68870, 'spell_bronjahm_soulstorm_visual'),
--- Pit of Saron
-( 69172, 'spell_tyrannus_overlord_brand'),
--- Icecrown Citadel
-( 69057, 'spell_marrowgar_bone_spike_graveyard'),
-( 70826, 'spell_marrowgar_bone_spike_graveyard'),
-( 72088, 'spell_marrowgar_bone_spike_graveyard'),
-( 72089, 'spell_marrowgar_bone_spike_graveyard'),
-( 69140, 'spell_marrowgar_coldflame'),
-( 72705, 'spell_marrowgar_coldflame'),
-( 69147, 'spell_marrowgar_coldflame_trigger'),
-( 69075, 'spell_marrowgar_bone_storm'),
-( 70834, 'spell_marrowgar_bone_storm'),
-( 70835, 'spell_marrowgar_bone_storm'),
-( 70836, 'spell_marrowgar_bone_storm'),
-( 70842, 'spell_deathwhisper_mana_barrier'),
-( 70903, 'spell_cultist_dark_martyrdom'),
-( 72498, 'spell_cultist_dark_martyrdom'),
-( 72499, 'spell_cultist_dark_martyrdom'),
-( 72500, 'spell_cultist_dark_martyrdom'),
-( 71236, 'spell_cultist_dark_martyrdom'),
-( 72495, 'spell_cultist_dark_martyrdom'),
-( 72496, 'spell_cultist_dark_martyrdom'),
-( 72497, 'spell_cultist_dark_martyrdom'),
-( 72202, 'spell_deathbringer_blood_link'),
-( 72178, 'spell_deathbringer_blood_link_aura'),
-( 72371, 'spell_deathbringer_blood_power'),
-( 72409, 'spell_deathbringer_rune_of_blood'),
-( 72447, 'spell_deathbringer_rune_of_blood'),
-( 72448, 'spell_deathbringer_rune_of_blood'),
-( 72449, 'spell_deathbringer_rune_of_blood'),
-( 72380, 'spell_deathbringer_blood_nova'),
-( 72438, 'spell_deathbringer_blood_nova'),
-( 72439, 'spell_deathbringer_blood_nova'),
-( 72440, 'spell_deathbringer_blood_nova'),
-( 71123, 'spell_stinky_precious_decimate'),
-( 73032, 'spell_festergut_pungent_blight'),
-( 73031, 'spell_festergut_pungent_blight'),
-( 71219, 'spell_festergut_pungent_blight'),
-( 69195, 'spell_festergut_pungent_blight'),
-( 72219, 'spell_festergut_gastric_bloat'),
-( 72551, 'spell_festergut_gastric_bloat'),
-( 72552, 'spell_festergut_gastric_bloat'),
-( 72553, 'spell_festergut_gastric_bloat'),
-( 69290, 'spell_festergut_blighted_spores'),
-( 71222, 'spell_festergut_blighted_spores'),
-( 73033, 'spell_festergut_blighted_spores'),
-( 73034, 'spell_festergut_blighted_spores'),
-( 69782, 'spell_rotface_ooze_flood'),
-( 69796, 'spell_rotface_ooze_flood'),
-( 69798, 'spell_rotface_ooze_flood'),
-( 69801, 'spell_rotface_ooze_flood'),
-( 69538, 'spell_rotface_little_ooze_combine'),
-( 69553, 'spell_rotface_large_ooze_combine'),
-( 69610, 'spell_rotface_large_ooze_buff_combine'),
-( 69839, 'spell_rotface_unstable_ooze_explosion_init'),
-( 69832, 'spell_rotface_unstable_ooze_explosion'),
-( 71441, 'spell_rotface_unstable_ooze_explosion_suicide'),
-( 70701, 'spell_putricide_expunged_gas'),
-( 70343, 'spell_putricide_slime_puddle'),
-( 70351, 'spell_putricide_unstable_experiment'),
-( 71966, 'spell_putricide_unstable_experiment'),
-( 71967, 'spell_putricide_unstable_experiment'),
-( 71968, 'spell_putricide_unstable_experiment'),
-( 71412, 'spell_putricide_ooze_summon'),
-( 71415, 'spell_putricide_ooze_summon'),
-( 70672, 'spell_putricide_gaseous_bloat'),
-( 72455, 'spell_putricide_gaseous_bloat'),
-( 72832, 'spell_putricide_gaseous_bloat'),
-( 72833, 'spell_putricide_gaseous_bloat'),
-( 70459, 'spell_putricide_ooze_eruption_searcher'),
-( 71255, 'spell_putricide_choking_gas_bomb'),
-( 70920, 'spell_putricide_unbound_plague'),
-( 70360, 'spell_putricide_eat_ooze'),
-( 72527, 'spell_putricide_eat_ooze'),
-( 72451, 'spell_putricide_mutated_plague'),
-( 72463, 'spell_putricide_mutated_plague'),
-( 72671, 'spell_putricide_mutated_plague'),
-( 72672, 'spell_putricide_mutated_plague'),
-( 70308, 'spell_putricide_mutation_init'),
-( 70311, 'spell_putricide_mutated_transformation'),
-( 71503, 'spell_putricide_mutated_transformation'),
-( 70405, 'spell_putricide_mutated_transformation_dismiss'),
-( 72508, 'spell_putricide_mutated_transformation_dismiss'),
-( 72509, 'spell_putricide_mutated_transformation_dismiss'),
-( 72510, 'spell_putricide_mutated_transformation_dismiss'),
-( 70539, 'spell_putricide_regurgitated_ooze'),
-( 72457, 'spell_putricide_regurgitated_ooze'),
-( 72875, 'spell_putricide_regurgitated_ooze'),
-( 72876, 'spell_putricide_regurgitated_ooze'),
-( 71598, 'spell_creature_permanent_feign_death'),
-( 71806, 'spell_taldaram_glittering_sparks'),
-( 71718, 'spell_taldaram_summon_flame_ball'),
-( 72040, 'spell_taldaram_summon_flame_ball'),
-( 55891, 'spell_taldaram_flame_ball_visual'),
-( 55947, 'spell_taldaram_flame_ball_visual'),
-( 71756, 'spell_taldaram_ball_of_inferno_flame'),
-( 72782, 'spell_taldaram_ball_of_inferno_flame'),
-( 72783, 'spell_taldaram_ball_of_inferno_flame'),
-( 72784, 'spell_taldaram_ball_of_inferno_flame'),
-( 72080, 'spell_valanar_kinetic_bomb'),
-( 72087, 'spell_valanar_kinetic_bomb_knockback'),
-( 73001, 'spell_blood_council_shadow_prison'),
-( 72999, 'spell_blood_council_shadow_prison_damage'),
-( 70877, 'spell_blood_queen_frenzied_bloodthirst'),
-( 71474, 'spell_blood_queen_frenzied_bloodthirst'),
-( 70946, 'spell_blood_queen_vampiric_bite'),
-( 71475, 'spell_blood_queen_vampiric_bite'),
-( 71476, 'spell_blood_queen_vampiric_bite'),
-( 71477, 'spell_blood_queen_vampiric_bite'),
-( 71899, 'spell_blood_queen_bloodbolt'),
-( 71900, 'spell_blood_queen_bloodbolt'),
-( 71901, 'spell_blood_queen_bloodbolt'),
-( 71902, 'spell_blood_queen_bloodbolt'),
--- Ulduar
-( 62717, 'spell_ignis_slag_pot'),
-( 63477, 'spell_ignis_slag_pot'),
--- quest
-(  8913, 'spell_q55_sacred_cleansing'),
-( 17271, 'spell_q5206_test_fetid_skull'),
-( 19512, 'spell_q6124_6129_apply_salve'),
-( 34665, 'spell_q10255_administer_antidote'),
-( 43874, 'spell_q11396_11399_force_shield_arcane_purple_x3'),
-( 43882, 'spell_q11396_11399_scourging_crystal_controller_dummy'),
-( 50133, 'spell_q11396_11399_scourging_crystal_controller'),
-( 44936, 'spell_q11515_fel_siphon_dummy'),
-( 45449, 'spell_q11587_arcane_prisoner_rescue'),
-( 46023, 'spell_q11730_ultrasonic_screwdriver'),
-( 49587, 'spell_q12459_seeds_of_natures_wrath'),
-( 51840, 'spell_q12634_despawn_fruit_tosser'),
-( 52308, 'spell_q12683_take_sputum_sample'),
-( 55804, 'spell_q12937_relief_for_the_fallen'),
--- item
-( 23074, 'spell_item_arcanite_dragonling'),
-(  8063, 'spell_item_deviate_fish'),
-( 67019, 'spell_item_flask_of_the_north'),
-( 23133, 'spell_item_gnomish_battle_chicken'),
-( 13280, 'spell_item_gnomish_death_ray'),
-( 33060, 'spell_item_make_a_wish'),
-( 23076, 'spell_item_mechanical_dragonling'),
-( 40802, 'spell_item_mingos_fortune_generator'),
-( 23075, 'spell_item_mithril_mechanical_dragonling'),
-( 13120, 'spell_item_net_o_matic'),
-( 16589, 'spell_item_noggenfogger_elixir'),
-(  8213, 'spell_item_savory_deviate_delight'),
-( 14537, 'spell_item_six_demon_bag'),
-( 59640, 'spell_item_underbelly_elixir'),
-( 71905, 'spell_item_shadowmourne'),
-( 67533, 'spell_item_red_rider_air_rifle'),
--- warrior
-( 12975, 'spell_warr_last_stand'),
--- paladin
-( 20425, 'spell_pal_judgement_of_command'),
-( 63521, 'spell_pal_guarded_by_the_light'),
-(-20473, 'spell_pal_holy_shock'),
-( 20911, 'spell_pal_blessing_of_sanctuary'),
-( 25899, 'spell_pal_blessing_of_sanctuary'),
-( 37877, 'spell_pal_blessing_of_faith'),
--- hunter
-( 53209, 'spell_hun_chimera_shot'),
-( 53412, 'spell_hun_invigoration'),
-( 53271, 'spell_hun_masters_call'),
-( 53478, 'spell_hun_last_stand_pet'),
-( 23989, 'spell_hun_readiness'),
-( 37506, 'spell_hun_scatter_shot'),
-(-53302, 'spell_hun_sniper_training'),
-( 55709, 'spell_hun_pet_heart_of_the_phoenix'),
-( 54044, 'spell_hun_pet_carrion_feeder'),
--- rogue
-(-31130, 'spell_rog_nerves_of_steel'),
-(  5938, 'spell_rog_shiv'),
-( 14185, 'spell_rog_preparation'),
-(-51685, 'spell_rog_prey_on_the_weak'),
--- priest
-( 47948, 'spell_pri_pain_and_suffering_proc'),
-(-47540, 'spell_pri_penance'),
-( -8129, 'spell_pri_mana_burn'),
--- death knight
-(-49158, 'spell_dk_corpse_explosion'),
-( 50524, 'spell_dk_runic_power_feed'),
-(-55090, 'spell_dk_scourge_strike'),
-(-49145, 'spell_dk_spell_deflection'),
--- shaman
-(-51474, 'spell_sha_astral_shift'),
-( 39610, 'spell_sha_mana_tide_totem'),
-( -1535, 'spell_sha_fire_nova'),
-(  6474, 'spell_sha_earthbind_totem'),
--- mage
-(-11113, 'spell_mage_blast_wave'),
-( 11958, 'spell_mage_cold_snap'),
-( 31687, 'spell_mage_summon_water_elemental'),
-( 32826, 'spell_mage_polymorph_visual'),
--- warlock
-( -6201, 'spell_warl_create_healthstone'),
-( 47193, 'spell_warl_demonic_empowerment'),
-( 47422, 'spell_warl_everlasting_affliction'),
--- druid
-( 54846, 'spell_dru_glyph_of_starfire'),
-(69366, 'spell_dru_moonkin_form_passive'),
-(-33851, 'spell_dru_primal_tenacity'),
-(62606, 'spell_dru_savage_defense'),
--- example
-( 66244, 'spell_ex_66244'), 
-( 5581,  'spell_ex_5581'),
-(47299, 'spell_ex_absorb_aura');
-
 /*!40000 ALTER TABLE `spell_script_names` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -27456,7 +27300,7 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 (536, '   Home movement used for player?!?', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (537, '   Taxi flight', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (538, '   Unknown movement generator (%u)', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(539, 'Player selected NPC\nGUID: %u.\nFaction: %u.\nnpcFlags: %u.\nEntry: %u.\nDisplayID: %u (Native: %u).', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(539, 'Player selected NPC\nDB GUID: %u, current GUID: %u.\nFaction: %u.\nnpcFlags: %u.\nEntry: %u.\nDisplayID: %u (Native: %u).', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (540, 'Level: %u.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (541, 'Health (base): %u. (max): %u. (current): %u.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (542, 'Field Flags: %u.\nDynamic Flags: %u.\nFaction Template: %u.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
@@ -27713,6 +27557,26 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 (1133, '|   Character   |   BanDate    |   UnbanDate  |  Banned By    |   Ban Reason  |', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1200, 'You try to view cinemitic %u but it doesn''t exist.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1201, 'You try to view movie %u but it doesn''t exist.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1205, 'The battle will begin in two minutes.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1206, 'The battle will begin in 1 minute.', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1208, 'The battle has begun!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1207, 'The battle will begin in 30 seconds!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1209, 'the alliance keep', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1210, 'the horde keep', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1211, '%s wins!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1212, 'The west gate of %s is destroyed!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1213, 'The east gate of %s is destroyed!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1214, 'The south gate of %s is destroyed!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1215, 'The north gate of %s is destroyed!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1216, '$n has assaulted the %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1217, '$n has defended the %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1218, '$n claims the %s! If left unchallenged, the %s will control it in 1 minute!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1219, 'The %s has taken the %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1220, 'Workshop', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1221, 'Docks', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1222, 'Refinery', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1223, 'Quarry', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(1224, 'Hangar', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1300, 'Alliance', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1301, 'Horde', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (1302, '%s was destroyed by the %s!', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
@@ -27899,13 +27763,13 @@ INSERT INTO `trinity_string` (`entry`,`content_default`,`content_loc1`,`content_
 UNLOCK TABLES;
 
 --
--- Table structure for table `vehicle_accessory`
+-- Table structure for table `vehicle_template_accessory`
 --
 
-DROP TABLE IF EXISTS `vehicle_accessory`;
+DROP TABLE IF EXISTS `vehicle_template_accessory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `vehicle_accessory` (
+CREATE TABLE `vehicle_template_accessory` (
   `entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
   `accessory_entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
   `seat_id` TINYINT(1) SIGNED NOT NULL DEFAULT 0,
@@ -27920,14 +27784,47 @@ AVG_ROW_LENGTH=0;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `vehicle_template_accessory`
+--
+
+LOCK TABLES `vehicle_template_accessory` WRITE;
+/*!40000 ALTER TABLE `vehicle_template_accessory` DISABLE KEYS */;
+INSERT INTO `vehicle_template_accessory` VALUES
+(36476,36477,0,0, 'Krick and Ick'),
+(36661,36658,0,0, 'Scourgelord Tyrannus and Rimefang'),
+(36891,31260,0,0, 'Ymirjar Skycaller on Drake'),
+(36678,38309,0,1, 'Professor Putricide - trigger'),
+(36678,38308,1,1, 'Professor Putricide - trigger');
+/*!40000 ALTER TABLE `vehicle_template_accessory` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `vehicle_accessory`
+--
+
+DROP TABLE IF EXISTS `vehicle_accessory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `vehicle_accessory` (
+  `guid` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `accessory_entry` MEDIUMINT(8) UNSIGNED NOT NULL DEFAULT 0,
+  `seat_id` TINYINT(1) SIGNED NOT NULL DEFAULT 0,
+  `minion` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `description` TEXT NOT NULL,
+  PRIMARY KEY (`accessory_entry`, `seat_id`)
+)
+COLLATE=utf8_general_ci
+ENGINE=MyISAM
+ROW_FORMAT=FIXED
+AVG_ROW_LENGTH=0;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Dumping data for table `vehicle_accessory`
 --
 
 LOCK TABLES `vehicle_accessory` WRITE;
 /*!40000 ALTER TABLE `vehicle_accessory` DISABLE KEYS */;
-INSERT INTO `vehicle_accessory` VALUES
-(36678,38309,0,1, 'Professor Putricide - trigger'),
-(36678,38308,1,1, 'Professor Putricide - trigger');
 /*!40000 ALTER TABLE `vehicle_accessory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -27978,6 +27875,33 @@ CREATE TABLE `version` (
 LOCK TABLES `version` WRITE;
 /*!40000 ALTER TABLE `version` DISABLE KEYS */;
 /*!40000 ALTER TABLE `version` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `waypoints`
+--
+
+DROP TABLE IF EXISTS `waypoints`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `waypoints` (
+  `entry` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `pointid` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `position_x` float NOT NULL DEFAULT '0',
+  `position_y` float NOT NULL DEFAULT '0',
+  `position_z` float NOT NULL DEFAULT '0',
+  `point_comment` text,
+  PRIMARY KEY (`entry`,`pointid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Creature waypoints';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `waypoints`
+--
+
+LOCK TABLES `waypoints` WRITE;
+/*!40000 ALTER TABLE `waypoints` DISABLE KEYS */;
+/*!40000 ALTER TABLE `waypoints` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

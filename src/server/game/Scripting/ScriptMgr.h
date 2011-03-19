@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -584,9 +584,6 @@ class VehicleScript : public ScriptObject
         // Called after a vehicle is uninstalled.
         virtual void OnUninstall(Vehicle* /*veh*/) { }
 
-        // Called after a vehicle dies.
-        virtual void OnDie(Vehicle* /*veh*/) { }
-
         // Called when a vehicle resets.
         virtual void OnReset(Vehicle* /*veh*/) { }
 
@@ -763,7 +760,7 @@ class ScriptMgr
     friend class ScriptObject;
 
     ScriptMgr();
-    ~ScriptMgr();
+    virtual ~ScriptMgr();
 
     uint32 _scriptCount;
 
@@ -777,6 +774,9 @@ class ScriptMgr
 
         void IncrementScriptCount() { ++_scriptCount; }
         uint32 GetScriptCount() const { return _scriptCount; }
+
+    public: /* Unloading */
+        void Unload();
 
     public: /* SpellScriptLoader */
 
@@ -898,7 +898,6 @@ class ScriptMgr
 
         void OnInstall(Vehicle* veh);
         void OnUninstall(Vehicle* veh);
-        void OnDie(Vehicle* veh);
         void OnReset(Vehicle* veh);
         void OnInstallAccessory(Vehicle* veh, Creature* accessory);
         void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 seatId);

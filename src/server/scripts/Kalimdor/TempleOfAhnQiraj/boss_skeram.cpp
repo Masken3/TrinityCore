@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -264,7 +264,7 @@ public:
                 case 25: Images25 = true; break;
             }
 
-            Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+            Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
             Creature *Image1 = me->SummonCreature(15263, i1->x, i1->y, i1->z, i1->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
             if (Image1)

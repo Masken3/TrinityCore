@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,19 +15,42 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DEF_ICECROWN_CITADEL_H
-#define DEF_ICECROWN_CITADEL_H
+#ifndef ICECROWN_CITADEL_H_
+#define ICECROWN_CITADEL_H_
+
+#include "SpellScript.h"
 
 #define ICCScriptName "instance_icecrown_citadel"
 
-// Shared spells used by every boss
-enum eSharedSpells
+uint32 const EncounterCount = 12;
+uint32 const WeeklyNPCs = 7;
+uint32 const MaxHeroicAttempts = 50;
+// Defined in boss_sindragosa.cpp
+extern Position const SindragosaSpawnPos;
+
+// Shared spells used by more than one script
+enum SharedSpells
 {
-    SPELL_BERSERK   = 26662,
-    SPELL_BERSERK2  = 47008
+    SPELL_BERSERK               = 26662,
+    SPELL_BERSERK2              = 47008,
+
+    // Residue Rendezvous
+    SPELL_ORANGE_BLIGHT_RESIDUE = 72144,
+    SPELL_GREEN_BLIGHT_RESIDUE  = 72145,
 };
 
-enum eData
+enum TeleporterSpells
+{
+    LIGHT_S_HAMMER_TELEPORT         = 70781,
+    ORATORY_OF_THE_DAMNED_TELEPORT  = 70856,
+    RAMPART_OF_SKULLS_TELEPORT      = 70857,
+    DEATHBRINGER_S_RISE_TELEPORT    = 70858,
+    UPPER_SPIRE_TELEPORT            = 70859,
+    FROZEN_THRONE_TELEPORT          = 70860,
+    SINDRAGOSA_S_LAIR_TELEPORT      = 70861,
+};
+
+enum DataTypes
 {
     // Encounter States/Boss GUIDs
     DATA_LORD_MARROWGAR             = 0,
@@ -54,17 +77,23 @@ enum eData
     DATA_PRINCE_TALDARAM_GUID       = 19,
     DATA_PRINCE_VALANAR_GUID        = 20,
     DATA_BLOOD_PRINCES_CONTROL      = 21,
+    DATA_SINDRAGOSA_FROSTWYRMS      = 22,
+    DATA_SPINESTALKER               = 23,
+    DATA_RIMEFANG                   = 24,
+    DATA_COLDFLAME_JETS             = 25,
+    DATA_TEAM_IN_INSTANCE           = 26,
+    DATA_BLOOD_QUICKENING_STATE     = 27,
+    DATA_HEROIC_ATTEMPTS            = 28,
 };
 
-#define MAX_ENCOUNTER 12
-
-enum eCreatures
+enum CreaturesIds
 {
     // At Light's Hammer
+    NPC_HIGHLORD_TIRION_FORDRING_LH             = 37119,
+    NPC_THE_LICH_KING_LH                        = 37181,
+    NPC_HIGHLORD_BOLVAR_FORDRAGON_LH            = 37183,
     NPC_KOR_KRON_GENERAL                        = 37189,
     NPC_ALLIANCE_COMMANDER                      = 37190,
-    NPC_KOR_KRON_LIEUTENANT                     = 38491,
-    NPC_SKYBREAKER_LIEUTENANT                   = 38492,
     NPC_TORTUNOK                                = 37992,    // Druid Armor H
     NPC_ALANA_MOONSTRIKE                        = 37999,    // Druid Armor A
     NPC_GERARDO_THE_SUAVE                       = 37993,    // Hunter Armor H
@@ -79,6 +108,16 @@ enum eCreatures
     NPC_NIBY_THE_ALMIGHTY                       = 38182,    // Warlock Armor N
     NPC_GARROSH_HELLSCREAM                      = 39372,
     NPC_KING_VARIAN_WRYNN                       = 39371,
+
+    // Weekly quests
+    NPC_INFILTRATOR_MINCHAR                     = 38471,
+    NPC_KOR_KRON_LIEUTENANT                     = 38491,
+    NPC_SKYBREAKER_LIEUTENANT                   = 38492,
+    NPC_ALCHEMIST_ADRIANNA                      = 38501,
+    NPC_ALRIN_THE_AGILE                         = 38551,
+    NPC_INFILTRATOR_MINCHAR_BQ                  = 38558,
+    NPC_MINCHAR_BEAM_STALKER                    = 38557,
+    NPC_VALITHRIA_DREAMWALKER_QUEST             = 38589,
 
     // Lord Marrowgar
     NPC_LORD_MARROWGAR                          = 36612,
@@ -104,6 +143,7 @@ enum eCreatures
     NPC_SE_HIGH_OVERLORD_SAURFANG               = 37187,
     NPC_SE_KOR_KRON_REAVER                      = 37920,
     NPC_SE_SKYBREAKER_MARINE                    = 37830,
+    NPC_FROST_FREEZE_TRAP                       = 37744,
 
     // Festergut
     NPC_FESTERGUT                               = 36626,
@@ -123,6 +163,8 @@ enum eCreatures
     NPC_VOLATILE_OOZE                           = 37697,
     NPC_CHOKING_GAS_BOMB                        = 38159,
     NPC_TEAR_GAS_TARGET_STALKER                 = 38317,
+    NPC_MUTATED_ABOMINATION_10                  = 37672,
+    NPC_MUTATED_ABOMINATION_25                  = 38285,
 
     // Blood Prince Council
     NPC_PRINCE_KELESETH                         = 37972,
@@ -139,9 +181,19 @@ enum eCreatures
 
     // Blood-Queen Lana'thel
     NPC_BLOOD_QUEEN_LANA_THEL                   = 37955,
+
+    // Sindragosa
+    NPC_SINDRAGOSA                              = 36853,
+    NPC_SPINESTALKER                            = 37534,
+    NPC_RIMEFANG                                = 37533,
+    NPC_FROSTWARDEN_HANDLER                     = 37531,
+    NPC_FROSTWING_WHELP                         = 37532,
+    NPC_ICY_BLAST                               = 38223,
+    NPC_FROST_BOMB                              = 37186,
+    NPC_ICE_TOMB                                = 36980,
 };
 
-enum eGameobjects
+enum GameObjectsIds
 {
     // Lord Marrogar
     GO_DOODAD_ICECROWN_ICEWALL02            = 201910,
@@ -170,6 +222,7 @@ enum eGameobjects
     GO_DOODAD_ICECROWN_GREENTUBES02         = 201618,
     GO_SCIENTIST_ENTRANCE                   = 201372,
     GO_DRINK_ME                             = 201584,
+    GO_PLAGUE_SIGIL                         = 202182,
 
     // Blood Prince Council
     GO_CRIMSON_HALL_DOOR                    = 201376,
@@ -179,6 +232,7 @@ enum eGameobjects
     // Blood-Queen Lana'thel
     GO_DOODAD_ICECROWN_BLOODPRINCE_DOOR_01  = 201746,
     GO_DOODAD_ICECROWN_GRATE_01             = 201755,
+    GO_BLOODWING_SIGIL                      = 202183,
 
     // Valithria Dreamwalker
     GO_GREEN_DRAGON_BOSS_ENTRANCE           = 201375,
@@ -188,9 +242,12 @@ enum eGameobjects
     GO_SINDRAGOSA_ENTRANCE_DOOR             = 201373,
     GO_SINDRAGOSA_SHORTCUT_ENTRANCE_DOOR    = 201369,
     GO_SINDRAGOSA_SHORTCUT_EXIT_DOOR        = 201379,
+    GO_ICE_WALL                             = 202396,
+    GO_ICE_BLOCK                            = 201722,
+    GO_SIGIL_OF_THE_FROSTWING               = 202181,
 };
 
-enum eAchievementCriteria
+enum AchievementCriteriaIds
 {
     // Lord Marrowgar
     CRITERIA_BONED_10N                  = 12775,
@@ -225,8 +282,11 @@ enum eAchievementCriteria
     CRITERIA_ONCE_BITTEN_TWICE_SHY_25V  = 13013,
 };
 
-enum eSharedActions
+enum SharedActions
 {
+    // Coldflame Traps
+    ACTION_STOP_TRAPS           = -377440,
+
     // Festergut
     ACTION_FESTERGUT_COMBAT     = -366260,
     ACTION_FESTERGUT_GAS        = -366261,
@@ -236,7 +296,78 @@ enum eSharedActions
     ACTION_ROTFACE_COMBAT       = -366270,
     ACTION_ROTFACE_OOZE         = -366271,
     ACTION_ROTFACE_DEATH        = -366272,
-    ACTION_CHANGE_PHASE         = -366780
+    ACTION_CHANGE_PHASE         = -366780,
+
+    // Blood-Queen Lana'thel
+    ACTION_KILL_MINCHAR         = -379550,
+
+    // Sindragosa
+    ACTION_START_FROSTWYRM      = -368530,
+    ACTION_TRIGGER_ASPHYXIATION = -368531,
 };
 
-#endif // DEF_ICECROWN_CITADEL_H
+enum WeekliesICC
+{
+    QUEST_DEPROGRAMMING_10                  = 24869,
+    QUEST_DEPROGRAMMING_25                  = 24875,
+    QUEST_SECURING_THE_RAMPARTS_10          = 24870,
+    QUEST_SECURING_THE_RAMPARTS_25          = 24877,
+    QUEST_RESIDUE_RENDEZVOUS_10             = 24873,
+    QUEST_RESIDUE_RENDEZVOUS_25             = 24878,
+    QUEST_BLOOD_QUICKENING_10               = 24874,
+    QUEST_BLOOD_QUICKENING_25               = 24879,
+    QUEST_RESPITE_FOR_A_TORNMENTED_SOUL_10  = 24872,
+    QUEST_RESPITE_FOR_A_TORNMENTED_SOUL_25  = 24880,
+};
+
+enum WorldStatesICC
+{
+    WORLDSTATE_SHOW_TIMER           = 4903,
+    WORLDSTATE_EXECUTION_TIME       = 4904,
+    WORLDSTATE_SHOW_ATTEMPTS        = 4940,
+    WORLDSTATE_ATTEMPTS_REMAINING   = 4941,
+    WORLDSTATE_ATTEMPTS_MAX         = 4942,
+};
+
+class spell_trigger_spell_from_caster : public SpellScriptLoader
+{
+    public:
+        spell_trigger_spell_from_caster(char const* scriptName, uint32 triggerId) : SpellScriptLoader(scriptName), _triggerId(triggerId) { }
+
+        class spell_trigger_spell_from_caster_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_trigger_spell_from_caster_SpellScript);
+
+        public:
+            spell_trigger_spell_from_caster_SpellScript(uint32 triggerId) : SpellScript(), _triggerId(triggerId) { }
+
+            bool Validate(SpellEntry const* /*spell*/)
+            {
+                if (!sSpellStore.LookupEntry(_triggerId))
+                    return false;
+                return true;
+            }
+
+            void HandleTrigger()
+            {
+                GetCaster()->CastSpell(GetHitUnit(), _triggerId, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_trigger_spell_from_caster_SpellScript::HandleTrigger);
+            }
+
+            uint32 _triggerId;
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_trigger_spell_from_caster_SpellScript(_triggerId);
+        }
+
+    private:
+        uint32 _triggerId;
+};
+
+#endif // ICECROWN_CITADEL_H_

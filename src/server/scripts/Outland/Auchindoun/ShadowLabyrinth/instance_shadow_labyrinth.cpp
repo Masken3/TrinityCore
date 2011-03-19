@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -108,7 +108,7 @@ public:
                     if (creature->isAlive())
                     {
                         ++m_uiFelOverseerCount;
-                        sLog->outDebug("TSCR: Shadow Labyrinth: counting %u Fel Overseers.",m_uiFelOverseerCount);
+                        sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Shadow Labyrinth: counting %u Fel Overseers.",m_uiFelOverseerCount);
                     }
                     break;
             }
@@ -133,11 +133,11 @@ public:
                         --m_uiFelOverseerCount;
 
                         if (m_uiFelOverseerCount)
-                            sLog->outDebug("TSCR: Shadow Labyrinth: %u Fel Overseers left to kill.",m_uiFelOverseerCount);
+                            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Shadow Labyrinth: %u Fel Overseers left to kill.",m_uiFelOverseerCount);
                         else
                         {
                             m_auiEncounter[1] = DONE;
-                            sLog->outDebug("TSCR: Shadow Labyrinth: TYPE_OVERSEER == DONE");
+                            sLog->outDebug(LOG_FILTER_TSCR, "TSCR: Shadow Labyrinth: TYPE_OVERSEER == DONE");
                         }
                     }
                     break;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -217,12 +217,12 @@ void BattlegroundWS::RespawnFlag(uint32 Team, bool captured)
 {
     if (Team == ALLIANCE)
     {
-        sLog->outDebug("Respawn Alliance flag");
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Respawn Alliance flag");
         m_FlagState[BG_TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_BASE;
     }
     else
     {
-        sLog->outDebug("Respawn Horde flag");
+        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Respawn Horde flag");
         m_FlagState[BG_TEAM_HORDE] = BG_WS_FLAG_STATE_ON_BASE;
     }
 
@@ -699,7 +699,7 @@ bool BattlegroundWS::SetupBattleground()
         return false;
     }
 
-    sLog->outDebug("BatteGroundWS: BG objects and spirit guides spawned");
+    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BatteGroundWS: BG objects and spirit guides spawned");
 
     return true;
 }

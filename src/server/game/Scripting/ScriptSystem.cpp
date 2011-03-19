@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -44,7 +44,7 @@ void SystemMgr::LoadScriptTexts()
 {
     sLog->outString("TSCR: Loading Script Texts...");
     LoadTrinityStrings("script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
-    
+
     sLog->outString("TSCR: Loading Script Texts additional data...");
     uint32 oldMSTime = getMSTime();
 

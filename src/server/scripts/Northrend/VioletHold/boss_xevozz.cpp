@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -114,7 +114,7 @@ public:
         void JustSummoned(Creature* pSummoned)
         {
             pSummoned->SetSpeed(MOVE_RUN, 0.5f);
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
             {
                 pSummoned->AddThreat(pTarget, 0.00f);
                 pSummoned->AI()->AttackStart(pTarget);

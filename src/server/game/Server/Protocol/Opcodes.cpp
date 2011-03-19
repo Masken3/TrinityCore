@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -344,8 +344,8 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x13B*/ { "CMSG_CANCEL_CHANNELLING",                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleCancelChanneling          },
     /*0x13C*/ { "SMSG_AI_REACTION",                             STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x13D*/ { "CMSG_SET_SELECTION",                           STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleSetSelectionOpcode        },
-    /*0x13E*/ { "CMSG_EQUIPMENT_SET_DELETE",                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleEquipmentSetDelete          },
-    /*0x13F*/ { "CMSG_INSTANCE_LOCK_WARNING_RESPONSE",          STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+    /*0x13E*/ { "CMSG_EQUIPMENT_SET_DELETE",                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleEquipmentSetDelete        },
+    /*0x13F*/ { "CMSG_INSTANCE_LOCK_WARNING_RESPONSE",          STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleInstanceLockResponse      },
     /*0x140*/ { "CMSG_UNUSED2",                                 STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x141*/ { "CMSG_ATTACKSWING",                             STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleAttackSwingOpcode         },
     /*0x142*/ { "CMSG_ATTACKSTOP",                              STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleAttackStopOpcode          },
@@ -684,7 +684,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x28F*/ { "CMSG_GROUP_ASSISTANT_LEADER",                  STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGroupAssistantLeaderOpcode},
     /*0x290*/ { "CMSG_BUYBACK_ITEM",                            STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBuybackItem               },
     /*0x291*/ { "SMSG_SERVER_MESSAGE",                          STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
-    /*0x292*/ { "CMSG_SET_SAVED_INSTANCE_EXTEND",               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+    /*0x292*/ { "CMSG_SET_SAVED_INSTANCE_EXTEND",               STATUS_UNHANDLED,PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x293*/ { "SMSG_LFG_OFFER_CONTINUE",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x294*/ { "CMSG_MEETINGSTONE_CHEAT",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x295*/ { "SMSG_MEETINGSTONE_SETQUEUE",                   STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
@@ -1333,4 +1333,8 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x518*/ { "SMSG_UNKNOWN_1304",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x519*/ { "UMSG_UNKNOWN_1305",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x51A*/ { "UMSG_UNKNOWN_1306",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+    /*0x51B*/ { "CMSG_COMMENTATOR_SKIRMISH_QUEUE_COMMAND",      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
+    /*0x51C*/ { "SMSG_UNKNOWN_1308",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+    /*0x51D*/ { "SMSG_UNKNOWN_1309",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+    /*0x51E*/ { "SMSG_UNKNOWN_1310",                            STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
 };

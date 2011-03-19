@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -114,7 +114,7 @@ class boss_arlokk : public CreatureScript
                     m_pInstance->SetData(TYPE_ARLOKK, NOT_STARTED);
 
                 //we should be summoned, so despawn
-                me->ForcedDespawn();
+                me->DespawnOrUnsummon();
             }
 
             void JustDied(Unit* /*pKiller*/)
@@ -162,7 +162,7 @@ class boss_arlokk : public CreatureScript
 
                     if (m_uiMark_Timer <= uiDiff)
                     {
-                        Unit *pMarkedTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                        Unit *pMarkedTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
 
                         if (pMarkedTarget)
                         {
@@ -242,7 +242,7 @@ class boss_arlokk : public CreatureScript
                         me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, (cinfo->maxdmg +((cinfo->maxdmg/100) * 35)));
                         me->UpdateDamagePhysical(BASE_ATTACK);
 
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                             AttackStart(pTarget);
 
                         m_bIsPhaseTwo = true;

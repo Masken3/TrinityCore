@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -137,7 +137,7 @@ public:
 
             if (Saw_Blade_Timer <= diff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,1))
                     DoCast(pTarget, SPELL_SAW_BLADE);
                 else
                     DoCast(me->getVictim(), SPELL_SAW_BLADE);

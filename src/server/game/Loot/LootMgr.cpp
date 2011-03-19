@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -452,7 +452,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bo
     return true;
 }
 
-void Loot::FillNotNormalLootFor(Player* pl, bool withCurrency)
+void Loot::FillNotNormalLootFor(Player* pl, bool presentAtLooting)
 {
     uint32 plguid = pl->GetGUIDLow();
 
@@ -466,10 +466,10 @@ void Loot::FillNotNormalLootFor(Player* pl, bool withCurrency)
 
     qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
     if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
-        FillNonQuestNonFFAConditionalLoot(pl);
+        FillNonQuestNonFFAConditionalLoot(pl, presentAtLooting);
 
     // if not auto-processed player will have to come and pick it up manually
-    if (!withCurrency)
+    if (!presentAtLooting)
         return;
 
     // Process currency items
@@ -548,7 +548,7 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
     return ql;
 }
 
-QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(Player* player)
+QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(Player* player, bool presentAtLooting)
 {
     QuestItemList *ql = new QuestItemList();
 
@@ -557,7 +557,8 @@ QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(Player* player)
         LootItem &item = items[i];
         if (!item.is_looted && !item.freeforall && item.AllowedForPlayer(player))
         {
-            item.AddAllowedLooter(player);
+            if (presentAtLooting)
+                item.AddAllowedLooter(player);
             if (!item.conditions.empty())
             {
                 ql->push_back(QuestItem(i));
@@ -866,8 +867,21 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
         }
         case ALL_PERMISSION:
         case MASTER_PERMISSION:
+        case OWNER_PERMISSION:
         {
-            uint8 slot_type = (lv.permission == MASTER_PERMISSION) ? LOOT_SLOT_TYPE_MASTER : LOOT_SLOT_TYPE_ALLOW_LOOT;
+            uint8 slot_type = LOOT_SLOT_TYPE_ALLOW_LOOT;
+            switch (lv.permission)
+            {
+                case MASTER_PERMISSION:
+                    slot_type = LOOT_SLOT_TYPE_MASTER;
+                    break;
+                case OWNER_PERMISSION:
+                    slot_type = LOOT_SLOT_TYPE_OWNER;
+                    break;
+                default:
+                    break;
+            }
+
             for (uint8 i = 0; i < l.items.size(); ++i)
             {
                 if (!l.items[i].is_looted && !l.items[i].freeforall && l.items[i].conditions.empty() && l.items[i].AllowedForPlayer(lv.viewer))
@@ -883,6 +897,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             return b;                                       // nothing output more
     }
 
+    LootSlotType slotType = lv.permission == OWNER_PERMISSION ? LOOT_SLOT_TYPE_OWNER : LOOT_SLOT_TYPE_ALLOW_LOOT;
     QuestItemMap const& lootPlayerQuestItems = l.GetPlayerQuestItems();
     QuestItemMap::const_iterator q_itr = lootPlayerQuestItems.find(lv.viewer->GetGUIDLow());
     if (q_itr != lootPlayerQuestItems.end())
@@ -895,7 +910,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             {
                 b << uint8(l.items.size() + (qi - q_list->begin()));
                 b << item;
-                b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                b << uint8(slotType);
                 ++itemsShown;
             }
         }
@@ -911,8 +926,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.items[fi->index];
             if (!fi->is_looted && !item.is_looted)
             {
-                b << uint8(fi->index) << item;
-                b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                b << uint8(fi->index);
+                b << item;
+                b << uint8(slotType);
                 ++itemsShown;
             }
         }
@@ -928,8 +944,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.items[ci->index];
             if (!ci->is_looted && !item.is_looted)
             {
-                b << uint8(ci->index) << item;
-                b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                b << uint8(ci->index);
+                b << item;
+                b << uint8(slotType);
                 ++itemsShown;
             }
         }
@@ -1555,7 +1572,7 @@ void LoadLootTemplates_Item()
         sLog->outString(">> Loaded %u prospecting loot templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     else
         sLog->outErrorDb(">> Loaded 0 prospecting loot templates. DB table `item_loot_template` is empty");
-    
+
     sLog->outString();
 }
 
@@ -1693,7 +1710,7 @@ void LoadLootTemplates_Mail()
 void LoadLootTemplates_Skinning()
 {
     sLog->outString("Loading skinning loot templates...");
-    
+
     uint32 oldMSTime = getMSTime();
 
     LootIdSet ids_set, ids_setUsed;

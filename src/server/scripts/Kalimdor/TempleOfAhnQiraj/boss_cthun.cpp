@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -78,13 +78,13 @@ enum Creatures
 {
     MOB_CTHUN_PORTAL                            = 15896,
 
-    //***** Main Phase 1 ********
+    // ***** Main Phase 1 ********
     BOSS_EYE_OF_CTHUN                           = 15589,
     MOB_CLAW_TENTACLE                           = 15725,
     MOB_EYE_TENTACLE                            = 15726,
     MOB_SMALL_PORTAL                            = 15904,
 
-    //***** Main Phase 2 ********
+    // ***** Main Phase 2 ********
     MOB_BODY_OF_CTHUN                           = 15809,
     MOB_GIANT_CLAW_TENTACLE                     = 15728,
     MOB_GIANT_EYE_TENTACLE                      = 15334,
@@ -94,7 +94,7 @@ enum Creatures
 
 enum Spells
 {
-    //***** Main Phase 1 ********
+    // ***** Main Phase 1 ********
     //Eye Spells
     SPELL_FREEZE_ANIM                           = 16245,
     SPELL_GREEN_BEAM                            = 26134,
@@ -108,7 +108,7 @@ enum Spells
     SPELL_GROUND_RUPTURE                        = 26139,
     SPELL_HAMSTRING                             = 26141,
 
-    //***** Main Phase 2 ******
+    // ***** Main Phase 2 ******
     //Body spells
     //#define SPELL_CARAPACE_CTHUN                26156   //Was removed from client dbcs
     SPELL_TRANSFORM                             = 26232,
@@ -142,7 +142,7 @@ enum Yells
     //Text emote
     EMOTE_WEAKENED                              = -1531011,
 
-    //****** Out of Combat ******
+    // ****** Out of Combat ******
     // Random Wispers - No txt only sound
     // The random sound is chosen by the client.
     RANDOM_SOUND_WHISPER                        = 8663,
@@ -241,7 +241,7 @@ public:
         void SpawnEyeTentacle(float x, float y)
         {
             if (Creature* Spawned = DoSpawnCreature(MOB_EYE_TENTACLE, x, y, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 500))
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                     if (Spawned->AI())
                         Spawned->AI()->AttackStart(pTarget);
         }
@@ -284,7 +284,7 @@ public:
                     if (BeamTimer <= diff)
                     {
                         //SPELL_GREEN_BEAM
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             me->InterruptNonMeleeSpells(false);
                             DoCast(pTarget, SPELL_GREEN_BEAM);
@@ -300,7 +300,7 @@ public:
                     //ClawTentacleTimer
                     if (ClawTentacleTimer <= diff)
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             Creature* Spawned = NULL;
 
@@ -328,7 +328,7 @@ public:
                         me->SetUInt64Value(UNIT_FIELD_TARGET, 0);
 
                         //Select random target for dark beam to start on
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                         {
                             //Face our target
                             DarkGlareAngle = me->GetAngle(pTarget);
@@ -411,9 +411,9 @@ public:
                 case PHASE_CTHUN_DONE:
                     Creature* pPortal= me->FindNearestCreature(MOB_CTHUN_PORTAL, 10);
                     if (pPortal)
-                        pPortal->ForcedDespawn();
+                        pPortal->DespawnOrUnsummon();
 
-                    me->ForcedDespawn();
+                    me->DespawnOrUnsummon();
                     break;
             }
         }
@@ -988,7 +988,7 @@ public:
             //MindflayTimer
             if (MindflayTimer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget && !pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     DoCast(pTarget, SPELL_MIND_FLAY);
 
@@ -1064,7 +1064,7 @@ public:
                     //Dissapear and reappear at new position
                     me->SetVisible(false);
 
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                     if (!pTarget)
                     {
                         me->Kill(me);
@@ -1176,7 +1176,7 @@ public:
                     //Dissapear and reappear at new position
                     me->SetVisible(false);
 
-                    Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (!pTarget)
                     {
                         me->Kill(me);
@@ -1281,7 +1281,7 @@ public:
             //BeamTimer
             if (BeamTimer <= diff)
             {
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM,0);
+                Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0);
                 if (pTarget && !pTarget->HasAura(SPELL_DIGESTIVE_ACID))
                     DoCast(pTarget, SPELL_GREEN_BEAM);
 

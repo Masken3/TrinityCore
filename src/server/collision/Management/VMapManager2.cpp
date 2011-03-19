@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -274,7 +274,7 @@ namespace VMAP
                 delete worldmodel;
                 return NULL;
             }
-            sLog->outDebug("VMapManager2: loading file '%s%s'", basepath.c_str(), filename.c_str());
+            sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: loading file '%s%s'", basepath.c_str(), filename.c_str());
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
             model->second.setModel(worldmodel);
         }
@@ -292,7 +292,7 @@ namespace VMAP
         }
         if( model->second.decRefCount() == 0)
         {
-            sLog->outDebug("VMapManager2: unloading file '%s'", filename.c_str());
+            sLog->outDebug(LOG_FILTER_MAPS, "VMapManager2: unloading file '%s'", filename.c_str());
             delete model->second.getModel();
             iLoadedModelFiles.erase(model);
         }

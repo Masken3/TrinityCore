@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -46,7 +46,7 @@ class instance_forge_of_souls : public InstanceMapScript
                 Map::PlayerList const &players = instance->GetPlayers();
                 if (!players.isEmpty())
                     if (Player* player = players.begin()->getSource())
-                        teamInInstance = player->GetTeamId();
+                        teamInInstance = player->GetTeam();
 
                 switch (creature->GetEntry())
                 {
@@ -55,6 +55,18 @@ class instance_forge_of_souls : public InstanceMapScript
                         break;
                     case CREATURE_DEVOURER:
                         devourerOfSouls = creature->GetGUID();
+                        break;
+                    case NPC_SYLVANAS_PART1:
+                        if (teamInInstance == ALLIANCE)
+                            creature->UpdateEntry(NPC_JAINA_PART1, ALLIANCE);
+                        break;
+                    case NPC_LORALEN:
+                        if (teamInInstance == ALLIANCE)
+                            creature->UpdateEntry(NPC_ELANDRA, ALLIANCE);
+                        break;
+                    case NPC_KALIRA:
+                        if (teamInInstance == ALLIANCE)
+                            creature->UpdateEntry(NPC_KORELN, ALLIANCE);
                         break;
                 }
             }

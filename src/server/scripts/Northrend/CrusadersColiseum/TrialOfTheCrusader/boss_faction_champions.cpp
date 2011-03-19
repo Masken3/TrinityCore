@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -216,7 +216,7 @@ public:
                             {
                                 m_pInstance->SetData(TYPE_CRUSADERS, FAIL);
                                 Summons.DespawnAll();
-                                me->ForcedDespawn();
+                                me->DespawnOrUnsummon();
                             }
                             break;
                         case IN_PROGRESS:
@@ -238,7 +238,7 @@ public:
                             {
                                 m_pInstance->SetData(TYPE_CRUSADERS, DONE);
                                 Summons.DespawnAll();
-                                me->ForcedDespawn();
+                                me->DespawnOrUnsummon();
                             }
                             break;
                     }
@@ -277,7 +277,7 @@ struct boss_faction_championsAI : public ScriptedAI
         if (m_pInstance)
             if (Creature* pChampionController = Unit::GetCreature((*me), m_pInstance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
                 pChampionController->AI()->SetData(2, FAIL);
-        me->ForcedDespawn();
+        me->DespawnOrUnsummon();
     }
 
     float CalculateThreat(float distance, float armor, uint32 health)
@@ -601,12 +601,12 @@ public:
                 else
                     if (!me->HasAura(AURA_SATED))
                         DoCastAOE(SPELL_BLOODLUST);
-                m_uiHeroismOrBloodlustTimer = urand(30*IN_MILLISECONDS, 60*IN_MILLISECONDS);
+                m_uiHeroismOrBloodlustTimer = 300*IN_MILLISECONDS;
             } else m_uiHeroismOrBloodlustTimer -= uiDiff;
 
             if (m_uiHexTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_HEX);
                 m_uiHexTimer = urand(10*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiHexTimer -= uiDiff;
@@ -708,7 +708,7 @@ public:
 
             if (m_uiHolyShockTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_HOLY_SHOCK);
                 m_uiHolyShockTimer = urand(6*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiHolyShockTimer -= uiDiff;
@@ -722,7 +722,7 @@ public:
 
             if (m_uiHammerOfJusticeTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_HAMMER_OF_JUSTICE);
                 m_uiHammerOfJusticeTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiHammerOfJusticeTimer -= uiDiff;
@@ -810,7 +810,7 @@ public:
                         DoCast(me, SPELL_FLASH_HEAL);
                         break;
                     case 4:
-                        if (Unit *pTarget = urand(0, 1) ? SelectUnit(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
+                        if (Unit *pTarget = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
                             DoCast(pTarget, SPELL_DISPEL);
                         break;
                     case 5:
@@ -905,7 +905,7 @@ public:
 
             if (m_uiMindBlastTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_MIND_BLAST);
                 m_uiMindBlastTimer = urand(3*IN_MILLISECONDS, 8*IN_MILLISECONDS);
             } else m_uiMindBlastTimer -= uiDiff;
@@ -915,19 +915,19 @@ public:
                 switch (urand(0, 4))
                 {
                     case 0: case 1:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_MIND_FLAY);
                         break;
                     case 2:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_VAMPIRIC_TOUCH);
                         break;
                    case 3:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_SW_PAIN);
                         break;
                    case 4:
-                        if (Unit *pTarget = urand(0, 1) ? SelectUnit(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
+                        if (Unit *pTarget = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
                             DoCast(pTarget, SPELL_DISPEL);
                         break;
                 }
@@ -995,7 +995,7 @@ public:
 
             if (m_uiFearTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_FEAR);
                 m_uiFearTimer = urand(4*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiFearTimer -= uiDiff;
@@ -1009,7 +1009,7 @@ public:
 
             if (m_uiUnstableAfflictionTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_UNSTABLE_AFFLICTION);
                 m_uiUnstableAfflictionTimer = urand(2*IN_MILLISECONDS, 10*IN_MILLISECONDS);
             } else m_uiUnstableAfflictionTimer -= uiDiff;
@@ -1036,7 +1036,7 @@ public:
                         DoCastVictim(SPELL_CURSE_OF_AGONY);
                         break;
                     case 5:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_CURSE_OF_EXHAUSTION);
                         break;
                 }
@@ -1122,7 +1122,7 @@ public:
 
             if (m_uiPolymorphTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_POLYMORPH);
                 m_uiPolymorphTimer = urand(15*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiPolymorphTimer -= uiDiff;
@@ -1324,14 +1324,14 @@ public:
 
             if (m_uiCycloneTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_CYCLONE);
                 m_uiCycloneTimer = urand(5*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiCycloneTimer -= uiDiff;
 
             if (m_uiEntanglingRootsTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_ENTANGLING_ROOTS);
                 m_uiEntanglingRootsTimer = urand(5*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiEntanglingRootsTimer -= uiDiff;
@@ -1546,7 +1546,7 @@ public:
 
             if (m_uiChainsOfIceTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_CHAINS_OF_ICE);
                 m_uiChainsOfIceTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiChainsOfIceTimer -= uiDiff;
@@ -1667,7 +1667,7 @@ public:
 
             if (m_uiBlindTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     if (me->IsInRange(pTarget, 0.0f, 15.0f, false))
                         DoCast(pTarget, SPELL_BLIND);
                 m_uiBlindTimer = urand(7*IN_MILLISECONDS, 8*IN_MILLISECONDS);
@@ -1878,7 +1878,7 @@ public:
 
             if (m_uiRepeteanceTimer <= uiDiff)
             {
-                if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_REPENTANCE);
                 m_uiRepeteanceTimer = 60*IN_MILLISECONDS;
             } else m_uiRepeteanceTimer -= uiDiff;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -102,7 +102,6 @@ public:
             { "item_enchantment_template",    SEC_ADMINISTRATOR, true,  &HandleReloadItemEnchantementsCommand,          "", NULL },
             { "item_loot_template",           SEC_ADMINISTRATOR, true,  &HandleReloadLootTemplatesItemCommand,          "", NULL },
             { "item_set_names",               SEC_ADMINISTRATOR, true,  &HandleReloadItemSetNamesCommand,               "", NULL },
-            { "lfg_dungeon_encounters",       SEC_ADMINISTRATOR, true,  &HandleReloadLfgEncountersCommand,              "", NULL },
             { "lfg_dungeon_rewards",          SEC_ADMINISTRATOR, true,  &HandleReloadLfgRewardsCommand,                 "", NULL },
             { "locales_achievement_reward",   SEC_ADMINISTRATOR, true,  &HandleReloadLocalesAchievementRewardCommand,   "", NULL },
             { "locales_creature",             SEC_ADMINISTRATOR, true,  &HandleReloadLocalesCreatureCommand,            "", NULL },
@@ -117,7 +116,6 @@ public:
             { "mail_level_reward",            SEC_ADMINISTRATOR, true,  &HandleReloadMailLevelRewardCommand,            "", NULL },
             { "mail_loot_template",           SEC_ADMINISTRATOR, true,  &HandleReloadLootTemplatesMailCommand,          "", NULL },
             { "milling_loot_template",        SEC_ADMINISTRATOR, true,  &HandleReloadLootTemplatesMillingCommand,       "", NULL },
-            { "npc_gossip",                   SEC_ADMINISTRATOR, true,  &HandleReloadNpcGossipCommand,                  "", NULL },
             { "npc_spellclick_spells",        SEC_ADMINISTRATOR, true,  &HandleReloadSpellClickSpellsCommand,           "",NULL},
             { "npc_trainer",                  SEC_ADMINISTRATOR, true,  &HandleReloadNpcTrainerCommand,                 "", NULL },
             { "npc_vendor",                   SEC_ADMINISTRATOR, true,  &HandleReloadNpcVendorCommand,                  "", NULL },
@@ -153,6 +151,8 @@ public:
             { "spell_group_stack_rules",      SEC_ADMINISTRATOR, true,  &HandleReloadSpellGroupStackRulesCommand,       "", NULL },
             { "trinity_string",               SEC_ADMINISTRATOR, true,  &HandleReloadTrinityStringCommand,              "", NULL },
             { "waypoint_scripts",             SEC_ADMINISTRATOR, true,  &HandleReloadWpScriptsCommand,                  "", NULL },
+            { "vehicle_accessory",            SEC_ADMINISTRATOR, true,  &HandleReloadVehicleAccessoryCommand,           "", NULL },
+            { "vehicle_template_accessory",   SEC_ADMINISTRATOR, true,  &HandleReloadVehicleTemplateAccessoryCommand,   "", NULL },
             { NULL,                           0,                 false, NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -192,6 +192,9 @@ public:
         HandleReloadTrinityStringCommand(handler,"");
         HandleReloadGameTeleCommand(handler,"");
 
+        HandleReloadVehicleAccessoryCommand(handler, "");
+        HandleReloadVehicleTemplateAccessoryCommand(handler, "");
+
         HandleReloadAutobroadcastCommand(handler,"");
         return true;
     }
@@ -224,7 +227,6 @@ public:
     static bool HandleReloadAllNpcCommand(ChatHandler* handler, const char* args)
     {
         if(*args != 'a')                                          // will be reloaded from all_gossips
-            HandleReloadNpcGossipCommand(handler,"a");
         HandleReloadNpcTrainerCommand(handler,"a");
         HandleReloadNpcVendorCommand(handler,"a");
         HandleReloadPointsOfInterestCommand(handler,"a");
@@ -297,8 +299,7 @@ public:
         HandleReloadGossipMenuCommand(handler,"a");
         HandleReloadGossipMenuOptionCommand(handler,"a");
         if(*args != 'a')                                          // already reload from all_scripts
-            HandleReloadGossipScriptsCommand(handler,"a");
-        HandleReloadNpcGossipCommand(handler,"a");
+        HandleReloadGossipScriptsCommand(handler,"a");
         HandleReloadPointsOfInterestCommand(handler,"a");
         return true;
     }
@@ -743,14 +744,6 @@ public:
         return true;
     }
 
-    static bool HandleReloadNpcGossipCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        sLog->outString("Re-Loading `npc_gossip` Table!");
-        sObjectMgr->LoadNpcTextId();
-        handler->SendGlobalGMSysMessage("DB table `npc_gossip` reloaded.");
-        return true;
-    }
-
     static bool HandleReloadNpcTrainerCommand(ChatHandler* handler, const char* /*args*/)
     {
         sLog->outString("Re-Loading `npc_trainer` Table!");
@@ -1164,14 +1157,6 @@ public:
         return true;
     }
 
-    static bool HandleReloadLfgEncountersCommand(ChatHandler* handler, const char* /*args*/)
-    {
-        sLog->outString("Re-Loading dungeon encounter lfg associations...");
-        sLFGMgr->LoadDungeonEncounters();
-        handler->SendGlobalGMSysMessage("DB table `lfg_dungeon_encounters` reloaded.");
-        return true;
-    }
-
     static bool HandleReloadLfgRewardsCommand(ChatHandler* handler, const char* /*args*/)
     {
         sLog->outString("Re-Loading lfg dungeon rewards...");
@@ -1291,6 +1276,22 @@ public:
         sLog->outString("Re-Loading Smart Scripts...");
         sSmartScriptMgr->LoadSmartAIFromDB();
         handler->SendGlobalGMSysMessage("Smart Scripts reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadVehicleAccessoryCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sLog->outString("Reloading vehicle_accessory table...");
+        sObjectMgr->LoadVehicleAccessories();
+        handler->SendGlobalGMSysMessage("Vehicle accessories reloaded.");
+        return true;
+    }
+
+    static bool HandleReloadVehicleTemplateAccessoryCommand(ChatHandler* handler, const char* /*args*/)
+    {
+        sLog->outString("Reloading vehicle_template_accessory table...");
+        sObjectMgr->LoadVehicleTemplateAccessories();
+        handler->SendGlobalGMSysMessage("Vehicle template accessories reloaded.");
         return true;
     }
 };

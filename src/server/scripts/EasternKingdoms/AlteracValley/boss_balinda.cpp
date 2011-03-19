@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,8 +27,8 @@ enum Spells
 
 enum Yells
 {
-    YELL_AGGRO                                    = -2100019,
-    YELL_EVADE                                    = -2100020
+    YELL_AGGRO                                    = -1810023,
+    YELL_EVADE                                    = -1810024
 };
 
 enum Creatures

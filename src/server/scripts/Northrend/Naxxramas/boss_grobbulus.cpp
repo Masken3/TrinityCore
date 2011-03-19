@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -91,7 +91,7 @@ public:
                         events.ScheduleEvent(EVENT_SPRAY, 15000+rand()%15000);
                         return;
                     case EVENT_INJECT:
-                        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                             if (!pTarget->HasAura(SPELL_MUTATING_INJECTION))
                                 DoCast(pTarget, SPELL_MUTATING_INJECTION);
                         events.ScheduleEvent(EVENT_INJECT, 8000 + uint32(120 * me->GetHealthPct()));

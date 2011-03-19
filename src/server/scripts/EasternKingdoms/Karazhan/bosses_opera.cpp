@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -149,7 +149,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void SummonTito();
@@ -194,7 +194,7 @@ public:
 
             if (WaterBoltTimer <= diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_WATERBOLT);
+                DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_WATERBOLT);
                 WaterBoltTimer = TitoDied ? 1500 : 5000;
             } else WaterBoltTimer -= diff;
 
@@ -337,7 +337,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void SpellHit(Unit* /*caster*/, const SpellEntry *Spell)
@@ -440,7 +440,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void AttackStart(Unit* who)
@@ -564,7 +564,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void JustDied(Unit* /*killer*/)
@@ -648,7 +648,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void EnterCombat(Unit* /*who*/)
@@ -784,7 +784,7 @@ public:
             if (Creature* pBigBadWolf = pCreature->SummonCreature(CREATURE_BIG_BAD_WOLF, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS))
                 pBigBadWolf->AI()->AttackStart(pPlayer);
 
-            pCreature->ForcedDespawn();
+            pCreature->DespawnOrUnsummon();
         }
 
         return true;
@@ -848,7 +848,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void JustDied(Unit* /*killer*/)
@@ -1086,7 +1086,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void SpellHit(Unit* /*caster*/, const SpellEntry *Spell)
@@ -1176,7 +1176,7 @@ public:
 
         void JustReachedHome()
         {
-            me->ForcedDespawn();
+            me->DespawnOrUnsummon();
         }
 
         void DamageTaken(Unit* /*done_by*/, uint32 &damage)
@@ -1432,7 +1432,7 @@ void boss_julianne::boss_julianneAI::UpdateAI(const uint32 diff)
 
     if (PowerfulAttractionTimer <= diff)
     {
-        DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
+        DoCast(SelectTarget(SELECT_TARGET_RANDOM, 0), SPELL_POWERFUL_ATTRACTION);
         PowerfulAttractionTimer = urand(5000,30000);
     } else PowerfulAttractionTimer -= diff;
 
