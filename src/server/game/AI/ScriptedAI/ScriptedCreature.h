@@ -19,8 +19,8 @@
 #define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
 #define CAST_SUM(a)     (SCRIPT_CAST_TYPE<TempSummon*>(a))
 #define CAST_PET(a)     (SCRIPT_CAST_TYPE<Pet*>(a))
-#define CAST_AI(a,b)    (SCRIPT_CAST_TYPE<a*>(b))
-#define CAST_INST(a,b)  (SCRIPT_CAST_TYPE<a*>(b))
+#define CAST_AI(a, b)    (SCRIPT_CAST_TYPE<a*>(b))
+#define CAST_INST(a, b)  (SCRIPT_CAST_TYPE<a*>(b))
 
 #define GET_SPELL(a)    (const_cast<SpellEntry*>(GetSpellStore()->LookupEntry(a)))
 
@@ -57,7 +57,7 @@ struct ScriptedAI : public CreatureAI
     void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
 
     //Called at World update tick
-    void UpdateAI(const uint32);
+    virtual void UpdateAI(uint32 const diff);
 
     //Called at creature death
     void JustDied(Unit* /*killer*/) {}
@@ -75,7 +75,7 @@ struct ScriptedAI : public CreatureAI
     void SpellHit(Unit* /*caster*/, SpellEntry const* /*spell*/) {}
 
     // Called when spell hits a target
-    void SpellHitTarget(Unit * /*target*/, SpellEntry const* /*spell*/) {}
+    void SpellHitTarget(Unit* /*target*/, SpellEntry const* /*spell*/) {}
 
     //Called at waypoint reached or PointMovement end
     void MovementInform(uint32 /*type*/, uint32 /*id*/) {}
@@ -130,8 +130,6 @@ struct ScriptedAI : public CreatureAI
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
     void DoTeleportTo(float const pos[4]);
-
-    void DoAction(int32 const /*param*/) {}
 
     //Teleports a player without dropping threat (only teleports to same map)
     void DoTeleportPlayer(Unit* unit, float x, float y, float z, float o);
@@ -296,7 +294,7 @@ class BossAI : public ScriptedAI
 };
 
 // SD2 grid searchers.
-Creature *GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
 GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
 void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
 void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange);

@@ -88,20 +88,25 @@ enum BossSpells
     SPELL_BERSERK               = 64238,
     SPELL_NONE                  = 0,
 
-    SPELL_EMPOWERED_DARK        = 67215,
-    SPELL_EMPOWERED_LIGHT       = 67218,
+    SPELL_EMPOWERED_DARK        = 65724,
+    SPELL_EMPOWERED_LIGHT       = 65748,
 
     SPELL_UNLEASHED_DARK        = 65808,
     SPELL_UNLEASHED_LIGHT       = 65795,
     //PowerUp 67604
 };
 
+#define SPELL_DARK_ESSENCE_HELPER RAID_MODE<uint32>(65684, 67176, 67177, 67178)
+#define SPELL_LIGHT_ESSENCE_HELPER RAID_MODE<uint32>(65686, 67222, 67223, 67224)
+
+#define SPELL_EMPOWERED_DARK_HELPER RAID_MODE<uint32>(65724,67213,67214,67215)
+#define SPELL_EMPOWERED_LIGHT_HELPER RAID_MODE<uint32>(65748, 67216, 67217, 67218)
+
 enum Actions
 {
     ACTION_VORTEX,
     ACTION_PACT
 };
-
 
 /*######
 ## boss_twin_base
@@ -217,19 +222,10 @@ struct boss_twin_baseAI : public ScriptedAI
         switch (pSummoned->GetEntry())
         {
             case NPC_LIGHT_ESSENCE:
+                m_pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_LIGHT_ESSENCE_HELPER);
+                break;
             case NPC_DARK_ESSENCE:
-                Map* pMap = me->GetMap();
-                Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                {
-                    Unit* pPlayer = itr->getSource();
-                    if (!pPlayer) continue;
-                    if (pPlayer->isAlive())
-                        if (pSummoned->GetEntry() == NPC_LIGHT_ESSENCE)
-                            pPlayer->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
-                        if (pSummoned->GetEntry() == NPC_DARK_ESSENCE)
-                            pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
-                }
+                m_pInstance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DARK_ESSENCE_HELPER);
                 break;
         }
         Summons.Despawn(pSummoned);
@@ -458,9 +454,9 @@ public:
             m_uiSisterNpcId = NPC_DARKBANE;
             m_uiColorballNpcId = NPC_UNLEASHED_LIGHT;
             m_uiEssenceNpcId = NPC_LIGHT_ESSENCE;
-            m_uiMyEssenceSpellId = SPELL_LIGHT_ESSENCE;
-            m_uiOtherEssenceSpellId = SPELL_DARK_ESSENCE;
-            m_uiEmpoweredWeaknessSpellId = SPELL_EMPOWERED_DARK;
+            m_uiMyEssenceSpellId = SPELL_LIGHT_ESSENCE_HELPER;
+            m_uiOtherEssenceSpellId = SPELL_DARK_ESSENCE_HELPER;
+            m_uiEmpoweredWeaknessSpellId = SPELL_EMPOWERED_DARK_HELPER;
             m_uiSurgeSpellId = SPELL_LIGHT_SURGE;
             m_uiVortexSpellId = SPELL_LIGHT_VORTEX;
             m_uiShieldSpellId = SPELL_LIGHT_SHIELD;
@@ -490,7 +486,6 @@ public:
 
 };
 
-
 /*######
 ## boss_eydis
 ######*/
@@ -518,9 +513,9 @@ public:
             m_uiSisterNpcId = NPC_LIGHTBANE;
             m_uiColorballNpcId = NPC_UNLEASHED_DARK;
             m_uiEssenceNpcId = NPC_DARK_ESSENCE;
-            m_uiMyEssenceSpellId = SPELL_DARK_ESSENCE;
-            m_uiOtherEssenceSpellId = SPELL_LIGHT_ESSENCE;
-            m_uiEmpoweredWeaknessSpellId = SPELL_EMPOWERED_LIGHT;
+            m_uiMyEssenceSpellId = SPELL_DARK_ESSENCE_HELPER;
+            m_uiOtherEssenceSpellId = SPELL_LIGHT_ESSENCE_HELPER;
+            m_uiEmpoweredWeaknessSpellId = SPELL_EMPOWERED_LIGHT_HELPER;
             m_uiSurgeSpellId = SPELL_DARK_SURGE;
             m_uiVortexSpellId = SPELL_DARK_VORTEX;
             m_uiShieldSpellId = SPELL_DARK_SHIELD;
@@ -536,32 +531,50 @@ public:
 
 };
 
+#define ESSENCE_REMOVE 0
+#define ESSENCE_APPLY 1
 
 class mob_essence_of_twin : public CreatureScript
 {
-public:
-    mob_essence_of_twin() : CreatureScript("mob_essence_of_twin") { }
+    public:
+        mob_essence_of_twin() : CreatureScript("mob_essence_of_twin") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
-    {
-        switch (creature->GetEntry())
+        struct mob_essence_of_twinAI : public ScriptedAI
         {
-            case NPC_LIGHT_ESSENCE:
-                player->RemoveAura(SPELL_DARK_ESSENCE);
-                player->CastSpell(player, SPELL_LIGHT_ESSENCE, true);
-                break;
-            case NPC_DARK_ESSENCE:
-                player->RemoveAura(SPELL_LIGHT_ESSENCE);
-                player->CastSpell(player, SPELL_DARK_ESSENCE, true);
-                break;
-            default:
-                break;
-        }
-        player->CLOSE_GOSSIP_MENU();
-        return true;
-    }
-};
+            mob_essence_of_twinAI(Creature* creature) : ScriptedAI(creature) { }
 
+            uint32 GetData(uint32 data)
+            {
+                uint32 spellReturned = 0;
+                switch (me->GetEntry())
+                {
+                    case NPC_LIGHT_ESSENCE:
+                        spellReturned = data == ESSENCE_REMOVE? SPELL_DARK_ESSENCE_HELPER : SPELL_LIGHT_ESSENCE_HELPER;
+                        break;
+                    case NPC_DARK_ESSENCE:
+                        spellReturned = data == ESSENCE_REMOVE? SPELL_LIGHT_ESSENCE_HELPER : SPELL_DARK_ESSENCE_HELPER;
+                        break;
+                    default:
+                        break;
+                }
+
+                return spellReturned;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_essence_of_twinAI(creature);
+        };
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            player->RemoveAurasDueToSpell(creature->GetAI()->GetData(ESSENCE_REMOVE));
+            player->CastSpell(player, creature->GetAI()->GetData(ESSENCE_APPLY), true);
+            player->CLOSE_GOSSIP_MENU();
+            return true;
+        }
+};
 
 struct mob_unleashed_ballAI : public ScriptedAI
 {
@@ -645,7 +658,6 @@ public:
 
 };
 
-
 class mob_unleashed_light : public CreatureScript
 {
 public:
@@ -678,7 +690,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_twin_valkyr()
 {

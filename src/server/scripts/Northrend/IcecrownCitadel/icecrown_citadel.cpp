@@ -31,36 +31,36 @@
 enum Texts
 {
     // Highlord Tirion Fordring (at Light's Hammer)
-    SAY_TIRION_INTRO_1          = 0,
-    SAY_TIRION_INTRO_2          = 1,
-    SAY_TIRION_INTRO_3          = 2,
-    SAY_TIRION_INTRO_4          = 3,
-    SAY_TIRION_INTRO_H_5        = 4,
-    SAY_TIRION_INTRO_A_5        = 5,
+    SAY_TIRION_INTRO_1              = 0,
+    SAY_TIRION_INTRO_2              = 1,
+    SAY_TIRION_INTRO_3              = 2,
+    SAY_TIRION_INTRO_4              = 3,
+    SAY_TIRION_INTRO_H_5            = 4,
+    SAY_TIRION_INTRO_A_5            = 5,
 
     // The Lich King (at Light's Hammer)
-    SAY_LK_INTRO_1              = 0,
-    SAY_LK_INTRO_2              = 1,
-    SAY_LK_INTRO_3              = 2,
-    SAY_LK_INTRO_4              = 3,
-    SAY_LK_INTRO_5              = 4,
+    SAY_LK_INTRO_1                  = 0,
+    SAY_LK_INTRO_2                  = 1,
+    SAY_LK_INTRO_3                  = 2,
+    SAY_LK_INTRO_4                  = 3,
+    SAY_LK_INTRO_5                  = 4,
 
     // Highlord Bolvar Fordragon (at Light's Hammer)
-    SAY_BOLVAR_INTRO_1          = 0,
+    SAY_BOLVAR_INTRO_1              = 0,
 
     // High Overlord Saurfang (at Light's Hammer)
-    SAY_SAURFANG_INTRO_1        = 15,
-    SAY_SAURFANG_INTRO_2        = 16,
-    SAY_SAURFANG_INTRO_3        = 17,
-    SAY_SAURFANG_INTRO_4        = 18,
+    SAY_SAURFANG_INTRO_1            = 15,
+    SAY_SAURFANG_INTRO_2            = 16,
+    SAY_SAURFANG_INTRO_3            = 17,
+    SAY_SAURFANG_INTRO_4            = 18,
 
     // Muradin Bronzebeard (at Light's Hammer)
-    SAY_MURADIN_INTRO_1         = 13,
-    SAY_MURADIN_INTRO_2         = 14,
-    SAY_MURADIN_INTRO_3         = 15,
+    SAY_MURADIN_INTRO_1             = 13,
+    SAY_MURADIN_INTRO_2             = 14,
+    SAY_MURADIN_INTRO_3             = 15,
 
     // Rotting Frost Giant
-    EMOTE_DEATH_PLAGUE_WARNING  = 0,
+    EMOTE_DEATH_PLAGUE_WARNING      = 0,
 };
 
 enum Spells
@@ -81,45 +81,46 @@ enum Spells
     SPELL_HARVEST_BLIGHT_SPECIMEN25 = 72162,
 };
 
-enum Events
+enum EventTypes
 {
     // Highlord Tirion Fordring (at Light's Hammer)
     // The Lich King (at Light's Hammer)
     // Highlord Bolvar Fordragon (at Light's Hammer)
     // High Overlord Saurfang (at Light's Hammer)
     // Muradin Bronzebeard (at Light's Hammer)
-    EVENT_TIRION_INTRO_2    = 1,
-    EVENT_TIRION_INTRO_3    = 2,
-    EVENT_TIRION_INTRO_4    = 3,
-    EVENT_TIRION_INTRO_5    = 4,
-    EVENT_LK_INTRO_1        = 5,
-    EVENT_TIRION_INTRO_6    = 6,
-    EVENT_LK_INTRO_2        = 7,
-    EVENT_LK_INTRO_3        = 8,
-    EVENT_LK_INTRO_4        = 9,
-    EVENT_BOLVAR_INTRO_1    = 10,
-    EVENT_LK_INTRO_5        = 11,
-    EVENT_SAURFANG_INTRO_1  = 12,
-    EVENT_TIRION_INTRO_H_7  = 13,
-    EVENT_SAURFANG_INTRO_2  = 14,
-    EVENT_SAURFANG_INTRO_3  = 15,
-    EVENT_SAURFANG_INTRO_4  = 16,
-    EVENT_SAURFANG_RUN      = 17,
-    EVENT_MURADIN_INTRO_1   = 18,
-    EVENT_MURADIN_INTRO_2   = 19,
-    EVENT_MURADIN_INTRO_3   = 20,
-    EVENT_TIRION_INTRO_A_7  = 21,
-    EVENT_MURADIN_INTRO_4   = 22,
-    EVENT_MURADIN_INTRO_5   = 23,
-    EVENT_MURADIN_RUN       = 24,
+    EVENT_TIRION_INTRO_2                = 1,
+    EVENT_TIRION_INTRO_3                = 2,
+    EVENT_TIRION_INTRO_4                = 3,
+    EVENT_TIRION_INTRO_5                = 4,
+    EVENT_LK_INTRO_1                    = 5,
+    EVENT_TIRION_INTRO_6                = 6,
+    EVENT_LK_INTRO_2                    = 7,
+    EVENT_LK_INTRO_3                    = 8,
+    EVENT_LK_INTRO_4                    = 9,
+    EVENT_BOLVAR_INTRO_1                = 10,
+    EVENT_LK_INTRO_5                    = 11,
+    EVENT_SAURFANG_INTRO_1              = 12,
+    EVENT_TIRION_INTRO_H_7              = 13,
+    EVENT_SAURFANG_INTRO_2              = 14,
+    EVENT_SAURFANG_INTRO_3              = 15,
+    EVENT_SAURFANG_INTRO_4              = 16,
+    EVENT_SAURFANG_RUN                  = 17,
+    EVENT_MURADIN_INTRO_1               = 18,
+    EVENT_MURADIN_INTRO_2               = 19,
+    EVENT_MURADIN_INTRO_3               = 20,
+    EVENT_TIRION_INTRO_A_7              = 21,
+    EVENT_MURADIN_INTRO_4               = 22,
+    EVENT_MURADIN_INTRO_5               = 23,
+    EVENT_MURADIN_RUN                   = 24,
 
     // Rotting Frost Giant
-    EVENT_DEATH_PLAGUE      = 25,
-    EVENT_STOMP             = 26,
-    EVENT_ARCTIC_BREATH     = 27,
+    EVENT_DEATH_PLAGUE                  = 25,
+    EVENT_STOMP                         = 26,
+    EVENT_ARCTIC_BREATH                 = 27,
 
     // Frost Freeze Trap
-    EVENT_ACTIVATE_TRAP     = 28,
+    EVENT_ACTIVATE_TRAP                 = 28,
+
 };
 
 enum DataTypesICC
@@ -135,13 +136,13 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
 
         struct npc_highlord_tirion_fordringAI : public ScriptedAI
         {
-            npc_highlord_tirion_fordringAI(Creature* creature) : ScriptedAI(creature), instance(creature->GetInstanceScript())
+            npc_highlord_tirion_fordringAI(Creature* creature) : ScriptedAI(creature), _instance(creature->GetInstanceScript())
             {
             }
 
             void Reset()
             {
-                events.Reset();
+                _events.Reset();
                 _theLichKing = 0;
                 _bolvarFordragon = 0;
                 _factionNPC = 0;
@@ -152,9 +153,6 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
             // of The Damned SAI
             void SetData(uint32 type, uint32 data)
             {
-                if (!instance)
-                    return;
-
                 if (type == DATA_DAMNED_KILLS && data == 1)
                 {
                     if (++_damnedKills == 2)
@@ -163,7 +161,7 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
                         {
                             if (Creature* bolvarFordragon = me->FindNearestCreature(NPC_HIGHLORD_BOLVAR_FORDRAGON_LH, 150.0f))
                             {
-                                if (Creature* factionNPC = me->FindNearestCreature(instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_SE_HIGH_OVERLORD_SAURFANG : NPC_SE_MURADIN_BRONZEBEARD, 50.0f))
+                                if (Creature* factionNPC = me->FindNearestCreature(_instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? NPC_SE_HIGH_OVERLORD_SAURFANG : NPC_SE_MURADIN_BRONZEBEARD, 50.0f))
                                 {
                                     me->setActive(true);
                                     _theLichKing = theLichKing->GetGUID();
@@ -180,36 +178,36 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
                             return;
 
                         Talk(SAY_TIRION_INTRO_1);
-                        events.ScheduleEvent(EVENT_TIRION_INTRO_2, 4000);
-                        events.ScheduleEvent(EVENT_TIRION_INTRO_3, 14000);
-                        events.ScheduleEvent(EVENT_TIRION_INTRO_4, 18000);
-                        events.ScheduleEvent(EVENT_TIRION_INTRO_5, 31000);
-                        events.ScheduleEvent(EVENT_LK_INTRO_1, 35000);
-                        events.ScheduleEvent(EVENT_TIRION_INTRO_6, 51000);
-                        events.ScheduleEvent(EVENT_LK_INTRO_2, 58000);
-                        events.ScheduleEvent(EVENT_LK_INTRO_3, 74000);
-                        events.ScheduleEvent(EVENT_LK_INTRO_4, 86000);
-                        events.ScheduleEvent(EVENT_BOLVAR_INTRO_1, 100000);
-                        events.ScheduleEvent(EVENT_LK_INTRO_5, 108000);
+                        _events.ScheduleEvent(EVENT_TIRION_INTRO_2, 4000);
+                        _events.ScheduleEvent(EVENT_TIRION_INTRO_3, 14000);
+                        _events.ScheduleEvent(EVENT_TIRION_INTRO_4, 18000);
+                        _events.ScheduleEvent(EVENT_TIRION_INTRO_5, 31000);
+                        _events.ScheduleEvent(EVENT_LK_INTRO_1, 35000);
+                        _events.ScheduleEvent(EVENT_TIRION_INTRO_6, 51000);
+                        _events.ScheduleEvent(EVENT_LK_INTRO_2, 58000);
+                        _events.ScheduleEvent(EVENT_LK_INTRO_3, 74000);
+                        _events.ScheduleEvent(EVENT_LK_INTRO_4, 86000);
+                        _events.ScheduleEvent(EVENT_BOLVAR_INTRO_1, 100000);
+                        _events.ScheduleEvent(EVENT_LK_INTRO_5, 108000);
 
-                        if (instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE)
+                        if (_instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE)
                         {
-                            events.ScheduleEvent(EVENT_SAURFANG_INTRO_1, 120000);
-                            events.ScheduleEvent(EVENT_TIRION_INTRO_H_7, 129000);
-                            events.ScheduleEvent(EVENT_SAURFANG_INTRO_2, 139000);
-                            events.ScheduleEvent(EVENT_SAURFANG_INTRO_3, 150000);
-                            events.ScheduleEvent(EVENT_SAURFANG_INTRO_4, 162000);
-                            events.ScheduleEvent(EVENT_SAURFANG_RUN, 170000);
+                            _events.ScheduleEvent(EVENT_SAURFANG_INTRO_1, 120000);
+                            _events.ScheduleEvent(EVENT_TIRION_INTRO_H_7, 129000);
+                            _events.ScheduleEvent(EVENT_SAURFANG_INTRO_2, 139000);
+                            _events.ScheduleEvent(EVENT_SAURFANG_INTRO_3, 150000);
+                            _events.ScheduleEvent(EVENT_SAURFANG_INTRO_4, 162000);
+                            _events.ScheduleEvent(EVENT_SAURFANG_RUN, 170000);
                         }
                         else
                         {
-                            events.ScheduleEvent(EVENT_MURADIN_INTRO_1, 120000);
-                            events.ScheduleEvent(EVENT_MURADIN_INTRO_2, 124000);
-                            events.ScheduleEvent(EVENT_MURADIN_INTRO_3, 127000);
-                            events.ScheduleEvent(EVENT_TIRION_INTRO_A_7, 136000);
-                            events.ScheduleEvent(EVENT_MURADIN_INTRO_4, 144000);
-                            events.ScheduleEvent(EVENT_MURADIN_INTRO_5, 151000);
-                            events.ScheduleEvent(EVENT_MURADIN_RUN, 157000);
+                            _events.ScheduleEvent(EVENT_MURADIN_INTRO_1, 120000);
+                            _events.ScheduleEvent(EVENT_MURADIN_INTRO_2, 124000);
+                            _events.ScheduleEvent(EVENT_MURADIN_INTRO_3, 127000);
+                            _events.ScheduleEvent(EVENT_TIRION_INTRO_A_7, 136000);
+                            _events.ScheduleEvent(EVENT_MURADIN_INTRO_4, 144000);
+                            _events.ScheduleEvent(EVENT_MURADIN_INTRO_5, 151000);
+                            _events.ScheduleEvent(EVENT_MURADIN_RUN, 157000);
                         }
                     }
                 }
@@ -220,9 +218,9 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
                 if (_damnedKills != 2)
                     return;
 
-                events.Update(diff);
+                _events.Update(diff);
 
-                while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = _events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
@@ -328,8 +326,8 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
             }
 
         private:
-            EventMap events;
-            InstanceScript* const instance;
+            EventMap _events;
+            InstanceScript* const _instance;
             uint64 _theLichKing;
             uint64 _bolvarFordragon;
             uint64 _factionNPC;
@@ -338,7 +336,7 @@ class npc_highlord_tirion_fordring_lh : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_highlord_tirion_fordringAI(creature);
+            return GetIcecrownCitadelAI<npc_highlord_tirion_fordringAI>(creature);
         }
 };
 
@@ -355,15 +353,15 @@ class npc_rotting_frost_giant : public CreatureScript
 
             void Reset()
             {
-                events.Reset();
-                events.ScheduleEvent(EVENT_DEATH_PLAGUE, 15000);
-                events.ScheduleEvent(EVENT_STOMP, urand(5000, 8000));
-                events.ScheduleEvent(EVENT_ARCTIC_BREATH, urand(10000, 15000));
+                _events.Reset();
+                _events.ScheduleEvent(EVENT_DEATH_PLAGUE, 15000);
+                _events.ScheduleEvent(EVENT_STOMP, urand(5000, 8000));
+                _events.ScheduleEvent(EVENT_ARCTIC_BREATH, urand(10000, 15000));
             }
 
             void JustDied(Unit* /*killer*/)
             {
-                events.Reset();
+                _events.Reset();
             }
 
             void UpdateAI(uint32 const diff)
@@ -371,12 +369,12 @@ class npc_rotting_frost_giant : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                events.Update(diff);
+                _events.Update(diff);
 
                 if (me->HasUnitState(UNIT_STAT_CASTING))
                     return;
 
-                while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = _events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
@@ -386,15 +384,15 @@ class npc_rotting_frost_giant : public CreatureScript
                                 Talk(EMOTE_DEATH_PLAGUE_WARNING, target->GetGUID());
                                 DoCast(target, SPELL_DEATH_PLAGUE);
                             }
-                            events.ScheduleEvent(EVENT_DEATH_PLAGUE, 15000);
+                            _events.ScheduleEvent(EVENT_DEATH_PLAGUE, 15000);
                             break;
                         case EVENT_STOMP:
                             DoCastVictim(SPELL_STOMP);
-                            events.ScheduleEvent(EVENT_STOMP, urand(15000, 18000));
+                            _events.ScheduleEvent(EVENT_STOMP, urand(15000, 18000));
                             break;
                         case EVENT_ARCTIC_BREATH:
                             DoCastVictim(SPELL_ARCTIC_BREATH);
-                            events.ScheduleEvent(EVENT_ARCTIC_BREATH, urand(26000, 33000));
+                            _events.ScheduleEvent(EVENT_ARCTIC_BREATH, urand(26000, 33000));
                             break;
                         default:
                             break;
@@ -405,12 +403,12 @@ class npc_rotting_frost_giant : public CreatureScript
             }
 
         private:
-            EventMap events;
+            EventMap _events;
         };
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_rotting_frost_giantAI(creature);
+            return GetIcecrownCitadelAI<npc_rotting_frost_giantAI>(creature);
         }
 };
 
@@ -431,11 +429,11 @@ class npc_frost_freeze_trap : public CreatureScript
                 {
                     case 1000:
                     case 11000:
-                        events.ScheduleEvent(EVENT_ACTIVATE_TRAP, uint32(action));
+                        _events.ScheduleEvent(EVENT_ACTIVATE_TRAP, uint32(action));
                         break;
                     case ACTION_STOP_TRAPS:
                         me->RemoveAurasDueToSpell(SPELL_COLDFLAME_JETS);
-                        events.CancelEvent(EVENT_ACTIVATE_TRAP);
+                        _events.CancelEvent(EVENT_ACTIVATE_TRAP);
                         break;
                     default:
                         break;
@@ -444,22 +442,22 @@ class npc_frost_freeze_trap : public CreatureScript
 
             void UpdateAI(uint32 const diff)
             {
-                events.Update(diff);
+                _events.Update(diff);
 
-                if (events.ExecuteEvent() == EVENT_ACTIVATE_TRAP)
+                if (_events.ExecuteEvent() == EVENT_ACTIVATE_TRAP)
                 {
                     DoCast(me, SPELL_COLDFLAME_JETS);
-                    events.ScheduleEvent(EVENT_ACTIVATE_TRAP, 22000);
+                    _events.ScheduleEvent(EVENT_ACTIVATE_TRAP, 22000);
                 }
             }
 
         private:
-            EventMap events;
+            EventMap _events;
         };
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_frost_freeze_trapAI(creature);
+            return GetIcecrownCitadelAI<npc_frost_freeze_trapAI>(creature);
         }
 };
 
@@ -480,11 +478,11 @@ class npc_alchemist_adrianna : public CreatureScript
 class DeathPlagueTargetSelector
 {
     public:
-        DeathPlagueTargetSelector(Unit* _caster) : caster(_caster) {}
+        explicit DeathPlagueTargetSelector(Unit* caster) : _caster(caster) {}
 
         bool operator()(Unit* unit)
         {
-            if (unit == caster)
+            if (unit == _caster)
                 return true;
 
             if (unit->GetTypeId() != TYPEID_PLAYER)
@@ -496,7 +494,8 @@ class DeathPlagueTargetSelector
             return false;
         }
 
-        Unit* caster;
+    private:
+        Unit* _caster;
 };
 
 class spell_frost_giant_death_plague : public SpellScriptLoader
@@ -510,7 +509,7 @@ class spell_frost_giant_death_plague : public SpellScriptLoader
 
             bool Load()
             {
-                failed = false;
+                _failed = false;
                 return true;
             }
 
@@ -518,7 +517,7 @@ class spell_frost_giant_death_plague : public SpellScriptLoader
             void CountTargets(std::list<Unit*>& unitList)
             {
                 unitList.remove(GetCaster());
-                failed = unitList.empty();
+                _failed = unitList.empty();
             }
 
             // Second effect
@@ -543,7 +542,7 @@ class spell_frost_giant_death_plague : public SpellScriptLoader
                 PreventHitDefaultEffect(effIndex);
                 if (GetHitUnit() != GetCaster())
                     GetCaster()->CastSpell(GetHitUnit(), SPELL_DEATH_PLAGUE_AURA, true);
-                else if (failed)
+                else if (_failed)
                     GetCaster()->CastSpell(GetCaster(), SPELL_DEATH_PLAGUE_KILL, true);
             }
 
@@ -554,7 +553,7 @@ class spell_frost_giant_death_plague : public SpellScriptLoader
                 OnEffect += SpellEffectFn(spell_frost_giant_death_plague_SpellScript::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
             }
 
-            bool failed;
+            bool _failed;
         };
 
         SpellScript* GetSpellScript() const

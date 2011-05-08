@@ -104,6 +104,8 @@ enum BossSpells
     SPELL_SPIKE_TELE        = 66170,
 };
 
+#define SPELL_PERMAFROST_HELPER RAID_MODE<uint32>(66193,67856,67855,67857)
+
 enum SummonActions
 {
     ACTION_SHADOW_STRIKE,
@@ -405,7 +407,6 @@ public:
 
 };
 
-
 class mob_swarm_scarab : public CreatureScript
 {
 public:
@@ -473,7 +474,6 @@ public:
 
 };
 
-
 class mob_nerubian_burrower : public CreatureScript
 {
 public:
@@ -535,7 +535,7 @@ public:
                 }
                 else
                 {
-                    if (!me->HasAura(SPELL_PERMAFROST))
+                    if (!me->HasAura(SPELL_PERMAFROST_HELPER))
                     {
                         DoCast(me, SPELL_SUBMERGE_EFFECT);
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -550,7 +550,6 @@ public:
     };
 
 };
-
 
 class mob_frost_sphere : public CreatureScript
 {
@@ -631,7 +630,6 @@ public:
     };
 
 };
-
 
 class mob_anubarak_spike : public CreatureScript
 {

@@ -160,7 +160,7 @@ void TempSummon::Update(uint32 diff)
         }
         default:
             UnSummon();
-            sLog->outError("Temporary summoned creature (entry: %u) have unknown type %u of ",GetEntry(),m_type);
+            sLog->outError("Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
             break;
     }
 }
@@ -180,7 +180,7 @@ void TempSummon::InitStats(uint32 duration)
 		sLog->outDetail("TempSummon, InitStats. mindmg: %i",
 			GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE));
 
-		CreatureInfo* info = (CreatureInfo*)this->GetCreatureInfo();
+		CreatureTemplate* info = (CreatureTemplate*)this->GetCreatureInfo();
 		if(info) {
 			sLog->outDetail("Has info. eliteFactor: %f", info->eliteFactor);
 			if(info->eliteFactor == 1.0f) {
@@ -191,7 +191,7 @@ void TempSummon::InitStats(uint32 duration)
 					Creature* co = owner->ToCreature();
 					if(co) {
 						setEliteFactor = true;
-						const CreatureInfo* ci = co->GetCreatureInfo();
+						const CreatureTemplate* ci = co->GetCreatureInfo();
 						if(!ci) {
 							sLog->outError("TempSummon: no data for owner of %i", info->Entry);
 						} else {

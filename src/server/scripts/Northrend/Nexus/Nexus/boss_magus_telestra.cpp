@@ -256,7 +256,7 @@ public:
                 bFireMagusDead = false;
                 bFrostMagusDead = false;
                 bArcaneMagusDead = false;
-                DoScriptText(RAND(SAY_SPLIT_1,SAY_SPLIT_2), me);
+                DoScriptText(RAND(SAY_SPLIT_1, SAY_SPLIT_2), me);
                 return;
             }
 
@@ -273,7 +273,7 @@ public:
                 bFireMagusDead = false;
                 bFrostMagusDead = false;
                 bArcaneMagusDead = false;
-                DoScriptText(RAND(SAY_SPLIT_1,SAY_SPLIT_2), me);
+                DoScriptText(RAND(SAY_SPLIT_1, SAY_SPLIT_2), me);
                 return;
             }
 
@@ -323,7 +323,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_magus_telestra()
 {

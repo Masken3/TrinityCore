@@ -127,7 +127,7 @@ void ScriptedAI::AttackStartNoMove(Unit* pWho)
         DoStartNoMovement(pWho);
 }
 
-void ScriptedAI::UpdateAI(const uint32 /*uiDiff*/)
+void ScriptedAI::UpdateAI(uint32 const /*diff*/)
 {
     //Check if we have a current target
     if (!UpdateVictim())
@@ -421,7 +421,7 @@ void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 mainHand /*= EQUIP_NO
 {
     if (loadDefault)
     {
-        if (CreatureInfo const* creatureInfo = ObjectMgr::GetCreatureTemplate(me->GetEntry()))
+        if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(me->GetEntry()))
             me->LoadEquipment(creatureInfo->equipmentId, true);
 
         return;

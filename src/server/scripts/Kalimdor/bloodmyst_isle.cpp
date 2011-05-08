@@ -63,7 +63,7 @@ public:
         {
             uint32 spawnCreatureID = 0;
 
-            switch (urand(0,2))
+            switch (urand(0, 2))
             {
                 case 0:
                     spawnCreatureID = 17681;
@@ -72,7 +72,7 @@ public:
                     break;
                 case 1:
                 case 2:
-                    spawnCreatureID = possibleSpawns[urand(0,30)];
+                    spawnCreatureID = possibleSpawns[urand(0, 30)];
                     break;
             }
 
@@ -149,75 +149,59 @@ public:
 
 };
 
-/*########
-## Quest: Saving Princess Stillpine
-########*/
+/*######
+## Quest 9667: Saving Princess Stillpine
+######*/
 
-enum StillPineCage
+enum eStillpine
 {
-    QUEST_SAVE_PRINCESS_STILLPINE         = 9667,
-    NPC_PRINCESS_STILLPINE                = 17682,
-    GO_STILLPINE_CAGE                     = 181928,
-    PRINCESS_SAY_1                        = -1230013
+    QUEST_SAVING_PRINCESS_STILLPINE               = 9667,
+    NPC_PRINCESS_STILLPINE                        = 17682,
+    GO_PRINCESS_STILLPINES_CAGE                   = 181928,
+    SPELL_OPENING_PRINCESS_STILLPINE_CREDIT       = 31003,
+    SAY_DIRECTION                                 = -1800074
+};
+
+class go_princess_stillpines_cage : public GameObjectScript
+{
+public:
+    go_princess_stillpines_cage() : GameObjectScript("go_princess_stillpines_cage") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        if (Creature* stillpine = go->FindNearestCreature(NPC_PRINCESS_STILLPINE, 25, true))
+        {
+            go->SetGoState(GO_STATE_ACTIVE);
+            stillpine->GetMotionMaster()->MovePoint(1, go->GetPositionX(), go->GetPositionY()-15, go->GetPositionZ());
+            player->CastedCreatureOrGO(NPC_PRINCESS_STILLPINE, 0, SPELL_OPENING_PRINCESS_STILLPINE_CREDIT);
+        }
+        return true;
+    }
 };
 
 class npc_princess_stillpine : public CreatureScript
 {
 public:
-	npc_princess_stillpine() : CreatureScript("npc_princess_stillpine") { }
+    npc_princess_stillpine() : CreatureScript("npc_princess_stillpine") { }
 
-	CreatureAI* GetAI(Creature* pCreature)
-	{
-		return new npc_princess_stillpineAI(pCreature);
-	}
+    struct npc_princess_stillpineAI : public ScriptedAI
+    {
+        npc_princess_stillpineAI(Creature* creature) : ScriptedAI(creature) {}
 
-	struct npc_princess_stillpineAI : public ScriptedAI
-	{
-		npc_princess_stillpineAI(Creature *c) : ScriptedAI(c){}
+        void MovementInform(uint32 type, uint32 id)
+        {
+            if (type == POINT_MOTION_TYPE && id == 1)
+            {
+                DoScriptText(SAY_DIRECTION, me);
+                me->ForcedDespawn();
+            }
+        }
+    };
 
-		uint32 FleeTimer;
-
-		void Reset()
-		{
-			FleeTimer = 0;
-			GameObject* cage = me->FindNearestGameObject(GO_STILLPINE_CAGE, 5.0f);
-			if(cage)
-				cage->ResetDoorOrButton();
-		}
-
-		void UpdateAI(const uint32 diff)
-		{
-			if(FleeTimer)
-			{
-				if(FleeTimer <= diff)
-					me->ForcedDespawn();
-				else FleeTimer -= diff;
-			}
-		}
-	};
-};
-
-class go_stillpine_cage : public GameObjectScript
-{
-public:
-	go_stillpine_cage() : GameObjectScript("go_stillpine_cage") { }
-
-	bool OnGossipHello(Player* pPlayer, GameObject* pGo)
-	{
-		if(pPlayer->GetQuestStatus(QUEST_SAVE_PRINCESS_STILLPINE) == QUEST_STATUS_INCOMPLETE)
-		{
-			Creature* pCreature = pGo->FindNearestCreature(NPC_PRINCESS_STILLPINE, 5.0f, true);
-			if(pCreature)
-			{
-				DoScriptText(PRINCESS_SAY_1, pCreature, pPlayer);
-				pCreature->GetMotionMaster()->MoveFleeing(pPlayer, 3500);
-				pPlayer->KilledMonsterCredit(pCreature->GetEntry(), pCreature->GetGUID());
-				CAST_AI(npc_princess_stillpine::npc_princess_stillpineAI, pCreature->AI())->FleeTimer = 3500;
-				return false;
-			}
-		}
-		return true;
-	}
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_princess_stillpineAI(creature);
+    }
 };
 
 void AddSC_bloodmyst_isle()
@@ -225,5 +209,5 @@ void AddSC_bloodmyst_isle()
     new mob_webbed_creature();
     new npc_captured_sunhawk_agent();
     new npc_princess_stillpine();
-    new go_stillpine_cage();
+    new go_princess_stillpines_cage();
 }

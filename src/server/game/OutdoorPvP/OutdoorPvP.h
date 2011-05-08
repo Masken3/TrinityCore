@@ -36,8 +36,6 @@ enum OutdoorPvPTypes
 
 #define MAX_OUTDOORPVP_TYPES 7
 
-const uint8 CapturePointArtKit[3] = {2, 1, 21};
-
 enum ObjectiveStates
 {
     OBJECTIVESTATE_NEUTRAL = 0,
@@ -94,6 +92,8 @@ class OPvPCapturePoint
     public:
 
         OPvPCapturePoint(OutdoorPvP * pvp);
+
+        virtual ~OPvPCapturePoint() {}
 
         virtual void FillInitialWorldStates(WorldPacket & /*data*/) {}
 
@@ -181,10 +181,10 @@ class OPvPCapturePoint
 
         // map to store the various gameobjects and creatures spawned by the objective
         //        type , guid
-        std::map<uint32,uint64> m_Objects;
-        std::map<uint32,uint64> m_Creatures;
-        std::map<uint64,uint32> m_ObjectTypes;
-        std::map<uint64,uint32> m_CreatureTypes;
+        std::map<uint32, uint64> m_Objects;
+        std::map<uint32, uint64> m_Creatures;
+        std::map<uint64, uint32> m_ObjectTypes;
+        std::map<uint64, uint32> m_CreatureTypes;
 };
 
 // base class for specific outdoor pvp handlers
@@ -198,7 +198,7 @@ class OutdoorPvP : public ZoneScript
         OutdoorPvP();
 
         // dtor
-        ~OutdoorPvP();
+        virtual ~OutdoorPvP();
 
         // deletes all gos/creatures spawned by the pvp
         void DeleteSpawns();

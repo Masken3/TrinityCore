@@ -138,7 +138,7 @@ public:
                     {
                         DoScriptText(RAND(SAY_HEAL1, SAY_HEAL2, SAY_HEAL3, SAY_HEAL4), me, pPlayer);
 
-                        pPlayer->TalkedToCreature(me->GetEntry(),me->GetGUID());
+                        pPlayer->TalkedToCreature(me->GetEntry(), me->GetGUID());
                     }
 
                     me->GetMotionMaster()->Clear();
@@ -285,9 +285,6 @@ public:
 
 };
 
-
-
-
 /*######
 ## npc_injured_draenei
 ######*/
@@ -393,7 +390,7 @@ public:
             case 29:
                 DoScriptText(EMOTE_HUG, me, pPlayer);
                 DoScriptText(SAY_END2, me, pPlayer);
-                pPlayer->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP,me);
+                pPlayer->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP, me);
                 break;
             }
         }
@@ -407,7 +404,6 @@ public:
     };
 
 };
-
 
 /*######
 ## npc_geezle
@@ -537,7 +533,7 @@ public:
                 if ((*itr)->GetQuestStatus(QUEST_TREES_COMPANY) == QUEST_STATUS_INCOMPLETE
                     &&(*itr)->HasAura(SPELL_TREE_DISGUISE))
                 {
-                    (*itr)->KilledMonsterCredit(MOB_SPARK,0);
+                    (*itr)->KilledMonsterCredit(MOB_SPARK, 0);
                 }
             }
         }
@@ -545,7 +541,7 @@ public:
         void DespawnNagaFlag(bool despawn)
         {
             std::list<GameObject*> FlagList;
-            me->GetGameObjectListWithEntryInGrid(FlagList,GO_NAGA_FLAG, 100.0f);
+            me->GetGameObjectListWithEntryInGrid(FlagList, GO_NAGA_FLAG, 100.0f);
 
             if (!FlagList.empty())
             {
@@ -575,7 +571,6 @@ public:
 
 };
 
-
 enum eRavegerCage
 {
     NPC_DEATH_RAVAGER       = 17556,
@@ -597,7 +592,7 @@ public:
         {
             if (Creature* ravager = pGo->FindNearestCreature(NPC_DEATH_RAVAGER, 5.0f, true))
             {
-                ravager->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+                ravager->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 ravager->SetReactState(REACT_AGGRESSIVE);
                 ravager->AI()->AttackStart(pPlayer);
             }

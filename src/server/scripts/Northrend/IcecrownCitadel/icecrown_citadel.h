@@ -19,11 +19,13 @@
 #define ICECROWN_CITADEL_H_
 
 #include "SpellScript.h"
+#include "Map.h"
+#include "Creature.h"
 
 #define ICCScriptName "instance_icecrown_citadel"
 
 uint32 const EncounterCount = 12;
-uint32 const WeeklyNPCs = 7;
+uint32 const WeeklyNPCs = 9;
 uint32 const MaxHeroicAttempts = 50;
 // Defined in boss_sindragosa.cpp
 extern Position const SindragosaSpawnPos;
@@ -113,6 +115,8 @@ enum CreaturesIds
     NPC_INFILTRATOR_MINCHAR                     = 38471,
     NPC_KOR_KRON_LIEUTENANT                     = 38491,
     NPC_SKYBREAKER_LIEUTENANT                   = 38492,
+    NPC_ROTTING_FROST_GIANT_10                  = 38490,
+    NPC_ROTTING_FROST_GIANT_25                  = 38494,
     NPC_ALCHEMIST_ADRIANNA                      = 38501,
     NPC_ALRIN_THE_AGILE                         = 38551,
     NPC_INFILTRATOR_MINCHAR_BQ                  = 38558,
@@ -369,5 +373,15 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
     private:
         uint32 _triggerId;
 };
+
+template<class AI>
+CreatureAI* GetIcecrownCitadelAI(Creature* creature)
+{
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+        if (instance->GetInstanceScript())
+            if (instance->GetScriptId() == GetScriptId(ICCScriptName))
+                return new AI(creature);
+    return NULL;
+}
 
 #endif // ICECROWN_CITADEL_H_

@@ -203,7 +203,7 @@ public:
 
         void KilledUnit(Unit* /*victim*/)
         {
-            DoScriptText(RAND(SAY_KILL_1,SAY_KILL_2), me);
+            DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
         }
 
         void MovementInform(uint32 type, uint32 id)
@@ -321,7 +321,6 @@ public:
 
 };
 
-
 class mob_fel_crystal : public CreatureScript
 {
 public:
@@ -367,7 +366,6 @@ public:
     };
 
 };
-
 
 void AddSC_boss_selin_fireheart()
 {

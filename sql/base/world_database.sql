@@ -76,6 +76,38 @@ LOCK TABLES `achievement_criteria_data` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `achievement_dbc`
+--
+
+DROP TABLE IF EXISTS `achievement_dbc`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `achievement_dbc` (
+  `ID` int(10) unsigned NOT NULL,
+  `requiredFaction` int(11) NOT NULL DEFAULT '-1',
+  `mapID` int(11) NOT NULL DEFAULT '-1',
+  `points` int(10) unsigned NOT NULL DEFAULT '0',
+  `flags` int(10) unsigned NOT NULL DEFAULT '0',
+  `count` int(10) unsigned NOT NULL DEFAULT '0',
+  `refAchievement` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `achievement_dbc`
+--
+
+LOCK TABLES `achievement_dbc` WRITE;
+/*!40000 ALTER TABLE `achievement_dbc` DISABLE KEYS */;
+INSERT INTO `achievement_dbc` VALUES
+(3696,-1,-1,0,2,1,0), -- Earned the right to represent a city in the Argent Tournament
+(4788,-1,-1,0,2,1,0), -- Is exalted with The Aldor or has any of exalted rewards
+(4789,-1,-1,0,2,1,0); -- Is exalted with The Scryers or has any of exalted rewards
+/*!40000 ALTER TABLE `achievement_dbc` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `achievement_reward`
 --
 
@@ -446,7 +478,6 @@ INSERT INTO `command` VALUES
 ('itemmove',2,'Syntax: .itemmove #sourceslotid #destinationslotid\r\n\r\nMove an item from slots #sourceslotid to #destinationslotid in your inventory\r\n\r\nNot yet implemented'),
 ('kick',2,'Syntax: .kick [$charactername] [$reason]\r\n\r\nKick the given character name from the world with or without reason. If no character name is provided then the selected player (except for yourself) will be kicked. If no reason is provided, default is \"No Reason\".'),
 ('learn',3,'Syntax: .learn #spell [all]\r\n\r\nSelected character learn a spell of id #spell. If ''all'' provided then all ranks learned.'),
-('learn all',3,'Syntax: .learn all\r\n\r\nLearn all big set different spell maybe useful for Administaror.'),
 ('learn all crafts',2,'Syntax: .learn crafts\r\n\r\nLearn all professions and recipes.'),
 ('learn all default',1,'Syntax: .learn all default [$playername]\r\n\r\nLearn for selected/$playername player all default spells for his race/class and spells rewarded by completed quests.'),
 ('learn all gm',2,'Syntax: .learn all gm\r\n\r\nLearn all default spells for Game Masters.'),
@@ -502,7 +533,7 @@ INSERT INTO `command` VALUES
 ('modify rage',1,'Syntax: .modify rage #newrage\r\n\r\nModify the rage of the selected player. If no player is selected, modify your rage.'),
 ('modify rep',2,'Syntax: .modify rep #repId (#repvalue | $rankname [#delta])\r\nSets the selected players reputation with faction #repId to #repvalue or to $reprank.\r\nIf the reputation rank name is provided, the resulting reputation will be the lowest reputation for that rank plus the delta amount, if specified.\r\nYou can use ''.pinfo rep'' to list all known reputation ids, or use ''.lookup faction $name'' to locate a specific faction id.'),
 ('modify runicpower',1,'Syntax: .modify runicpower #newrunicpower\r\n\r\nModify the runic power of the selected player. If no player is selected, modify your runic power.'),
-('modify scale',1,'.modify scale $parameter\nModify size of the selected player to \"normal scale\"*rate. If no player is selected, modify your size.\n#rate may range from 0.1 to 10.'),
+('modify scale',1,'.modify scale #scale\nModify size of the selected player or creature to \"normal scale\"*rate. If no player or creature is selected, modify your size.\n#rate may range from 0.1 to 10.'),
 ('modify speed',1,'Syntax: .modify speed #rate\r\n.speed #rate\r\n\r\nModify the running speed of the selected player to \"normal base run speed\"*rate. If no player is selected, modify your speed.\r\n\r\n #rate may range from 0.1 to 50.'),
 ('modify spell',1,'TODO'),
 ('modify standstate',2,'Syntax: .modify standstate #emoteid\r\n\r\nChange the emote of your character while standing to #emoteid.'),
@@ -1385,9 +1416,9 @@ DROP TABLE IF EXISTS `creature_equip_template`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `creature_equip_template` (
   `entry` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'Unique entry',
-  `equipentry1` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `equipentry2` mediumint(8) unsigned NOT NULL DEFAULT '0',
-  `equipentry3` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `itemEntry1` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `itemEntry2` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `itemEntry3` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`entry`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Creature System (Equipment)';
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2815,11 +2846,7 @@ DROP TABLE IF EXISTS `instance_template`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `instance_template` (
   `map` smallint(5) unsigned NOT NULL,
-  `parent` int(10) unsigned NOT NULL,
-  `startLocX` float DEFAULT NULL,
-  `startLocY` float DEFAULT NULL,
-  `startLocZ` float DEFAULT NULL,
-  `startLocO` float DEFAULT NULL,
+  `parent` smallint(5) unsigned NOT NULL,
   `script` varchar(128) NOT NULL DEFAULT '',
   `allowMount` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`map`)
@@ -16898,6 +16925,8 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (53352, -1, -1, 0.14, -1, 'Hunter - Explosive Shot (triggered)'),
 (55039, 0, 0, 0, 0, 'Item - Gnomish Lightning Generator'),
 (40293, 0, 0, 0, 0, 'Item - Siphon Essence'),
+(67760, 0, 0, 0, 0, 'Item - Coliseum 25 Heroic Caster Trinket - Pillar of Flame'),
+(67714, 0, 0, 0, 0, 'Item - Coliseum 25 Normal Caster Trinket - Pillar of Flame'),
 (44425, 0.7143, -1, -1, -1, 'Mage - Arcane Barrage'),
 (30451, 0.7143, -1, -1, -1, 'Mage - Arcane Blast'),
 (1449, 0.2128, -1, -1, -1, 'Mage - Arcane Explosion'),
@@ -16925,6 +16954,7 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (2948, 0.4286, -1, -1, -1, 'Mage - Scorch'),
 (59638, 0.3, -1, 0, -1, 'Mage - Mirror Image Frostbolt'),
 (59637, 0.15, -1, 0, -1, 'Mage - Mirror Image Fire Blast'),
+(31707, 0.8333, 0, 0, 0, 'Mage - Water Elemental Waterbolt'),
 (31935, 0.07, -1, 0.07, -1, 'Paladin - Avenger Shield'),
 (53742, -1, 0.0176, -1, 0.03, 'Paladin - Blood Corruption'),
 (26573, -1, 0.04, -1, 0.04, 'Paladin - Consecration'),
@@ -17112,6 +17142,7 @@ INSERT INTO `spell_bonus_data` (`entry`,`direct_bonus`,`dot_bonus`,`ap_bonus`,`a
 (61291, 0.1064, 0.0667, -1, -1, 'Warlock - Shadowflame Rank 2'),
 (30283, 0.1932, -1, -1, -1, 'Warlock - Shadowfury'),
 (63106, 0, 0, 0, 0, 'Warlock - Siphon Life Triggered'),
+(38395, 0 ,0, 0, 0, 'Warlock - Siphon Essence T6 2P proc'),
 (6353, 1.15, -1, -1, -1, 'Warlock - Soul Fire'),
 (30294, 0, 0, 0, 0, 'Warlock - Soul Leech'),
 (30108, -1, 0.2, -1, -1, 'Warlock - Unstable Affliction'),
@@ -17298,7 +17329,8 @@ INSERT INTO `spell_dbc` (`Id`,`Dispel`,`Mechanic`,`Attributes`,`AttributesEx`,`A
 (65195,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'The Iron Council credit marker'),
 (64899,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Hodir credit marker'),
 (64985,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Thorim credit marker'),
-(65074,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Freya credit marker');
+(65074,  0, 0, 536870912, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 16, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Freya credit marker'),
+(60937,  0, 0, 562036736, 32, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 101, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Seaforium charges damaging wall achievement credit');
 /*!40000 ALTER TABLE `spell_dbc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -17657,7 +17689,6 @@ INSERT INTO `spell_group` (`id`, `spell_id`) VALUES
 (1046,57660), -- Totem of Wrath
 (1046,57662), -- Totem of Wrath
 (1046,57663), -- Totem of Wrath
-(1046,30708), -- Totem of Wrath
 (1047,53646), -- Demonic Pact
 -- Increased Spell Hit Chance Taken Debuff
 (1049,33600), --  Improved Faerie Fire
@@ -18067,6 +18098,8 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 20066,-61840, 0, 'Repentance'),
 ( 66235, 66233, 0, 'Ardent Defender Visuals'),
 ( 58875, 58876, 1, 'Spirit Walk'),
+(-47960,-63311, 0, 'Glyph of Shadowflame Rank 1'),
+(-61291,-63311, 0, 'Glyph of Shadowflame Rank 2'),
 -- Misc
 ( 55428, 55475, 0, 'Lifeblood (Rank 1)'),
 ( 55480, 55475, 0, 'Lifeblood (Rank 2)'),
@@ -18074,6 +18107,8 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 55501, 55475, 0, 'Lifeblood (Rank 4)'),
 ( 55502, 55475, 0, 'Lifeblood (Rank 5)'),
 ( 55503, 55475, 0, 'Lifeblood (Rank 6)'),
+( 61716, 61719, 2, 'Rabbit Costume: Lay Egg periodic'),
+( 61734, 61719, 2, 'Noblegarden Bunny: Lay Egg periodic'),
 -- Quest
 ( 26286, 44430, 0, 'Small Red Rocket - questcredit'),
 ( 26292, 44430, 0, 'Small Green Rocket - questcredit'),
@@ -18170,6 +18205,10 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 (-71224, 69706, 0, 'Rotface: Mutated Infection Summon'),
 (-73022, 69706, 0, 'Rotface: Mutated Infection Summon'),
 (-73023, 69706, 0, 'Rotface: Mutated Infection Summon'),
+(-70447, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72836, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72837, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
+(-72838, 70530, 0, 'Putricide: Volatile Ooze Adhesive Protection'),
 ( 70867, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),
 ( 71473, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),
 ( 71532, 70871, 2, 'Blood-Queen: Essence of the Blood Queen'),
@@ -18189,6 +18228,8 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 71480, 71483, 1, 'Blood-Queen: Bloodbolt Splash'),
 ( 71952, 70995, 1, 'Blood-Queen: Presence of the Darkfallen'),
 ( 70157, 69700, 2, 'Sindragosa - Ice Tomb resistance'),
+-- Eye Of Eternity
+( 56397, 63934, 1,'Arcane Barrage - Arcane Barrage'),
 -- Isle of Conquest
 ( 66548, 66550, 0, 'Isle of Conquest (IN>OUT)'),
 ( 66549, 66551, 0, 'Isle of Conquest (OUT>IN)'),
@@ -18212,6 +18253,7 @@ INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment
 ( 50141, 50001, 0, 'Blood Oath to Blood Oath Aura'),
 ( 61263, 61267, 0, 'Intravenous Healing Effect'),
 ( 61263, 61268, 0, 'Intravenous Mana Regeneration Effect'),
+(-57350,60242,0, 'Darkmoon Card: Illusion'),
 -- PvP Trinket / Every Man for Himself / Will of the Forsaken
 (7744, 72757, 0, 'Will of the Forsaken Cooldown Trigger (WOTF)'),
 (42292, 72752, 0, 'Will of the Forsaken Cooldown Trigger'),
@@ -18376,7 +18418,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 11095, 0x00,   3, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Improved Scorch (Rank 1)
 ( 11119, 0x04,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Ignite (Rank 1)
 ( 11120, 0x04,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Ignite (Rank 2)
-( 11129, 0x04,   3, 0x08c00017, 0x00031048, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Combustion
+( 11129, 0x04,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Combustion
 ( 11180, 0x10,   3, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Winter's Chill (Rank 1)
 ( 11185, 0x00,   3, 0x00000080, 0x00000000, 0x00000000, 0x00050000, 0x00000000,   0,   0,   0), -- Improved Blizzard (Rank 1)
 ( 11255, 0x00,   3, 0x00004000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Improved Counterspell (Rank 1)
@@ -18702,7 +18744,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 33297, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Spell Haste Trinket
 ( 33299, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00010000,   0,   0,   0), -- Coilfang Slave Pens Lvl 70 Boss3a Caster Trinket
 ( 33510, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   5,   0,   0), -- Health Restore
-( 33648, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,   0), -- Reflection of Torment
+( 33648, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002,   0,   0,  45), -- Reflection of Torment
 ( 33719, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000800,   0,   0,   0), -- Perfect Spell Reflection
 ( 33736, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   3), -- Water Shield (Rank 8)
 ( 33746, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  10), -- Essence Infused Mushroom
@@ -19349,6 +19391,9 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 54925, 0x02,  10, 0x00000000, 0x00000208, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Glyph of Seal of Command
 ( 63320, 0x00,   5, 0x80040000, 0x00000000, 0x00008000, 0x00000400, 0x00000000,   0,   0,   0), -- Glyph of Life Tap
 ( 64955, 0x00,  10, 0x00000000, 0x00000040, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Paladin T8 Protection Relic
+( 67115, 0x00,  15, 0x01400000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   45), -- Item - Death Knight T9 Melee 2P Bonus
+( 67712, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00011000, 0x00000002,   0,   0,   2), -- Item - Coliseum 25 Normal Caster Trinket - Pillar of Flame
+( 67758, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00011000, 0x00000002,   0,   0,   2), -- Item - Coliseum 25 Heroic Caster Trinket - Pillar of Flame
 ( 67356, 0x08,   7, 0x00000010, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Druid T9 Restoration Relic (Rejuvenation)
 ( 67361, 0x00,   7, 0x00000002, 0x00000000, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Item - Druid T9 Balance Relic (Moonfire)
 ( 67363, 0x00,  10, 0x00000000, 0x80000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  10), -- Item - Paladin T9 Holy Relic (Judgement)
@@ -19379,6 +19424,7 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 70807, 0x00,  11, 0x00000000, 0x00000000, 0x00000010, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Shaman T10 Restoration 2P Bonus
 ( 70830, 0x00,  11, 0x00000000, 0x00020000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Shaman T10 Enhancement 2P Bonus
 ( 70841, 0x00,   5, 0x00000004, 0x00000100, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Item - Warlock T10 4P Bonus
+( 70844, 0x00,   4, 0x00000100, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Warrior T10 Protection 4P Bonus
 ( 70854, 0x00,   4, 0x00000000, 0x00000010, 0x00000000, 0x00000000, 0x00000000,   0,   0,   0), -- Item - Warrior T10 Melee 2P Bonus
 ( 71176, 0x00,   7, 0x00200002, 0x00000000, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Item - Druid T10 Balance Relic (Moonfire and Insect Swarm)
 ( 71178, 0x00,   7, 0x00000010, 0x00000000, 0x00000000, 0x00040000, 0x00000000,   0,   0,   0), -- Item - Druid T10 Restoration Relic (Rejuvenation)
@@ -19393,14 +19439,14 @@ INSERT INTO `spell_proc_event` (`entry`,`SchoolMask`,`SpellFamilyName`,`SpellFam
 ( 71519, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 105), -- Item - Deathbringer's Will Trinket Normal
 ( 71540, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Whispering Fanged Skull (Heroic)
 ( 71562, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 105), -- Item - Deathbringer's Will Trinket Heroic
-( 71602, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object
+( 71602, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00010000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object
 ( 71606, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 100), -- Phylactery of the Nameless Lich
 ( 71611, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Althor's Abacus
 ( 71634, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  30), -- Corpse Tongue Coin
 ( 71637, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0, 100), -- Phylactery of the Nameless Lich (Heroic)
 ( 71640, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  30), -- Corpse Tongue Coin (Heroic)
 ( 71642, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Althor's Abacus (Heroic)
-( 71645, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object (Heroic)
+( 71645, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00010000, 0x00000000,   0,   0,  45), -- Dislodged Foreign Object (Heroic)
 ( 71880, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce
 ( 71892, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   1,   0,   0), -- Heartpierce (Heroic)
 ( 72417, 0x00,   0, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,   0,   0,  60), -- Item - Icecrown Reputation Ring Caster Trigger
