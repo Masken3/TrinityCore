@@ -1890,6 +1890,7 @@ void Unit::CalcHealAbsorb(Unit *pVictim, const SpellEntry *healSpell, uint32 &he
     if (!healAmount)
         return;
 
+    applyEliteFactor(*this, healAmount);
     int32 RemainingHeal = healAmount;
 
     // Need remove expired auras after
