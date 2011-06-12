@@ -1108,9 +1108,9 @@ RecruitAFriend.MaxLevel = 60
 #    RecruitAFriend.MaxDifference
 #        Description: Highest level difference between linked Recruiter and Friend benefit from
 #                     the Recruit-A-Friend experience multiplier.
-#        Default:     3
+#        Default:     4
 
-RecruitAFriend.MaxDifference = 3
+RecruitAFriend.MaxDifference = 4
 
 #
 #    InstantLogout
@@ -1894,12 +1894,14 @@ GM.AllowFriend = 0
 GM.LowerSecurity = 0
 
 #
-#    GM.AllowAchievementGain
-#        Description: Allow GM characters to obtain achievements.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
+#    GM.AllowAchievementGain.Level
+#        Description: Max GM level that can obtain achievements.
+#        Default:     3 - (Anyone)
+#                     0 - (Only players)
+#                     1 - (Only moderators)
+#                     2 - (Only gamemasters)
 
-GM.AllowAchievementGain = 1
+GM.AllowAchievementGain.Level = 3
 
 #
 #    GM.TicketSystem.ChanceOfGMSurvey

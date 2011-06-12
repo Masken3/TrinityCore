@@ -22,10 +22,15 @@
  *          if reached brann speaks through his radio..
  */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "CombatAI.h"
+#include "PassiveAI.h"
 #include "ScriptedEscortAI.h"
+#include "ObjectMgr.h"
 #include "ulduar.h"
-#include "Vehicle.h"
+
 
 enum Spells
 {
@@ -214,7 +219,7 @@ class boss_flame_leviathan : public CreatureScript
 
         struct boss_flame_leviathanAI : public BossAI
         {
-            boss_flame_leviathanAI(Creature* creature) : BossAI(creature, TYPE_LEVIATHAN), vehicle(creature->GetVehicleKit())
+            boss_flame_leviathanAI(Creature* creature) : BossAI(creature, BOSS_LEVIATHAN), vehicle(creature->GetVehicleKit())
             {
             }
 
@@ -233,9 +238,6 @@ class boss_flame_leviathan : public CreatureScript
                 Shutout = true;
                 Unbroken = true;
 
-                // need to have correct immunities set in db
-                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-                me->ApplySpellImmune(0, IMMUNITY_ID, 49560, true); //deathgrip
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_STUNNED);
                 me->SetReactState(REACT_PASSIVE);
             }
@@ -567,7 +569,7 @@ class boss_flame_leviathan : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new boss_flame_leviathanAI(creature);
+            return GetUlduarAI<boss_flame_leviathanAI>(creature);
         }
 };
 
@@ -1180,7 +1182,7 @@ class npc_lorekeeper : public CreatureScript
                     if (player)
                         player->CLOSE_GOSSIP_MENU();
 
-                    if (Creature* leviathan = instance->instance->GetCreature(instance->GetData64(TYPE_LEVIATHAN)))
+                    if (Creature* leviathan = instance->instance->GetCreature(instance->GetData64(BOSS_LEVIATHAN)))
                     {
                         CAST_AI(boss_flame_leviathan::boss_flame_leviathanAI, (leviathan->AI()))->DoAction(0); //enable hard mode activating the 4 additional events spawning additional vehicles
                         creature->SetVisible(false);
@@ -1203,7 +1205,7 @@ class npc_lorekeeper : public CreatureScript
         bool OnGossipHello(Player* player, Creature* creature)
         {
             InstanceScript* instance = creature->GetInstanceScript();
-            if (instance && instance->GetData(TYPE_LEVIATHAN) !=DONE && player)
+            if (instance && instance->GetData(BOSS_LEVIATHAN) !=DONE && player)
             {
                 player->PrepareGossipMenu(creature);
 
@@ -1256,7 +1258,7 @@ public:
     //bool OnGossipHello(Player* pPlayer, Creature* creature)
     //{
     //    InstanceScript* instance = creature->GetInstanceScript();
-    //    if (instance && instance->GetData(TYPE_LEVIATHAN) !=DONE)
+    //    if (instance && instance->GetData(BOSS_LEVIATHAN) !=DONE)
     //    {
     //        pPlayer->PrepareGossipMenu(creature);
     //
@@ -1316,7 +1318,7 @@ class at_RX_214_repair_o_matic_station : public AreaTriggerScript
                 {
                     player->MonsterTextEmote(EMOTE_REPAIR, player->GetGUID(), true);
                     player->CastSpell(vehicle, SPELL_AUTO_REPAIR, true);
-                    if (Creature* leviathan = ObjectAccessor::GetCreature(*player, instance ? instance->GetData64(TYPE_LEVIATHAN) : 0))
+                    if (Creature* leviathan = ObjectAccessor::GetCreature(*player, instance ? instance->GetData64(BOSS_LEVIATHAN) : 0))
                         leviathan->AI()->SetData(DATA_UNBROKEN, 0); // set bool to false thats checked in leviathan getdata
                 }
             }

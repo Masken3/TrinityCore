@@ -15,7 +15,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ScriptPCH.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 #include "ulduar.h"
 
 //boss_auriaya
@@ -45,7 +46,7 @@ public:
 
     struct boss_auriaya_AI : public BossAI
     {
-        boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, TYPE_AURIAYA)
+        boss_auriaya_AI(Creature *pCreature) : BossAI(pCreature, BOSS_AURIAYA)
         {
         }
 

@@ -131,6 +131,7 @@ enum SpellValueMod
     SPELLVALUE_BASE_POINT2,
     SPELLVALUE_RADIUS_MOD,
     SPELLVALUE_MAX_TARGETS,
+    SPELLVALUE_AURA_STACK,
 };
 
 typedef std::pair<SpellValueMod, int32>     CustomSpellValueMod;
@@ -371,7 +372,6 @@ enum AuraRemoveMode
 {
     AURA_REMOVE_NONE = 0,
     AURA_REMOVE_BY_DEFAULT = 1,       // scripted remove, remove by stack with aura with different ids and sc aura remove
-    AURA_REMOVE_BY_STACK,             // replace by aura with same id
     AURA_REMOVE_BY_CANCEL,
     AURA_REMOVE_BY_ENEMY_SPELL,       // dispel and absorb aura destroy
     AURA_REMOVE_BY_EXPIRE,            // aura duration has ended
@@ -584,14 +584,15 @@ enum UnitFlags
 // Value masks for UNIT_FIELD_FLAGS_2
 enum UnitFlags2
 {
-    UNIT_FLAG2_FEIGN_DEATH      = 0x00000001,
-    UNIT_FLAG2_UNK1             = 0x00000002,               // Hide unit model (show only player equip)
-    UNIT_FLAG2_COMPREHEND_LANG  = 0x00000008,
-    UNIT_FLAG2_MIRROR_IMAGE     = 0x00000010,
-    UNIT_FLAG2_FORCE_MOVE       = 0x00000040,
-    UNIT_FLAG2_DISARM_OFFHAND   = 0x00000080,
-    UNIT_FLAG2_DISARM_RANGED    = 0x00000400,               //this does not disable ranged weapon display (maybe additional flag needed?)
-    UNIT_FLAG2_REGENERATE_POWER = 0x00000800
+    UNIT_FLAG2_FEIGN_DEATH          = 0x00000001,
+    UNIT_FLAG2_UNK1                 = 0x00000002,   // Hide unit model (show only player equip)
+    UNIT_FLAG2_COMPREHEND_LANG      = 0x00000008,
+    UNIT_FLAG2_MIRROR_IMAGE         = 0x00000010,
+    UNIT_FLAG2_FORCE_MOVE           = 0x00000040,
+    UNIT_FLAG2_DISARM_OFFHAND       = 0x00000080,
+    UNIT_FLAG2_DISARM_RANGED        = 0x00000400,   // this does not disable ranged weapon display (maybe additional flag needed?)
+    UNIT_FLAG2_REGENERATE_POWER     = 0x00000800,
+    UNIT_FLAG2_ALLOW_CHEAT_SPELLS   = 0x00040000,   // allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
 };
 
 /// Non Player Character flags
@@ -1265,13 +1266,14 @@ class Unit : public WorldObject
         uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
         uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
 
-        inline bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
-        inline bool HealthBelowPct(int32 pct) const { return GetHealth() * (uint64)100 < GetMaxHealth() * (uint64)pct; }
-        inline bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return (int32(GetHealth()) - damage) * (int64)100 < GetMaxHealth() * (int64)pct; }
-        inline bool HealthAbovePct(int32 pct) const { return GetHealth() * (uint64)100 > GetMaxHealth() * (uint64)pct; }
-        inline float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
-        inline uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePctN(GetMaxHealth(), pct); }
-        inline uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePctN(GetHealth(), pct); }
+        bool IsFullHealth() const { return GetHealth() == GetMaxHealth(); }
+        bool HealthBelowPct(int32 pct) const { return GetHealth() * uint64(100) < GetMaxHealth() * uint64(pct); }
+        bool HealthBelowPctDamaged(int32 pct, uint32 damage) const { return (int32(GetHealth()) - damage) * int64(100) < GetMaxHealth() * int64(pct); }
+        bool HealthAbovePct(int32 pct) const { return GetHealth() * uint64(100) > GetMaxHealth() * uint64(pct); }
+        bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return (GetHealth() + heal) * uint64(100) > GetMaxHealth() * uint64(pct); }
+        float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
+        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePctN(GetMaxHealth(), pct); }
+        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePctN(GetHealth(), pct); }
 
         void SetHealth(uint32 val);
         void SetMaxHealth(uint32 val);
@@ -1615,6 +1617,7 @@ class Unit : public WorldObject
         bool InitTamedPet(Pet * pet, uint8 level, uint32 spell_id);
 
         // aura apply/remove helpers - you should better not use these
+        Aura* _TryStackingOrRefreshingExistingAura(SpellEntry const* newAura, uint8 effMask, Unit* caster, int32* baseAmount = NULL, Item* castItem = NULL, uint64 casterGUID = 0);
         void _AddAura(UnitAura * aura, Unit * caster);
         AuraApplication * _CreateAuraApplication(Aura * aura, uint8 effMask);
         void _ApplyAuraEffect(Aura * aura, uint8 effIndex);
@@ -1647,7 +1650,6 @@ class Unit : public WorldObject
 
         void RemoveAurasDueToSpell(uint32 spellId, uint64 caster = 0, uint8 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAuraFromStack(uint32 spellId, uint64 caster = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
-        inline void RemoveAuraFromStack(AuraMap::iterator &iter, AuraRemoveMode removeMode, uint8 chargesRemoved = 1);
         void RemoveAurasDueToSpellByDispel(uint32 spellId, uint64 casterGUID, Unit *dispeller, uint8 chargesRemoved = 1);
         void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit *stealer);
         void RemoveAurasDueToItemSpell(Item* castItem, uint32 spellId);
@@ -1696,6 +1698,7 @@ class Unit : public WorldObject
         bool HasAuraTypeWithValue(AuraType auratype, int32 value) const;
         bool HasNegativeAuraWithInterruptFlag(uint32 flag, uint64 guid = 0);
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
+        bool HasAuraWithMechanic(uint32 mechanicMask);
 
         AuraEffect * IsScriptOverriden(SpellEntry const * spell, int32 script) const;
         uint32 GetDiseasesByCaster(uint64 casterGUID, bool remove = false);
@@ -1747,7 +1750,7 @@ class Unit : public WorldObject
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
         void SetCurrentCastedSpell(Spell * pSpell);
-        virtual void ProhibitSpellScholl(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
+        virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
         void InterruptSpell(CurrentSpellTypes spellType, bool withDelayed = true, bool withInstant = true);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
@@ -1790,7 +1793,7 @@ class Unit : public WorldObject
         {
             ShapeshiftForm form = GetShapeshiftForm();
             return form != FORM_NONE && form != FORM_BATTLESTANCE && form != FORM_BERSERKERSTANCE && form != FORM_DEFENSIVESTANCE &&
-                form != FORM_SHADOW;
+                form != FORM_SHADOW && form != FORM_STEALTH;
         }
 
         float m_modMeleeHitChance;
@@ -1925,7 +1928,7 @@ class Unit : public WorldObject
         void MeleeDamageBonus(Unit *pVictim, uint32 *damage, WeaponAttackType attType, SpellEntry const *spellProto = NULL);
         uint32 GetCastingTimeForBonus(SpellEntry const *spellProto, DamageEffectType damagetype, uint32 CastingTime);
 
-        uint32 GetRemainingDotDamage(uint64 caster, uint32 spellId, uint8 effectIndex = 0) const;
+        uint32 GetRemainingPeriodicAmount(uint64 caster, uint32 spellId, AuraType auraType, uint8 effectIndex = 0) const;
 
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply);
@@ -1935,7 +1938,6 @@ class Unit : public WorldObject
         bool IsImmunedToDamage(SpellEntry const* spellInfo);
         virtual bool IsImmunedToSpellEffect(SpellEntry const* spellInfo, uint32 index) const;
                                                             // redefined in Creature
-        uint32 CalcNotIgnoreDamageRedunction(uint32 damage, SpellSchoolMask damageSchoolMask);
         static bool IsDamageReducedByArmor(SpellSchoolMask damageSchoolMask, SpellEntry const *spellInfo = NULL, uint8 effIndex = MAX_SPELL_EFFECTS);
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage, SpellEntry const *spellInfo, WeaponAttackType attackType=MAX_ATTACK);
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, uint32& damage, uint32 *absorb, uint32 *resist, SpellEntry const *spellInfo = NULL);

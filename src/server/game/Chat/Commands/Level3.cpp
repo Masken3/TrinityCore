@@ -1231,32 +1231,29 @@ bool ChatHandler::HandleLookupCreatureCommand(const char *args)
     {
         uint32 id = itr->second.Entry;
         uint8 localeIndex = GetSessionDbLocaleIndex();
-        if (localeIndex >= 0)
+        if (CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(id))
         {
-            if (CreatureLocale const *cl = sObjectMgr->GetCreatureLocale(id))
+            if (cl->Name.size() > localeIndex && !cl->Name[localeIndex].empty ())
             {
-                if (cl->Name.size() > localeIndex && !cl->Name[localeIndex].empty ())
+                std::string name = cl->Name[localeIndex];
+
+                if (Utf8FitTo (name, wnamepart))
                 {
-                    std::string name = cl->Name[localeIndex];
-
-                    if (Utf8FitTo (name, wnamepart))
+                    if (maxResults && count++ == maxResults)
                     {
-                        if (maxResults && count++ == maxResults)
-                        {
-                            PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                            return true;
-                        }
-
-                        if (m_session)
-                            PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str ());
-                        else
-                            PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str ());
-
-                        if (!found)
-                            found = true;
-
-                        continue;
+                        PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                        return true;
                     }
+
+                    if (m_session)
+                        PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CHAT, id, id, name.c_str ());
+                    else
+                        PSendSysMessage (LANG_CREATURE_ENTRY_LIST_CONSOLE, id, name.c_str ());
+
+                    if (!found)
+                        found = true;
+
+                    continue;
                 }
             }
         }
@@ -1311,32 +1308,29 @@ bool ChatHandler::HandleLookupObjectCommand(const char *args)
     for (GameObjectTemplateContainer::const_iterator itr = gotc->begin(); itr != gotc->end(); ++itr)
     {
         uint8 localeIndex = GetSessionDbLocaleIndex();
-        if (localeIndex >= 0)
+        if (GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(itr->second.entry))
         {
-            if (GameObjectLocale const *gl = sObjectMgr->GetGameObjectLocale(itr->second.entry))
+            if (gl->Name.size() > localeIndex && !gl->Name[localeIndex].empty())
             {
-                if (gl->Name.size() > localeIndex && !gl->Name[localeIndex].empty())
+                std::string name = gl->Name[localeIndex];
+
+                if (Utf8FitTo(name, wnamepart))
                 {
-                    std::string name = gl->Name[localeIndex];
-
-                    if (Utf8FitTo(name, wnamepart))
+                    if (maxResults && count++ == maxResults)
                     {
-                        if (maxResults && count++ == maxResults)
-                        {
-                            PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
-                            return true;
-                        }
-
-                        if (m_session)
-                            PSendSysMessage(LANG_GO_ENTRY_LIST_CHAT, itr->second.entry, itr->second.entry, name.c_str());
-                        else
-                            PSendSysMessage(LANG_GO_ENTRY_LIST_CONSOLE, itr->second.entry, name.c_str());
-
-                        if (!found)
-                            found = true;
-
-                        continue;
+                        PSendSysMessage(LANG_COMMAND_LOOKUP_MAX_RESULTS, maxResults);
+                        return true;
                     }
+
+                    if (m_session)
+                        PSendSysMessage(LANG_GO_ENTRY_LIST_CHAT, itr->second.entry, itr->second.entry, name.c_str());
+                    else
+                        PSendSysMessage(LANG_GO_ENTRY_LIST_CONSOLE, itr->second.entry, name.c_str());
+
+                    if (!found)
+                        found = true;
+
+                    continue;
                 }
             }
         }
@@ -1963,7 +1957,7 @@ bool ChatHandler::HandleAuraCommand(const char *args)
     uint32 spellID = extractSpellIdFromLink((char*)args);
 
     if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(spellID))
-        Aura::TryCreate(spellInfo, target, target);
+        Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, target, target);
 
     return true;
 }
@@ -2536,12 +2530,12 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
     if (!HandleResetStatsOrLevelHelper(target))
         return false;
 
+    uint8 oldLevel = target->getLevel();
+
     // set starting level
     uint32 start_level = target->getClass() != CLASS_DEATH_KNIGHT
         ? sWorld->getIntConfig(CONFIG_START_PLAYER_LEVEL)
         : sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL);
-
-    sScriptMgr->OnPlayerLevelChanged(target, start_level);
 
     target->_ApplyAllLevelScaleItemMods(false);
     target->SetLevel(start_level);
@@ -2557,6 +2551,8 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
     // reset level for pet
     if (Pet* pet = target->GetPet())
         pet->SynchronizeLevelWithOwner();
+
+    sScriptMgr->OnPlayerLevelChanged(target, oldLevel);
 
     return true;
 }
@@ -2615,15 +2611,15 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
         Creature* creature = getSelectedCreature();
         if (!*args && creature && creature->isPet())
         {
-            Unit *owner = creature->GetOwner();
-            if (owner && owner->GetTypeId() == TYPEID_PLAYER && ((Pet *)creature)->IsPermanentPetFor(owner->ToPlayer()))
+            Unit* owner = creature->GetOwner();
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER && creature->ToPet()->IsPermanentPetFor(owner->ToPlayer()))
             {
-                ((Pet *)creature)->resetTalents(true);
+                creature->ToPet()->resetTalents();
                 owner->ToPlayer()->SendTalentsInfoData(true);
 
                 ChatHandler(owner->ToPlayer()).SendSysMessage(LANG_RESET_PET_TALENTS);
                 if (!m_session || m_session->GetPlayer() != owner->ToPlayer())
-          PSendSysMessage(LANG_RESET_PET_TALENTS_ONLINE, GetNameLink(owner->ToPlayer()).c_str());
+                    PSendSysMessage(LANG_RESET_PET_TALENTS_ONLINE, GetNameLink(owner->ToPlayer()).c_str());
             }
             return true;
         }
@@ -4528,7 +4524,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
 
         //m_session->GetPlayer()->CastSpell(player, spellID, false);
         if (SpellEntry const *spellInfo = sSpellStore.LookupEntry(9454))
-            Aura::TryCreate(spellInfo, player, player);
+            Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, player, player);
 
         //save player
         player->SaveToDB();

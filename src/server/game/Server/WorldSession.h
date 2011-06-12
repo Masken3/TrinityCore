@@ -708,7 +708,6 @@ class WorldSession
         void HandlePetAbandon(WorldPacket & recv_data);
         void HandlePetRename(WorldPacket & recv_data);
         void HandlePetCancelAuraOpcode(WorldPacket& recvPacket);
-        void HandlePetUnlearnOpcode(WorldPacket& recvPacket);
         void HandlePetSpellAutocastOpcode(WorldPacket& recvPacket);
         void HandlePetCastSpellOpcode(WorldPacket& recvPacket);
         void HandlePetLearnTalent(WorldPacket& recvPacket);
@@ -842,7 +841,7 @@ class WorldSession
         void HandleCalendarGetNumPending(WorldPacket& recv_data);
 
         void HandleSpellClick(WorldPacket& recv_data);
-        void HandleMirrrorImageDataRequest(WorldPacket & recv_data);
+        void HandleMirrorImageDataRequest(WorldPacket & recv_data);
         void HandleAlterAppearance(WorldPacket& recv_data);
         void HandleRemoveGlyph(WorldPacket& recv_data);
         void HandleCharCustomize(WorldPacket& recv_data);
