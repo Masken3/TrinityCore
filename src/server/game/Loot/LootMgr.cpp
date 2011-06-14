@@ -326,6 +326,7 @@ LootItem::LootItem(LootStoreItem const& li)
     freeforall  = proto && (proto->Flags & ITEM_PROTO_FLAG_PARTY_LOOT);
 
     needs_quest = li.needs_quest;
+    freeforall |= needs_quest;
 
     count       = urand(li.mincountOrRef, li.maxcount);     // constructor called for mincountOrRef > 0 only
     randomSuffix = GenerateEnchSuffixFactor(itemid);
@@ -393,15 +394,15 @@ void Loot::AddItem(LootStoreItem const & item)
     }
     else if (items.size() < MAX_NR_LOOT_ITEMS)              // Non-quest drop
     {
-        items.push_back(LootItem(item));
+        LootItem li(item);
+        items.push_back(li);
 
         // non-conditional one-player only items are counted here,
         // free for all items are counted in FillFFALoot(),
         // non-ffa conditionals are counted in FillNonQuestNonFFAConditionalLoot()
         if (item.conditions.empty())
         {
-            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
-            if (!proto || (proto->Flags & ITEM_PROTO_FLAG_PARTY_LOOT) == 0)
+            if (!li.freeforall)
                 ++unlootedCount;
         }
     }
