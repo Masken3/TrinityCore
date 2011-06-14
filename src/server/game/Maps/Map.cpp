@@ -2408,6 +2408,14 @@ public:
 #define MSG_COLOR_LIGHTRED       "|cffff6060"
 #define MSG_COLOR_LIGHTBLUE      "|cff00ccff"
 
+
+static void sendRetuneMessage(Player* player, int instanceId, int numPlayers, int creatureCount) {
+	ChatHandler ch(player);
+	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "eliteFactor of instance %i retuned for %i players.|r",
+		instanceId, numPlayers);
+	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "%i creatures respawned.|r", creatureCount);
+}
+
 // reset eliteFactors of all remaining creatures.
 void InstanceMap::UpdateEliteFactors(Player* player) {
 	if(!IsDungeon())
@@ -2418,6 +2426,7 @@ void InstanceMap::UpdateEliteFactors(Player* player) {
 		return;
 	}
 
+	// find number of players in dungeon.
 	uint32 numPlayers = GetPlayers().getSize();
 	Group* group = player->GetGroup();
 	if(group) {
@@ -2426,21 +2435,33 @@ void InstanceMap::UpdateEliteFactors(Player* player) {
 		}
 	}
 
-	CellPair p(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
-	Cell cell(p);
-	cell.data.Part.reserved = ALL_DISTRICT;
-	cell.SetNoCreate();
-
+	// update creatures.
+	// one cell is not enough. we must go through every cell in the Map.
 	IMRespawn u_do(numPlayers);
 	Trinity::WorldObjectWorker<IMRespawn> worker(player, u_do);
-
 	TypeContainerVisitor<Trinity::WorldObjectWorker<IMRespawn>,
 		GridTypeMapContainer> obj_worker(worker);
-	cell.Visit(p, obj_worker, *map);
-	ChatHandler ch(player);
-	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "eliteFactor of instance %i retuned for %i players.|r",
-		i_InstanceId, numPlayers);
-	ch.PSendSysMessage(MSG_COLOR_LIGHTBLUE "%i creatures respawned.|r", u_do.count());
+
+    // loop the cell range
+	// Map::Visit() shows that unloaded cells are not visited, so this should be safe.
+	for (uint32 x = 0; x <= TOTAL_NUMBER_OF_CELLS_PER_MAP; x++)
+	{
+		for (uint32 y = 0; y <= TOTAL_NUMBER_OF_CELLS_PER_MAP; y++)
+		{
+			CellPair p(x, y);
+			Cell cell(p);
+			cell.data.Part.reserved = ALL_DISTRICT;
+			cell.SetNoCreate();
+			cell.Visit(p, obj_worker, *map);
+		}
+	}
+
+	// tell them all about it.
+	//if(group) {
+		// TODO, but currently too tricky.
+	//} else {
+		sendRetuneMessage(player, i_InstanceId, numPlayers, u_do.count());
+	//}
 }
 
 void InstanceMap::Update(const uint32& t_diff)
