@@ -65,7 +65,7 @@ enum Actions
     ACTION_SET_NORMAL_EVENTS = 1
 };
 
-/*Ruby Drake ,
+/*Ruby Drake,
 (npc 27756) (item 37860)
 (summoned by spell Ruby Essence = 37860 ---> Call Amber Drake == 49462 ---> Summon 27756)
 */
@@ -115,9 +115,9 @@ class boss_eregos : public CreatureScript
 public:
     boss_eregos() : CreatureScript("boss_eregos") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_eregosAI (pCreature);
+        return new boss_eregosAI (creature);
     }
 
     struct boss_eregosAI : public BossAI
@@ -254,7 +254,7 @@ class spell_eregos_planar_shift : public SpellScriptLoader
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit * caster = GetCaster())
+                if (Unit* caster = GetCaster())
                     if (Creature* creatureCaster = caster->ToCreature())
                         creatureCaster->AI()->DoAction(ACTION_SET_NORMAL_EVENTS);
             }

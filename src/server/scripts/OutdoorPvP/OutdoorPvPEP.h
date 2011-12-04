@@ -184,11 +184,9 @@ class OutdoorPvPEP;
 
 class OPvPCapturePointEP_EWT : public OPvPCapturePoint
 {
-    friend class OutdoorPvPEP;
-
     public:
 
-        OPvPCapturePointEP_EWT(OutdoorPvP * pvp);
+        OPvPCapturePointEP_EWT(OutdoorPvP* pvp);
 
         void ChangeState();
 
@@ -197,8 +195,8 @@ class OPvPCapturePointEP_EWT : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
     protected:
 
@@ -215,11 +213,9 @@ class OPvPCapturePointEP_EWT : public OPvPCapturePoint
 
 class OPvPCapturePointEP_NPT : public OPvPCapturePoint
 {
-    friend class OutdoorPvPEP;
-
     public:
 
-        OPvPCapturePointEP_NPT(OutdoorPvP * pvp);
+        OPvPCapturePointEP_NPT(OutdoorPvP* pvp);
 
         void ChangeState();
 
@@ -228,8 +224,8 @@ class OPvPCapturePointEP_NPT : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
     protected:
 
@@ -246,11 +242,9 @@ class OPvPCapturePointEP_NPT : public OPvPCapturePoint
 
 class OPvPCapturePointEP_CGT : public OPvPCapturePoint
 {
-    friend class OutdoorPvPEP;
-
     public:
 
-        OPvPCapturePointEP_CGT(OutdoorPvP * pvp);
+        OPvPCapturePointEP_CGT(OutdoorPvP* pvp);
 
         void ChangeState();
 
@@ -259,8 +253,8 @@ class OPvPCapturePointEP_CGT : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
     protected:
 
@@ -277,11 +271,9 @@ class OPvPCapturePointEP_CGT : public OPvPCapturePoint
 
 class OPvPCapturePointEP_PWT : public OPvPCapturePoint
 {
-    friend class OutdoorPvPEP;
-
     public:
 
-        OPvPCapturePointEP_PWT(OutdoorPvP * pvp);
+        OPvPCapturePointEP_PWT(OutdoorPvP* pvp);
 
         void ChangeState();
 
@@ -290,8 +282,8 @@ class OPvPCapturePointEP_PWT : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
     protected:
 
@@ -308,27 +300,24 @@ class OPvPCapturePointEP_PWT : public OPvPCapturePoint
 
 class OutdoorPvPEP : public OutdoorPvP
 {
-    friend class OPvPCapturePointEP_EWT;
-    friend class OPvPCapturePointEP_NPT;
-    friend class OPvPCapturePointEP_PWT;
-    friend class OPvPCapturePointEP_CGT;
-
     public:
 
         OutdoorPvPEP();
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(Player *plr, uint32 zone);
-        void HandlePlayerLeaveZone(Player *plr, uint32 zone);
+        void HandlePlayerEnterZone(Player* player, uint32 zone);
+        void HandlePlayerLeaveZone(Player* player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(Player * plr);
+        void SendRemoveWorldStates(Player* player);
 
         void BuffTeams();
+
+        void SetControlledState(uint32 index, uint32 state);
 
     private:
 

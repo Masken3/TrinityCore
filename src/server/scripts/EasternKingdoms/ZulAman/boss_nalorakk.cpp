@@ -101,14 +101,14 @@ class boss_nalorakk : public CreatureScript
 
         struct boss_nalorakkAI : public ScriptedAI
         {
-            boss_nalorakkAI(Creature *c) : ScriptedAI(c)
+            boss_nalorakkAI(Creature* c) : ScriptedAI(c)
             {
                 MoveEvent = true;
                 MovePhase = 0;
-                pInstance = c->GetInstanceScript();
+                instance = c->GetInstanceScript();
             }
 
-            InstanceScript *pInstance;
+            InstanceScript* instance;
 
             uint32 BrutalSwipe_Timer;
             uint32 Mangle_Timer;
@@ -142,8 +142,8 @@ class boss_nalorakk : public CreatureScript
                     (*me).GetMotionMaster()->MovePoint(0, NalorakkWay[7][0], NalorakkWay[7][1], NalorakkWay[7][2]);
                 }
 
-                if (pInstance)
-                    pInstance->SetData(DATA_NALORAKKEVENT, NOT_STARTED);
+                if (instance)
+                    instance->SetData(DATA_NALORAKKEVENT, NOT_STARTED);
 
                 Surge_Timer = 15000 + rand()%5000;
                 BrutalSwipe_Timer = 7000 + rand()%5000;
@@ -155,16 +155,15 @@ class boss_nalorakk : public CreatureScript
                 // me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 5122);  // TODO: find the correct equipment id
             }
 
-            void SendAttacker(Unit *pTarget)
+            void SendAttacker(Unit* target)
             {
                 std::list<Creature*> templist;
                 float x, y, z;
                 me->GetPosition(x, y, z);
 
                 {
-                    CellPair pair(Trinity::ComputeCellPair(x, y));
+                    CellCoord pair(Trinity::ComputeCellCoord(x, y));
                     Cell cell(pair);
-                    cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
                     Trinity::AllFriendlyCreaturesInGrid check(me);
@@ -172,10 +171,10 @@ class boss_nalorakk : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()));
+                    cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->GetGridActivationRange());
                 }
 
-                if (!templist.size())
+                if (templist.empty())
                     return;
 
                 for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
@@ -183,7 +182,7 @@ class boss_nalorakk : public CreatureScript
                     if ((*i) && me->IsWithinDistInMap((*i), 25))
                     {
                         (*i)->SetNoCallAssistance(true);
-                        (*i)->AI()->AttackStart(pTarget);
+                        (*i)->AI()->AttackStart(target);
                     }
                 }
             }
@@ -194,7 +193,7 @@ class boss_nalorakk : public CreatureScript
                     ScriptedAI::AttackStart(who);
             }
 
-            void MoveInLineOfSight(Unit *who)
+            void MoveInLineOfSight(Unit* who)
             {
                 if (!MoveEvent)
                 {
@@ -206,7 +205,7 @@ class boss_nalorakk : public CreatureScript
                     {
                         if (!inMove)
                         {
-                            switch(MovePhase)
+                            switch (MovePhase)
                             {
                                 case 0:
                                     if (me->IsWithinDistInMap(who, 50))
@@ -267,10 +266,10 @@ class boss_nalorakk : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
-                if (pInstance)
-                    pInstance->SetData(DATA_NALORAKKEVENT, IN_PROGRESS);
+                if (instance)
+                    instance->SetData(DATA_NALORAKKEVENT, IN_PROGRESS);
 
                 me->MonsterYell(YELL_AGGRO, LANG_UNIVERSAL, 0);
                 DoPlaySoundToSet(me, SOUND_YELL_AGGRO);
@@ -279,8 +278,8 @@ class boss_nalorakk : public CreatureScript
 
             void JustDied(Unit* /*Killer*/)
             {
-                if (pInstance)
-                    pInstance->SetData(DATA_NALORAKKEVENT, DONE);
+                if (instance)
+                    instance->SetData(DATA_NALORAKKEVENT, DONE);
 
                 me->MonsterYell(YELL_DEATH, LANG_UNIVERSAL, 0);
                 DoPlaySoundToSet(me, SOUND_YELL_DEATH);
@@ -314,7 +313,7 @@ class boss_nalorakk : public CreatureScript
                     if (MovePhase != id)
                         return;
 
-                    switch(MovePhase)
+                    switch (MovePhase)
                     {
                         case 2:
                             me->SetOrientation(3.1415f*2);
@@ -414,9 +413,9 @@ class boss_nalorakk : public CreatureScript
                     {
                         me->MonsterYell(YELL_SURGE, LANG_UNIVERSAL, 0);
                         DoPlaySoundToSet(me, SOUND_YELL_SURGE);
-                        Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 45, true);
-                        if (pTarget)
-                            DoCast(pTarget, SPELL_SURGE);
+                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 45, true);
+                        if (target)
+                            DoCast(target, SPELL_SURGE);
                         Surge_Timer = 15000 + rand()%5000;
                     } else Surge_Timer -= diff;
                 }

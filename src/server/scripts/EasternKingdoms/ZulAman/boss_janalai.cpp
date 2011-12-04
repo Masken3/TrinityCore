@@ -113,12 +113,12 @@ class boss_janalai : public CreatureScript
 
         struct boss_janalaiAI : public ScriptedAI
         {
-            boss_janalaiAI(Creature *c) : ScriptedAI(c)
+            boss_janalaiAI(Creature* c) : ScriptedAI(c)
             {
-                pInstance = c->GetInstanceScript();
+                instance = c->GetInstanceScript();
             }
 
-            InstanceScript *pInstance;
+            InstanceScript* instance;
 
             uint32 FireBreathTimer;
             uint32 BombTimer;
@@ -137,8 +137,8 @@ class boss_janalai : public CreatureScript
 
             void Reset()
             {
-                if (pInstance)
-                    pInstance->SetData(DATA_JANALAIEVENT, NOT_STARTED);
+                if (instance)
+                    instance->SetData(DATA_JANALAIEVENT, NOT_STARTED);
 
                 FireBreathTimer = 8000;
                 BombTimer = 30000;
@@ -163,8 +163,8 @@ class boss_janalai : public CreatureScript
             {
                 DoScriptText(SAY_DEATH, me);
 
-                if (pInstance)
-                    pInstance->SetData(DATA_JANALAIEVENT, DONE);
+                if (instance)
+                    instance->SetData(DATA_JANALAIEVENT, DONE);
             }
 
             void KilledUnit(Unit* /*victim*/)
@@ -172,20 +172,20 @@ class boss_janalai : public CreatureScript
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
-                if (pInstance)
-                    pInstance->SetData(DATA_JANALAIEVENT, IN_PROGRESS);
+                if (instance)
+                    instance->SetData(DATA_JANALAIEVENT, IN_PROGRESS);
 
                 DoScriptText(SAY_AGGRO, me);
         //        DoZoneInCombat();
             }
 
-            void DamageDealt(Unit *pTarget, uint32 &damage, DamageEffectType /*damagetype*/)
+            void DamageDealt(Unit* target, uint32 &damage, DamageEffectType /*damagetype*/)
             {
                 if (isFlameBreathing)
                 {
-                    if (!me->HasInArc(M_PI/6, pTarget))
+                    if (!me->HasInArc(M_PI/6, target))
                         damage = 0;
                 }
             }
@@ -233,9 +233,8 @@ class boss_janalai : public CreatureScript
                 me->GetPosition(x, y, z);
 
                 {
-                    CellPair pair(Trinity::ComputeCellPair(x, y));
+                    CellCoord pair(Trinity::ComputeCellCoord(x, y));
                     Cell cell(pair);
-                    cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
                     Trinity::AllCreaturesOfEntryInRange check(me, MOB_EGG, 100);
@@ -243,11 +242,11 @@ class boss_janalai : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()));
+                    cell.Visit(pair, cSearcher, *me->GetMap(), *me, me->GetGridActivationRange());
                 }
 
                 //sLog->outError("Eggs %d at middle", templist.size());
-                if (!templist.size())
+                if (templist.empty())
                     return false;
 
                 for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
@@ -267,9 +266,8 @@ class boss_janalai : public CreatureScript
                 me->GetPosition(x, y, z);
 
                 {
-                    CellPair pair(Trinity::ComputeCellPair(x, y));
+                    CellCoord pair(Trinity::ComputeCellCoord(x, y));
                     Cell cell(pair);
-                    cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
                     Trinity::AllCreaturesOfEntryInRange check(me, MOB_FIRE_BOMB, 100);
@@ -277,7 +275,7 @@ class boss_janalai : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()));
+                    cell.Visit(pair, cSearcher, *me->GetMap(), *me, me->GetGridActivationRange());
                 }
                 for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
                 {
@@ -290,7 +288,7 @@ class boss_janalai : public CreatureScript
             {
                 if (BombCount < 40)
                 {
-                    if (Unit *FireBomb = Unit::GetUnit((*me), FireBombGUIDs[BombCount]))
+                    if (Unit* FireBomb = Unit::GetUnit((*me), FireBombGUIDs[BombCount]))
                     {
                         FireBomb->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         DoCast(FireBomb, SPELL_FIRE_BOMB_THROW, true);
@@ -375,9 +373,9 @@ class boss_janalai : public CreatureScript
                     BombSequenceTimer = 100;
 
                     //Teleport every Player into the middle
-                    Map* pMap = me->GetMap();
-                    if (!pMap->IsDungeon()) return;
-                    Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                    Map* map = me->GetMap();
+                    if (!map->IsDungeon()) return;
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         if (Player* i_pl = i->getSource())
                             if (i_pl->isAlive())
@@ -420,11 +418,11 @@ class boss_janalai : public CreatureScript
 
                 if (FireBreathTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         me->AttackStop();
                         me->GetMotionMaster()->Clear();
-                        DoCast(pTarget, SPELL_FLAME_BREATH, false);
+                        DoCast(target, SPELL_FLAME_BREATH, false);
                         me->StopMoving();
                         isFlameBreathing = true;
                     }
@@ -450,11 +448,11 @@ class mob_janalai_firebomb : public CreatureScript
 
         struct mob_janalai_firebombAI : public ScriptedAI
         {
-            mob_janalai_firebombAI(Creature *c) : ScriptedAI(c){}
+            mob_janalai_firebombAI(Creature* c) : ScriptedAI(c){}
 
             void Reset() {}
 
-            void SpellHit(Unit * /*caster*/, const SpellEntry *spell)
+            void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_FIRE_BOMB_THROW)
                     DoCast(me, SPELL_FIRE_BOMB_DUMMY, true);
@@ -486,12 +484,12 @@ class mob_janalai_hatcher : public CreatureScript
 
         struct mob_janalai_hatcherAI : public ScriptedAI
         {
-            mob_janalai_hatcherAI(Creature *c) : ScriptedAI(c)
+            mob_janalai_hatcherAI(Creature* c) : ScriptedAI(c)
             {
-                pInstance =c->GetInstanceScript();
+                instance =c->GetInstanceScript();
             }
 
-            InstanceScript *pInstance;
+            InstanceScript* instance;
 
             uint32 waypoint;
             uint32 HatchNum;
@@ -519,9 +517,8 @@ class mob_janalai_hatcher : public CreatureScript
                 me->GetPosition(x, y, z);
 
                 {
-                    CellPair pair(Trinity::ComputeCellPair(x, y));
+                    CellCoord pair(Trinity::ComputeCellCoord(x, y));
                     Cell cell(pair);
-                    cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
                     Trinity::AllCreaturesOfEntryInRange check(me, 23817, 50);
@@ -529,7 +526,7 @@ class mob_janalai_hatcher : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()));
+                    cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->GetGridActivationRange());
                 }
 
                 //sLog->outError("Eggs %d at %d", templist.size(), side);
@@ -561,7 +558,7 @@ class mob_janalai_hatcher : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (!pInstance || !(pInstance->GetData(DATA_JANALAIEVENT) == IN_PROGRESS))
+                if (!instance || !(instance->GetData(DATA_JANALAIEVENT) == IN_PROGRESS))
                 {
                     me->DisappearAndDie();
                     return;
@@ -619,12 +616,12 @@ class mob_janalai_hatchling : public CreatureScript
 
         struct mob_janalai_hatchlingAI : public ScriptedAI
         {
-            mob_janalai_hatchlingAI(Creature *c) : ScriptedAI(c)
+            mob_janalai_hatchlingAI(Creature* c) : ScriptedAI(c)
             {
-                pInstance =c->GetInstanceScript();
+                instance =c->GetInstanceScript();
             }
 
-            InstanceScript *pInstance;
+            InstanceScript* instance;
             uint32 BuffetTimer;
 
             void Reset()
@@ -638,11 +635,11 @@ class mob_janalai_hatchling : public CreatureScript
                 me->SetUnitMovementFlags(MOVEMENTFLAG_LEVITATING);
             }
 
-            void EnterCombat(Unit * /*who*/) {/*DoZoneInCombat();*/}
+            void EnterCombat(Unit* /*who*/) {/*DoZoneInCombat();*/}
 
             void UpdateAI(const uint32 diff)
             {
-                if (!pInstance || !(pInstance->GetData(DATA_JANALAIEVENT) == IN_PROGRESS))
+                if (!instance || !(instance->GetData(DATA_JANALAIEVENT) == IN_PROGRESS))
                 {
                     me->DisappearAndDie();
                     return;
@@ -685,7 +682,7 @@ public:
 
         void UpdateAI(uint32 const /*diff*/) {}
 
-        void SpellHit(Unit* /*caster*/, const SpellEntry* spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_HATCH_EGG)
             {

@@ -36,14 +36,14 @@ class boss_the_ravenian : public CreatureScript
 public:
     boss_the_ravenian() : CreatureScript("boss_the_ravenian") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_theravenianAI (pCreature);
+        return new boss_theravenianAI (creature);
     }
 
     struct boss_theravenianAI : public ScriptedAI
     {
-        boss_theravenianAI(Creature *c) : ScriptedAI(c) {}
+        boss_theravenianAI(Creature* c) : ScriptedAI(c) {}
 
         uint32 Trample_Timer;
         uint32 Cleave_Timer;
@@ -60,19 +60,19 @@ public:
             HasYelled = false;
         }
 
-        void JustDied(Unit * /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            InstanceScript *pInstance = me->GetInstanceScript();
-            if (pInstance)
+            InstanceScript* instance = me->GetInstanceScript();
+            if (instance)
             {
-                pInstance->SetData(DATA_THERAVENIAN_DEATH, 0);
+                instance->SetData(DATA_THERAVENIAN_DEATH, 0);
 
-                if (pInstance->GetData(TYPE_GANDLING) == IN_PROGRESS)
+                if (instance->GetData(TYPE_GANDLING) == IN_PROGRESS)
                     me->SummonCreature(1853, 180.73f, -9.43856f, 75.507f, 1.61399f, TEMPSUMMON_DEAD_DESPAWN, 0);
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

@@ -34,7 +34,7 @@ void UpdateData::AddOutOfRangeGUID(std::set<uint64>& guids)
     m_outOfRangeGUIDs.insert(guids.begin(), guids.end());
 }
 
-void UpdateData::AddOutOfRangeGUID(const uint64 &guid)
+void UpdateData::AddOutOfRangeGUID(uint64 guid)
 {
     m_outOfRangeGUIDs.insert(guid);
 }
@@ -101,7 +101,7 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     *dst_size = c_stream.total_out;
 }
 
-bool UpdateData::BuildPacket(WorldPacket *packet)
+bool UpdateData::BuildPacket(WorldPacket* packet)
 {
     ASSERT(packet->empty());                                // shouldn't happen
 

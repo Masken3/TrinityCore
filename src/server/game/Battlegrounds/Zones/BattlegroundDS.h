@@ -59,28 +59,27 @@ class BattlegroundDSScore : public BattlegroundScore
 
 class BattlegroundDS : public Battleground
 {
-    friend class BattlegroundMgr;
-
     public:
         BattlegroundDS();
         ~BattlegroundDS();
-        void Update(uint32 diff);
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(Player *plr, uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
         virtual void Reset();
         virtual void FillInitialWorldStates(WorldPacket &d);
-        void HandleKillPlayer(Player* player, Player *killer);
-        bool HandlePlayerUnderMap(Player * plr);
+        void HandleKillPlayer(Player* player, Player* killer);
+        bool HandlePlayerUnderMap(Player* player);
     private:
         uint32 m_waterTimer;
         bool m_waterfallActive;
+
+        virtual void PostUpdateImpl(uint32 diff);
     protected:
         bool isWaterFallActive() { return m_waterfallActive; };
         void setWaterFallActive(bool active) { m_waterfallActive = active; };

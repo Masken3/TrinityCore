@@ -69,16 +69,16 @@ class boss_mal_ganis : public CreatureScript
 public:
     boss_mal_ganis() : CreatureScript("boss_mal_ganis") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_mal_ganisAI (pCreature);
+        return new boss_mal_ganisAI (creature);
     }
 
     struct boss_mal_ganisAI : public ScriptedAI
     {
-        boss_mal_ganisAI(Creature *c) : ScriptedAI(c)
+        boss_mal_ganisAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
         uint32 uiCarrionSwarmTimer;
@@ -94,7 +94,7 @@ public:
 
         CombatPhases Phase;
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -107,18 +107,18 @@ public:
              uiSleepTimer = urand(15000, 20000);
              uiOutroTimer = 1000;
 
-             if (pInstance)
-                 pInstance->SetData(DATA_MAL_GANIS_EVENT, NOT_STARTED);
+             if (instance)
+                 instance->SetData(DATA_MAL_GANIS_EVENT, NOT_STARTED);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
-            if (pInstance)
-                pInstance->SetData(DATA_MAL_GANIS_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_MAL_GANIS_EVENT, IN_PROGRESS);
         }
 
-        void DamageTaken(Unit *done_by, uint32 &damage)
+        void DamageTaken(Unit* done_by, uint32 &damage)
         {
             if (damage >= me->GetHealth() && done_by != me)
                 damage = me->GetHealth()-1;
@@ -126,7 +126,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            switch(Phase)
+            switch (Phase)
             {
                 case COMBAT:
                     //Return since we have no target
@@ -154,13 +154,13 @@ public:
                         return;
                     }
 
-                    if (Creature* pArthas = me->GetCreature(*me, pInstance ? pInstance->GetData64(DATA_ARTHAS) : 0))
+                    if (Creature* pArthas = me->GetCreature(*me, instance ? instance->GetData64(DATA_ARTHAS) : 0))
                         if (pArthas->isDead())
                         {
                             EnterEvadeMode();
                             me->DisappearAndDie();
-                            if (pInstance)
-                                pInstance->SetData(DATA_MAL_GANIS_EVENT, FAIL);
+                            if (instance)
+                                instance->SetData(DATA_MAL_GANIS_EVENT, FAIL);
                         }
 
                     if (uiCarrionSwarmTimer < diff)
@@ -171,8 +171,8 @@ public:
 
                     if (uiMindBlastTimer < diff)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            DoCast(pTarget, SPELL_MIND_BLAST);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(target, SPELL_MIND_BLAST);
                         uiMindBlastTimer = 6000;
                     } else uiMindBlastTimer -= diff;
 
@@ -185,8 +185,8 @@ public:
                     if (uiSleepTimer < diff)
                     {
                         DoScriptText(RAND(SAY_SLEEP_1, SAY_SLEEP_2), me);
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            DoCast(pTarget, SPELL_SLEEP);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(target, SPELL_SLEEP);
                         uiSleepTimer = urand(15000, 20000);
                     } else uiSleepTimer -= diff;
 
@@ -195,7 +195,7 @@ public:
                 case OUTRO:
                     if (uiOutroTimer < diff)
                     {
-                        switch(uiOutroStep)
+                        switch (uiOutroStep)
                         {
                             case 1:
                                 DoScriptText(SAY_ESCAPE_SPEECH_1, me);
@@ -204,7 +204,7 @@ public:
                                 uiOutroTimer = 8000;
                                 break;
                             case 2:
-                                me->SetUInt64Value(UNIT_FIELD_TARGET, pInstance ? pInstance->GetData64(DATA_ARTHAS) : 0);
+                                me->SetTarget(instance ? instance->GetData64(DATA_ARTHAS) : 0);
                                 me->HandleEmoteCommand(29);
                                 DoScriptText(SAY_ESCAPE_SPEECH_2, me);
                                 ++uiOutroStep;
@@ -233,17 +233,17 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            if (pInstance)
+            if (instance)
             {
-                pInstance->SetData(DATA_MAL_GANIS_EVENT, DONE);
+                instance->SetData(DATA_MAL_GANIS_EVENT, DONE);
 
                 // give achievement credit to players. criteria use spell 58630 which doesn't exist.
-                if (pInstance)
-                    pInstance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630);
+                if (instance)
+                    instance->DoUpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, 58630);
             }
         }
 
-        void KilledUnit(Unit * victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

@@ -91,7 +91,7 @@ bool findnth(std::string &str, int n, std::string::size_type &s, std::string::si
 
     do
     {
-        e = str.find("'", s);
+        e = str.find('\'', s);
         if (e == std::string::npos) return false;
     } while (str[e-1] == '\\');
 
@@ -100,7 +100,7 @@ bool findnth(std::string &str, int n, std::string::size_type &s, std::string::si
         do
         {
             s = e+4;
-            e = str.find("'", s);
+            e = str.find('\'', s);
             if (e == std::string::npos) return false;
         } while (str[e-1] == '\\');
     }
@@ -176,7 +176,7 @@ bool changeGuid(std::string &str, int n, std::map<uint32, uint32> &guidMap, uint
         return true;                                        // not an error
 
     uint32 newGuid = registerNewGuid(oldGuid, guidMap, hiGuid);
-    snprintf(chritem, 20, "%d", newGuid);
+    snprintf(chritem, 20, "%u", newGuid);
 
     return changenth(str, n, chritem, false, nonzero);
 }
@@ -189,7 +189,7 @@ bool changetokGuid(std::string &str, int n, std::map<uint32, uint32> &guidMap, u
         return true;                                        // not an error
 
     uint32 newGuid = registerNewGuid(oldGuid, guidMap, hiGuid);
-    snprintf(chritem, 20, "%d", newGuid);
+    snprintf(chritem, 20, "%u", newGuid);
 
     return changetoknth(str, n, chritem, false, nonzero);
 }
@@ -199,17 +199,17 @@ std::string CreateDumpString(char const* tableName, QueryResult result)
     if (!tableName || !result) return "";
     std::ostringstream ss;
     ss << "INSERT INTO "<< _TABLE_SIM_ << tableName << _TABLE_SIM_ << " VALUES (";
-    Field *fields = result->Fetch();
+    Field* fields = result->Fetch();
     for (uint32 i = 0; i < result->GetFieldCount(); ++i)
     {
-        if (i == 0) ss << "'";
+        if (i == 0) ss << '\'';
         else ss << ", '";
 
         std::string s = fields[i].GetString();
-        CharacterDatabase.escape_string(s);
+        CharacterDatabase.EscapeString(s);
         ss << s;
 
-        ss << "'";
+        ss << '\'';
     }
     ss << ");";
     return ss.str();
@@ -218,7 +218,7 @@ std::string CreateDumpString(char const* tableName, QueryResult result)
 std::string PlayerDumpWriter::GenerateWhereStr(char const* field, uint32 guid)
 {
     std::ostringstream wherestr;
-    wherestr << field << " = '" << guid << "'";
+    wherestr << field << " = '" << guid << '\'';
     return wherestr.str();
 }
 
@@ -352,7 +352,16 @@ bool PlayerDumpWriter::GetDump(uint32 guid, std::string &dump)
 
 DumpReturn PlayerDumpWriter::WriteDump(const std::string& file, uint32 guid)
 {
-    FILE *fout = fopen(file.c_str(), "w");
+    if (sWorld->getBoolConfig(CONFIG_PDUMP_NO_PATHS))
+        if (strstr(file.c_str(), "\\") || strstr(file.c_str(), "/"))
+            return DUMP_FILE_OPEN_ERROR;
+    if (sWorld->getBoolConfig(CONFIG_PDUMP_NO_OVERWRITE))
+        if (FILE* f = fopen(file.c_str(), "r"))
+        {
+            fclose(f);
+            return DUMP_FILE_OPEN_ERROR;
+        }
+    FILE* fout = fopen(file.c_str(), "w");
     if (!fout)
         return DUMP_FILE_OPEN_ERROR;
 
@@ -382,11 +391,11 @@ void fixNULLfields(std::string &line)
 
 DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, std::string name, uint32 guid)
 {
-    uint32 charcount = sAccountMgr->GetCharactersCount(account);
+    uint32 charcount = AccountMgr::GetCharactersCount(account);
     if (charcount >= 10)
         return DUMP_TOO_MANY_CHARS;
 
-    FILE *fin = fopen(file.c_str(), "r");
+    FILE* fin = fopen(file.c_str(), "r");
     if (!fin)
         return DUMP_FILE_OPEN_ERROR;
 
@@ -411,7 +420,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     if (ObjectMgr::CheckPlayerName(name, true) == CHAR_NAME_SUCCESS)
     {
-        CharacterDatabase.escape_string(name);              // for safe, we use name only for sql quearies anyway
+        CharacterDatabase.EscapeString(name);              // for safe, we use name only for sql quearies anyway
         result = CharacterDatabase.PQuery("SELECT 1 FROM characters WHERE name = '%s'", name.c_str());
         if (result)
             name = "";                                      // use the one from the dump
@@ -421,9 +430,9 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     // name encoded or empty
 
-    snprintf(newguid, 20, "%d", guid);
-    snprintf(chraccount, 20, "%d", account);
-    snprintf(newpetid, 20, "%d", sObjectMgr->GeneratePetNumber());
+    snprintf(newguid, 20, "%u", guid);
+    snprintf(chraccount, 20, "%u", account);
+    snprintf(newpetid, 20, "%u", sObjectMgr->GeneratePetNumber());
     snprintf(lastpetid, 20, "%s", "");
 
     std::map<uint32, uint32> items;
@@ -433,6 +442,10 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     typedef std::map<uint32, uint32> PetIds;                // old->new petid relation
     typedef PetIds::value_type PetIdsPair;
     PetIds petids;
+
+    uint8 gender = GENDER_NONE;
+    uint8 race = RACE_NONE;
+    uint8 playerClass = 0;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     while (!feof(fin))
@@ -493,7 +506,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
         }
 
         // change the data to server values
-        switch(type)
+        switch (type)
         {
             case DTT_CHARACTER:
             {
@@ -503,28 +516,29 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                 if (!changenth(line, 2, chraccount))        // characters.account update
                     ROLLBACK(DUMP_FILE_BROKEN);
 
+                race = uint8(atol(getnth(line, 4).c_str()));
+                playerClass = uint8(atol(getnth(line, 5).c_str()));
+                gender = uint8(atol(getnth(line, 6).c_str()));
                 if (name == "")
                 {
                     // check if the original name already exists
                     name = getnth(line, 3);
-                    CharacterDatabase.escape_string(name);
+                    CharacterDatabase.EscapeString(name);
 
                     result = CharacterDatabase.PQuery("SELECT 1 FROM characters WHERE name = '%s'", name.c_str());
                     if (result)
-                    {
                         if (!changenth(line, 37, "1"))       // characters.at_login set to "rename on login"
                             ROLLBACK(DUMP_FILE_BROKEN);
-                    }
                 }
                 else if (!changenth(line, 3, name.c_str())) // characters.name
                     ROLLBACK(DUMP_FILE_BROKEN);
 
                 const char null[5] = "NULL";
-                if (!changenth(line, 68, null))             // characters.deleteInfos_Account
+                if (!changenth(line, 69, null))             // characters.deleteInfos_Account
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!changenth(line, 69, null))             // characters.deleteInfos_Name
+                if (!changenth(line, 70, null))             // characters.deleteInfos_Name
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!changenth(line, 70, null))             // characters.deleteDate
+                if (!changenth(line, 71, null))             // characters.deleteDate
                     ROLLBACK(DUMP_FILE_BROKEN);
                 break;
             }
@@ -645,6 +659,9 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     CharacterDatabase.CommitTransaction(trans);
 
+    // in case of name conflict player has to rename at login anyway
+    sWorld->AddCharacterNameData(guid, name, gender, race, playerClass);
+
     sObjectMgr->m_hiItemGuid += items.size();
     sObjectMgr->m_mailid     += mails.size();
 
@@ -655,4 +672,3 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     return DUMP_SUCCESS;
 }
-

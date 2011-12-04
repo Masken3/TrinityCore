@@ -23,7 +23,6 @@
 
 BattlegroundAA::BattlegroundAA()
 {
-
     m_StartDelayTimes[BG_STARTING_EVENT_FIRST]  = BG_START_DELAY_1M;
     m_StartDelayTimes[BG_STARTING_EVENT_SECOND] = BG_START_DELAY_30S;
     m_StartDelayTimes[BG_STARTING_EVENT_THIRD]  = BG_START_DELAY_15S;
@@ -40,11 +39,6 @@ BattlegroundAA::~BattlegroundAA()
 
 }
 
-void BattlegroundAA::Update(uint32 diff)
-{
-    Battleground::Update(diff);
-}
-
 void BattlegroundAA::StartingEventCloseDoors()
 {
 }
@@ -53,16 +47,16 @@ void BattlegroundAA::StartingEventOpenDoors()
 {
 }
 
-void BattlegroundAA::AddPlayer(Player *plr)
+void BattlegroundAA::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(plr);
+    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
     BattlegroundAAScore* sc = new BattlegroundAAScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    m_PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundAA::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
+void BattlegroundAA::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
 }
 
@@ -71,7 +65,7 @@ void BattlegroundAA::HandleKillPlayer(Player* player, Player* killer)
     Battleground::HandleKillPlayer(player, killer);
 }
 
-void BattlegroundAA::HandleAreaTrigger(Player * /*Source*/, uint32 /*Trigger*/)
+void BattlegroundAA::HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/)
 {
 }
 

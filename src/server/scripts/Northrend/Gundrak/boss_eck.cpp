@@ -34,16 +34,16 @@ class boss_eck : public CreatureScript
 public:
     boss_eck() : CreatureScript("boss_eck") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_eckAI (pCreature);
+        return new boss_eckAI (creature);
     }
 
     struct boss_eckAI : public ScriptedAI
     {
-        boss_eckAI(Creature *c) : ScriptedAI(c)
+        boss_eckAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
         uint32 uiBerserkTimer;
@@ -53,7 +53,7 @@ public:
 
         bool bBerserk;
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -64,14 +64,14 @@ public:
 
             bBerserk = false;
 
-            if (pInstance)
-                pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, NOT_STARTED);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance)
-                pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
         }
 
         void UpdateAI(const uint32 diff)
@@ -94,10 +94,10 @@ public:
 
             if (uiSpringTimer <= diff)
             {
-                Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
-                if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                if (target && target->GetTypeId() == TYPEID_PLAYER)
                 {
-                    DoCast(pTarget, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
+                    DoCast(target, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
                     uiSpringTimer = urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS);
                 }
             } else uiSpringTimer -= diff;
@@ -126,8 +126,8 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            if (pInstance)
-                pInstance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, DONE);
         }
     };
 
@@ -138,26 +138,26 @@ class npc_ruins_dweller : public CreatureScript
 public:
     npc_ruins_dweller() : CreatureScript("npc_ruins_dweller") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_ruins_dwellerAI (pCreature);
+        return new npc_ruins_dwellerAI (creature);
     }
 
     struct npc_ruins_dwellerAI : public ScriptedAI
     {
-        npc_ruins_dwellerAI(Creature *c) : ScriptedAI(c)
+        npc_ruins_dwellerAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
-        void JustDied(Unit * /*who*/)
+        void JustDied(Unit* /*who*/)
         {
-            if (pInstance)
+            if (instance)
             {
-                pInstance->SetData64(DATA_RUIN_DWELLER_DIED, me->GetGUID());
-                if (pInstance->GetData(DATA_ALIVE_RUIN_DWELLERS) == 0)
+                instance->SetData64(DATA_RUIN_DWELLER_DIED, me->GetGUID());
+                if (instance->GetData(DATA_ALIVE_RUIN_DWELLERS) == 0)
                     me->SummonCreature(CREATURE_ECK, EckSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 300*IN_MILLISECONDS);
             }
         }

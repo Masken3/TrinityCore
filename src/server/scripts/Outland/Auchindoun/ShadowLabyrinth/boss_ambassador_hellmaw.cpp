@@ -49,19 +49,19 @@ class boss_ambassador_hellmaw : public CreatureScript
 public:
     boss_ambassador_hellmaw() : CreatureScript("boss_ambassador_hellmaw") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_ambassador_hellmawAI(pCreature);
+        return new boss_ambassador_hellmawAI(creature);
     }
 
     struct boss_ambassador_hellmawAI : public npc_escortAI
     {
-        boss_ambassador_hellmawAI(Creature* pCreature) : npc_escortAI(pCreature)
+        boss_ambassador_hellmawAI(Creature* creature) : npc_escortAI(creature)
         {
-            m_pInstance = pCreature->GetInstanceScript();
+            m_instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_pInstance;
+        InstanceScript* m_instance;
 
         uint32 EventCheck_Timer;
         uint32 CorrosiveAcid_Timer;
@@ -81,25 +81,25 @@ public:
             IsBanished = true;
             Enraged = false;
 
-            if (m_pInstance && me->isAlive())
+            if (m_instance && me->isAlive())
             {
-                if (m_pInstance->GetData(TYPE_OVERSEER) != DONE)
+                if (m_instance->GetData(TYPE_OVERSEER) != DONE)
                     DoCast(me, SPELL_BANISH, true);
             }
         }
 
         void JustReachedHome()
         {
-            if (m_pInstance)
-                m_pInstance->SetData(TYPE_HELLMAW, FAIL);
+            if (m_instance)
+                m_instance->SetData(TYPE_HELLMAW, FAIL);
         }
 
-        void MoveInLineOfSight(Unit* pWho)
+        void MoveInLineOfSight(Unit* who)
         {
             if (me->HasAura(SPELL_BANISH))
                 return;
 
-            npc_escortAI::MoveInLineOfSight(pWho);
+            npc_escortAI::MoveInLineOfSight(who);
         }
 
         void WaypointReached(uint32 /*i*/)
@@ -114,34 +114,34 @@ public:
             IsBanished = false;
             Intro = true;
 
-            if (m_pInstance)
+            if (m_instance)
             {
-                if (m_pInstance->GetData(TYPE_HELLMAW) != FAIL)
+                if (m_instance->GetData(TYPE_HELLMAW) != FAIL)
                 {
                     DoScriptText(SAY_INTRO, me);
                     Start(true, false, 0, NULL, false, true);
                 }
 
-                m_pInstance->SetData(TYPE_HELLMAW, IN_PROGRESS);
+                m_instance->SetData(TYPE_HELLMAW, IN_PROGRESS);
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (m_pInstance)
-                m_pInstance->SetData(TYPE_HELLMAW, DONE);
+            if (m_instance)
+                m_instance->SetData(TYPE_HELLMAW, DONE);
         }
 
         void UpdateAI(const uint32 diff)
@@ -150,9 +150,9 @@ public:
             {
                 if (EventCheck_Timer <= diff)
                 {
-                    if (m_pInstance)
+                    if (m_instance)
                     {
-                        if (m_pInstance->GetData(TYPE_OVERSEER) == DONE)
+                        if (m_instance->GetData(TYPE_OVERSEER) == DONE)
                         {
                             DoIntro();
                             return;

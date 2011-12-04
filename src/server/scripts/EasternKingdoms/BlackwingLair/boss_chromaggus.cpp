@@ -64,14 +64,14 @@ class boss_chromaggus : public CreatureScript
 public:
     boss_chromaggus() : CreatureScript("boss_chromaggus") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_chromaggusAI (pCreature);
+        return new boss_chromaggusAI (creature);
     }
 
     struct boss_chromaggusAI : public ScriptedAI
     {
-        boss_chromaggusAI(Creature *c) : ScriptedAI(c)
+        boss_chromaggusAI(Creature* c) : ScriptedAI(c)
         {
             //Select the 2 breaths that we are going to use until despawned
             //5 possiblities for the first breath, 4 for the second, 20 total possiblites
@@ -197,7 +197,7 @@ public:
             Enraged = false;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -244,33 +244,33 @@ public:
                 std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
                 for (std::list<HostileReference*>::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
                 {
-                    Unit* pUnit;
+                    Unit* unit;
                     if ((*i) && (*i)->getSource())
                     {
-                        pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid());
-                        if (pUnit)
+                        unit = Unit::GetUnit((*me), (*i)->getUnitGuid());
+                        if (unit)
                         {
                             //Cast affliction
-                            DoCast(pUnit, RAND(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK,
+                            DoCast(unit, RAND(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK,
                                                SPELL_BROODAF_RED, SPELL_BROODAF_BRONZE, SPELL_BROODAF_GREEN), true);
 
                             //Chromatic mutation if target is effected by all afflictions
-                            if (pUnit->HasAura(SPELL_BROODAF_BLUE)
-                                && pUnit->HasAura(SPELL_BROODAF_BLACK)
-                                && pUnit->HasAura(SPELL_BROODAF_RED)
-                                && pUnit->HasAura(SPELL_BROODAF_BRONZE)
-                                && pUnit->HasAura(SPELL_BROODAF_GREEN))
+                            if (unit->HasAura(SPELL_BROODAF_BLUE)
+                                && unit->HasAura(SPELL_BROODAF_BLACK)
+                                && unit->HasAura(SPELL_BROODAF_RED)
+                                && unit->HasAura(SPELL_BROODAF_BRONZE)
+                                && unit->HasAura(SPELL_BROODAF_GREEN))
                             {
-                                //pTarget->RemoveAllAuras();
-                                //DoCast(pTarget, SPELL_CHROMATIC_MUT_1);
+                                //target->RemoveAllAuras();
+                                //DoCast(target, SPELL_CHROMATIC_MUT_1);
 
                                 //Chromatic mutation is causing issues
                                 //Assuming it is caused by a lack of core support for Charm
                                 //So instead we instant kill our target
 
                                 //WORKAROUND
-                                if (pUnit->GetTypeId() == TYPEID_PLAYER)
-                                    pUnit->CastSpell(pUnit, 5, false);
+                                if (unit->GetTypeId() == TYPEID_PLAYER)
+                                    unit->CastSpell(unit, 5, false);
                             }
                         }
                     }

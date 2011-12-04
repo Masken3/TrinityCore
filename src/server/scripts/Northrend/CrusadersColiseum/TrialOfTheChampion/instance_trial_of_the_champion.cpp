@@ -31,14 +31,14 @@ class instance_trial_of_the_champion : public InstanceMapScript
 public:
     instance_trial_of_the_champion() : InstanceMapScript("instance_trial_of_the_champion", 650) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* pMap) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
-        return new instance_trial_of_the_champion_InstanceMapScript(pMap);
+        return new instance_trial_of_the_champion_InstanceMapScript(map);
     }
 
     struct instance_trial_of_the_champion_InstanceMapScript : public InstanceScript
     {
-        instance_trial_of_the_champion_InstanceMapScript(Map* pMap) : InstanceScript(pMap) {}
+        instance_trial_of_the_champion_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -105,11 +105,11 @@ public:
 
             if (!players.isEmpty())
             {
-                if (Player* pPlayer = players.begin()->getSource())
-                    TeamInInstance = pPlayer->GetTeam();
+                if (Player* player = players.begin()->getSource())
+                    TeamInInstance = player->GetTeam();
             }
 
-            switch(creature->GetEntry())
+            switch (creature->GetEntry())
             {
                 // Champions
                 case VEHICLE_MOKRA_SKILLCRUSHER_MOUNT:
@@ -151,7 +151,7 @@ public:
 
         void OnGameObjectCreate(GameObject* go)
         {
-            switch(go->GetEntry())
+            switch (go->GetEntry())
             {
                 case GO_MAIN_GATE:
                     uiMainGateGUID = go->GetGUID();
@@ -165,7 +165,7 @@ public:
 
         void SetData(uint32 uiType, uint32 uiData)
         {
-            switch(uiType)
+            switch (uiType)
             {
                 case DATA_MOVEMENT_DONE:
                     uiMovementDone = uiData;
@@ -180,8 +180,8 @@ public:
                     if (uiData == IN_PROGRESS)
                     {
                         for (std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
-                            if (Creature* pSummon = instance->GetCreature(*itr))
-                                pSummon->RemoveFromWorld();
+                            if (Creature* summon = instance->GetCreature(*itr))
+                                summon->RemoveFromWorld();
                     }else if (uiData == DONE)
                     {
                         ++uiGrandChampionsDeaths;
@@ -234,7 +234,7 @@ public:
 
         uint32 GetData(uint32 uiData)
         {
-            switch(uiData)
+            switch (uiData)
             {
                 case BOSS_GRAND_CHAMPIONS:  return m_auiEncounter[0];
                 case BOSS_ARGENT_CHALLENGE_E: return m_auiEncounter[1];
@@ -250,7 +250,7 @@ public:
 
         uint64 GetData64(uint32 uiData)
         {
-            switch(uiData)
+            switch (uiData)
             {
                 case DATA_ANNOUNCER: return uiAnnouncerGUID;
                 case DATA_MAIN_GATE: return uiMainGateGUID;
@@ -265,7 +265,7 @@ public:
 
         void SetData64(uint32 uiType, uint64 uiData)
         {
-            switch(uiType)
+            switch (uiType)
             {
                 case DATA_GRAND_CHAMPION_1:
                     uiGrandChampion1GUID = uiData;
@@ -286,11 +286,11 @@ public:
             std::ostringstream saveStream;
 
             saveStream << "T C " << m_auiEncounter[0]
-                << " " << m_auiEncounter[1]
-                << " " << m_auiEncounter[2]
-                << " " << m_auiEncounter[3]
-                << " " << uiGrandChampionsDeaths
-                << " " << uiMovementDone;
+                << ' ' << m_auiEncounter[1]
+                << ' ' << m_auiEncounter[2]
+                << ' ' << m_auiEncounter[3]
+                << ' ' << uiGrandChampionsDeaths
+                << ' ' << uiMovementDone;
 
             str_data = saveStream.str();
 

@@ -81,19 +81,19 @@ class boss_hydross_the_unstable : public CreatureScript
 public:
     boss_hydross_the_unstable() : CreatureScript("boss_hydross_the_unstable") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_hydross_the_unstableAI (pCreature);
+        return new boss_hydross_the_unstableAI (creature);
     }
 
     struct boss_hydross_the_unstableAI : public ScriptedAI
     {
-        boss_hydross_the_unstableAI(Creature *c) : ScriptedAI(c), Summons(me)
+        boss_hydross_the_unstableAI(Creature* c) : ScriptedAI(c), Summons(me)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint64 beams[2];
         uint32 PosCheck_Timer;
@@ -129,8 +129,8 @@ public:
 
             me->SetDisplayId(MODEL_CLEAN);
 
-            if (pInstance)
-                pInstance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, NOT_STARTED);
             beam = false;
             Summons.DespawnAll();
         }
@@ -166,15 +166,15 @@ public:
                 }
             }
         }
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             if (CorruptedForm)
             {
@@ -202,20 +202,20 @@ public:
             }
         }
 
-        void SummonedCreatureDespawn(Creature *summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             Summons.Despawn(summon);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
             if (CorruptedForm)
                 DoScriptText(SAY_CORRUPT_DEATH, me);
             else
                 DoScriptText(SAY_CLEAN_DEATH, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_HYDROSSTHEUNSTABLEEVENT, DONE);
             Summons.DespawnAll();
         }
 
@@ -262,9 +262,9 @@ public:
                 //VileSludge_Timer
                 if (VileSludge_Timer <= diff)
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                    if (pTarget)
-                        DoCast(pTarget, SPELL_VILE_SLUDGE);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if (target)
+                        DoCast(target, SPELL_VILE_SLUDGE);
 
                     VileSludge_Timer = 15000;
                 } else VileSludge_Timer -= diff;
@@ -307,7 +307,7 @@ public:
                     {
                         uint32 mark_spell = 0;
 
-                        switch(MarkOfHydross_Count)
+                        switch (MarkOfHydross_Count)
                         {
                             case 0:  mark_spell = SPELL_MARK_OF_HYDROSS1; break;
                             case 1:  mark_spell = SPELL_MARK_OF_HYDROSS2; break;
@@ -329,9 +329,9 @@ public:
                 //WaterTomb_Timer
                 if (WaterTomb_Timer <= diff)
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
-                    if (pTarget)
-                        DoCast(pTarget, SPELL_WATER_TOMB);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                    if (target)
+                        DoCast(target, SPELL_WATER_TOMB);
 
                     WaterTomb_Timer = 7000;
                 } else WaterTomb_Timer -= diff;

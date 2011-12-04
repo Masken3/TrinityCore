@@ -40,25 +40,25 @@ class ChatCommand
         bool               AllowConsole;
         bool (*Handler)(ChatHandler*, const char* args);
         std::string        Help;
-        ChatCommand *      ChildCommands;
+        ChatCommand*      ChildCommands;
 };
 
 class ChatHandler
 {
     public:
-        WorldSession * GetSession() { return m_session; }
+        WorldSession* GetSession() { return m_session; }
         explicit ChatHandler(WorldSession* session) : m_session(session) {}
         explicit ChatHandler(Player* player) : m_session(player->GetSession()) {}
         virtual ~ChatHandler() {}
 
-        static void FillMessageData(WorldPacket *data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit *speaker);
+        static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit* speaker);
 
-        void FillMessageData(WorldPacket *data, uint8 type, uint32 language, uint64 target_guid, const char* message)
+        void FillMessageData(WorldPacket* data, uint8 type, uint32 language, uint64 target_guid, const char* message)
         {
             FillMessageData(data, m_session, type, language, NULL, target_guid, message, NULL);
         }
 
-        void FillSystemMessageData(WorldPacket *data, const char* message)
+        void FillSystemMessageData(WorldPacket* data, const char* message)
         {
             FillMessageData(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, 0, message);
         }
@@ -109,7 +109,7 @@ class ChatHandler
         uint32    extractSpellIdFromLink(char* text);
         uint64    extractGuidFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
-        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline = false);
+        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &player, Group* &group, uint64 &guid, bool offline = false);
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
         bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
@@ -119,17 +119,17 @@ class ChatHandler
 
         GameObject* GetNearbyGameObject();
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid, uint32 entry);
-        bool HasSentErrorMessage() { return sentErrorMessage;}
+        bool HasSentErrorMessage() const { return sentErrorMessage;}
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
         static bool LoadCommandTable() { return load_command_table;}
         static void SetLoadCommandTable(bool val){ load_command_table = val;};
 
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
-        static bool SetDataForCommandInTable(ChatCommand *table, const char* text, uint32 security, std::string const& help, std::string const& fullcommand);
-        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd);
-        bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
-        bool ShowHelpForSubCommands(ChatCommand *table, char const* cmd, char const* subcmd);
+        static bool SetDataForCommandInTable(ChatCommand* table, const char* text, uint32 security, std::string const& help, std::string const& fullcommand);
+        bool ExecuteCommandInTable(ChatCommand* table, const char* text, const std::string& fullcmd);
+        bool ShowHelpForCommand(ChatCommand* table, const char* cmd);
+        bool ShowHelpForSubCommands(ChatCommand* table, char const* cmd, char const* subcmd);
 
         bool HandleNameAnnounceCommand(const char* args);
         bool HandleGMNameAnnounceCommand(const char* args);
@@ -152,6 +152,7 @@ class ChatHandler
         bool HandleCastDistCommand(const char *args);
         bool HandleCastSelfCommand(const char *args);
         bool HandleCastTargetCommand(const char *args);
+        bool HandleCastDestCommand(const char *args);
 
         bool HandleCharacterCustomizeCommand(const char * args);
         bool HandleCharacterChangeFactionCommand(const char * args);
@@ -258,7 +259,6 @@ class ChatHandler
         bool HandleRecallCommand(const char* args);
         bool HandleAnnounceCommand(const char* args);
         bool HandleNotifyCommand(const char* args);
-        bool HandleGPSCommand(const char* args);
         bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
 
@@ -293,7 +293,6 @@ class ChatHandler
         bool HandleHideAreaCommand(const char* args);
         bool HandleAddItemCommand(const char* args);
         bool HandleAddItemSetCommand(const char* args);
-        bool HandlePetTpCommand(const char* args);
         bool HandlePetUnlearnCommand(const char* args);
         bool HandlePetLearnCommand(const char* args);
         bool HandleCreatePetCommand(const char* args);
@@ -318,6 +317,7 @@ class ChatHandler
         bool HandleGMTicketUnAssignCommand(const char* args);
         bool HandleGMTicketCommentCommand(const char* args);
         bool HandleGMTicketDeleteByIdCommand(const char* args);
+        bool HandleGMTicketResetCommand(const char* /* args */);
         bool HandleGMTicketReloadCommand(const char*);
         bool HandleToggleGMTicketSystem(const char* args);
         bool HandleGMTicketEscalateCommand(const char* args);
@@ -379,7 +379,7 @@ class ChatHandler
     private:
         bool _HandleGMTicketResponseAppendCommand(const char* args, bool newLine);
 
-        WorldSession * m_session;                           // != NULL for chat command call and NULL for CLI command
+        WorldSession* m_session;                           // != NULL for chat command call and NULL for CLI command
 
         // common global flag
         static bool load_command_table;

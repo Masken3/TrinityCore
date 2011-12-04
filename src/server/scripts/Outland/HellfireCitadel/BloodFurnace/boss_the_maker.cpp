@@ -52,12 +52,12 @@ class boss_the_maker : public CreatureScript
 
         struct boss_the_makerAI : public ScriptedAI
         {
-            boss_the_makerAI(Creature* pCreature) : ScriptedAI(pCreature)
+            boss_the_makerAI(Creature* creature) : ScriptedAI(creature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = creature->GetInstanceScript();
             }
 
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 AcidSpray_Timer;
             uint32 ExplodingBreaker_Timer;
@@ -71,22 +71,22 @@ class boss_the_maker : public CreatureScript
                 Domination_Timer = 120000;
                 Knockdown_Timer = 10000;
 
-                if (!pInstance)
+                if (!instance)
                     return;
 
-                pInstance->SetData(TYPE_THE_MAKER_EVENT, NOT_STARTED);
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR2), true);
+                instance->SetData(TYPE_THE_MAKER_EVENT, NOT_STARTED);
+                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), true);
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
-                if (!pInstance)
+                if (!instance)
                     return;
 
-                pInstance->SetData(TYPE_THE_MAKER_EVENT, IN_PROGRESS);
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR2), false);
+                instance->SetData(TYPE_THE_MAKER_EVENT, IN_PROGRESS);
+                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), false);
             }
 
             void KilledUnit(Unit* /*victim*/)
@@ -98,12 +98,12 @@ class boss_the_maker : public CreatureScript
             {
                 DoScriptText(SAY_DIE, me);
 
-                if (!pInstance)
+                if (!instance)
                     return;
 
-                pInstance->SetData(TYPE_THE_MAKER_EVENT, DONE);
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR2), true);
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_DOOR3), true);
+                instance->SetData(TYPE_THE_MAKER_EVENT, DONE);
+                instance->HandleGameObject(instance->GetData64(DATA_DOOR2), true);
+                instance->HandleGameObject(instance->GetData64(DATA_DOOR3), true);
 
              }
 
@@ -122,8 +122,8 @@ class boss_the_maker : public CreatureScript
 
                 if (ExplodingBreaker_Timer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                        DoCast(pTarget, SPELL_EXPLODING_BREAKER);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        DoCast(target, SPELL_EXPLODING_BREAKER);
                     ExplodingBreaker_Timer = 4000+rand()%8000;
                 }
                 else
@@ -132,10 +132,10 @@ class boss_the_maker : public CreatureScript
                 /* // Disabled until Core Support for mind control
                 if (domination_timer_timer <= diff)
                 {
-                Unit *pTarget;
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target;
+                target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 
-                DoCast(pTarget, SPELL_DOMINATION);
+                DoCast(target, SPELL_DOMINATION);
 
                 domination_timer = 120000;
                 } else domination_timer -=diff;

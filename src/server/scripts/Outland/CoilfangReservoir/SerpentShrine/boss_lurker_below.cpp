@@ -71,26 +71,19 @@ class boss_the_lurker_below : public CreatureScript
 public:
     boss_the_lurker_below() : CreatureScript("boss_the_lurker_below") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_the_lurker_belowAI (pCreature);
+        return new boss_the_lurker_belowAI (creature);
     }
 
     struct boss_the_lurker_belowAI : public Scripted_NoMovementAI
     {
-        boss_the_lurker_belowAI(Creature *c) : Scripted_NoMovementAI(c), Summons(me)
+        boss_the_lurker_belowAI(Creature* c) : Scripted_NoMovementAI(c), Summons(me)
         {
-            pInstance = c->GetInstanceScript();
-            SpellEntry *TempSpell = GET_SPELL(SPELL_SPOUT_ANIM);
-            if (TempSpell)
-            {
-                TempSpell->Effect[0] = 0;//remove all spell effect, only anim is needed
-                TempSpell->Effect[1] = 0;
-                TempSpell->Effect[2] = 0;
-            }
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
         SummonList Summons;
 
         bool Spawned;
@@ -110,7 +103,7 @@ public:
 
         bool CheckCanStart()//check if players fished
         {
-            if (pInstance && pInstance->GetData(DATA_STRANGE_POOL) == NOT_STARTED)
+            if (instance && instance->GetData(DATA_STRANGE_POOL) == NOT_STARTED)
                 return false;
             return true;
         }
@@ -135,10 +128,10 @@ public:
 
             Summons.DespawnAll();
 
-            if (pInstance)
+            if (instance)
             {
-                pInstance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
-                pInstance->SetData(DATA_STRANGE_POOL, NOT_STARTED);
+                instance->SetData(DATA_THELURKERBELOWEVENT, NOT_STARTED);
+                instance->SetData(DATA_STRANGE_POOL, NOT_STARTED);
             }
             DoCast(me, SPELL_SUBMERGE);//submerge anim
             me->SetVisible(false);//we start invis under water, submerged
@@ -148,27 +141,27 @@ public:
 
         void JustDied(Unit* /*Killer*/)
         {
-            if (pInstance)
+            if (instance)
             {
-                pInstance->SetData(DATA_THELURKERBELOWEVENT, DONE);
-                pInstance->SetData(DATA_STRANGE_POOL, IN_PROGRESS);
+                instance->SetData(DATA_THELURKERBELOWEVENT, DONE);
+                instance->SetData(DATA_STRANGE_POOL, IN_PROGRESS);
             }
 
             Summons.DespawnAll();
         }
 
-        void EnterCombat(Unit * who)
+        void EnterCombat(Unit* who)
         {
-            if (pInstance)
-                pInstance->SetData(DATA_THELURKERBELOWEVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_THELURKERBELOWEVENT, IN_PROGRESS);
             Scripted_NoMovementAI::EnterCombat(who);
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!CanStartEvent)//boss is invisible, don't attack
                 return;
-            if (!me->getVictim() && who->isTargetableForAttack() && (me->IsHostileTo(who)))
+            if (!me->getVictim() && who->IsValidAttackTarget(me))
             {
                 float attackRadius = me->GetAttackDistance(who);
                 if (me->IsWithinDistInMap(who, attackRadius))
@@ -241,7 +234,7 @@ public:
                 {
                     me->MonsterTextEmote(EMOTE_SPOUT, 0, true);
                     me->SetReactState(REACT_PASSIVE);
-                    me->GetMotionMaster()->MoveRotate(20000, rand()%2 ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
+                    me->GetMotionMaster()->MoveRotate(20000, urand(0, 1) ? ROTATE_DIRECTION_LEFT : ROTATE_DIRECTION_RIGHT);
                     SpoutTimer = 45000;
                     WhirlTimer = 20000;//whirl directly after spout
                     RotTimer = 20000;
@@ -258,8 +251,8 @@ public:
                 if (CheckTimer <= diff)//check if there are players in melee range
                 {
                     InRange = false;
-                    Map* pMap = me->GetMap();
-                    Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                    Map* map = me->GetMap();
+                    Map::PlayerList const &PlayerList = map->GetPlayers();
                     if (!PlayerList.isEmpty())
                     {
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
@@ -273,10 +266,10 @@ public:
 
                 if (RotTimer)
                 {
-                    Map* pMap = me->GetMap();
-                    if (pMap->IsDungeon())
+                    Map* map = me->GetMap();
+                    if (map->IsDungeon())
                     {
-                        Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                        Map::PlayerList const &PlayerList = map->GetPlayers();
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
                             if (i->getSource() && i->getSource()->isAlive() && me->HasInArc(float(diff/20000*M_PI*2), i->getSource()) && me->IsWithinDist(i->getSource(), SPOUT_DIST) && !i->getSource()->IsInWater())
@@ -299,11 +292,11 @@ public:
 
                 if (GeyserTimer <= diff)
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1);
-                    if (!pTarget && me->getVictim())
-                        pTarget = me->getVictim();
-                    if (pTarget)
-                        DoCast(pTarget, SPELL_GEYSER, true);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                    if (!target && me->getVictim())
+                        target = me->getVictim();
+                    if (target)
+                        DoCast(target, SPELL_GEYSER, true);
                     GeyserTimer = rand()%5000 + 15000;
                 } else GeyserTimer -= diff;
 
@@ -311,11 +304,11 @@ public:
                 {
                     if (WaterboltTimer <= diff)
                     {
-                        Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                        if (!pTarget && me->getVictim())
-                            pTarget = me->getVictim();
-                        if (pTarget)
-                            DoCast(pTarget, SPELL_WATERBOLT, true);
+                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                        if (!target && me->getVictim())
+                            target = me->getVictim();
+                        if (target)
+                            DoCast(target, SPELL_WATERBOLT, true);
                         WaterboltTimer = 3000;
                     } else WaterboltTimer -= diff;
                 }
@@ -375,9 +368,9 @@ class mob_coilfang_guardian : public CreatureScript
 public:
     mob_coilfang_guardian() : CreatureScript("mob_coilfang_guardian") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        SimpleAI* ai = new SimpleAI (pCreature);
+        SimpleAI* ai = new SimpleAI (creature);
 
         ai->Spell[0].Enabled = true;
         ai->Spell[0].Spell_Id = SPELL_ARCINGSMASH;
@@ -401,18 +394,15 @@ class mob_coilfang_ambusher : public CreatureScript
 public:
     mob_coilfang_ambusher() : CreatureScript("mob_coilfang_ambusher") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_coilfang_ambusherAI (pCreature);
+        return new mob_coilfang_ambusherAI (creature);
     }
 
     struct mob_coilfang_ambusherAI : public Scripted_NoMovementAI
     {
-        mob_coilfang_ambusherAI(Creature *c) : Scripted_NoMovementAI(c)
+        mob_coilfang_ambusherAI(Creature* c) : Scripted_NoMovementAI(c)
         {
-            SpellEntry *TempSpell = GET_SPELL(SPELL_SHOOT);
-            if (TempSpell)
-                TempSpell->Effect[0] = 2;//change spell effect from weapon % dmg to simple phisical dmg
         }
 
         uint32 MultiShotTimer;
@@ -425,16 +415,16 @@ public:
 
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
 
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || me->getVictim()) return;
 
-            if (who->isTargetableForAttack() && who->isInAccessiblePlaceFor(me) && me->IsHostileTo(who) && me->IsWithinDistInMap(who, 45))
+            if (who->isInAccessiblePlaceFor(me) && me->IsValidAttackTarget(who) && me->IsWithinDistInMap(who, 45))
             {
                 AttackStart(who);
             }
@@ -453,11 +443,11 @@ public:
 
             if (ShootBowTimer <= diff)
             {
-                Unit *pTarget = NULL;
-                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = NULL;
+                target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 int bp0 = 1100;
-                if (pTarget)
-                    me->CastCustomSpell(pTarget, SPELL_SHOOT, &bp0, NULL, NULL, true);
+                if (target)
+                    me->CastCustomSpell(target, SPELL_SHOOT, &bp0, NULL, NULL, true);
                 ShootBowTimer = 4000+rand()%5000;
                 MultiShotTimer += 1500;//add global cooldown
             } else ShootBowTimer -= diff;

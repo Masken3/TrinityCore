@@ -43,7 +43,7 @@
 #include "ScriptMgr.h"
 #include "Transport.h"
 
-bool MapSessionFilter::Process(WorldPacket *packet)
+bool MapSessionFilter::Process(WorldPacket* packet)
 {
     OpcodeHandler const &opHandle = opcodeTable[packet->GetOpcode()];
 
@@ -55,17 +55,17 @@ bool MapSessionFilter::Process(WorldPacket *packet)
     if (opHandle.packetProcessing == PROCESS_THREADUNSAFE)
         return false;
 
-    Player *plr = m_pSession->GetPlayer();
-    if (!plr)
+    Player* player = m_pSession->GetPlayer();
+    if (!player)
         return false;
 
     //in Map::Update() we do not process packets where player is not in world!
-    return plr->IsInWorld();
+    return player->IsInWorld();
 }
 
 //we should process ALL packets when player is not in world/logged in
 //OR packet handler is not thread-safe!
-bool WorldSessionFilter::Process(WorldPacket *packet)
+bool WorldSessionFilter::Process(WorldPacket* packet)
 {
     OpcodeHandler const &opHandle = opcodeTable[packet->GetOpcode()];
     //check if packet handler is supposed to be safe
@@ -77,23 +77,24 @@ bool WorldSessionFilter::Process(WorldPacket *packet)
         return true;
 
     //no player attached? -> our client! ^^
-    Player *plr = m_pSession->GetPlayer();
-    if (!plr)
+    Player* player = m_pSession->GetPlayer();
+    if (!player)
         return true;
 
     //lets process all packets for non-in-the-world player
-    return (plr->IsInWorld() == false);
+    return (player->IsInWorld() == false);
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter):
+WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter):
 m_muteTime(mute_time), m_timeOutTime(0), _player(NULL), m_Socket(sock),
 _security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
 m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
-m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter)
+m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
+isRecruiter(isARecruiter)
 {
     if (sock)
     {
@@ -102,6 +103,8 @@ m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter)
         ResetTimeOutTime();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
     }
+
+    InitializeQueryCallbackParameters();
 }
 
 /// WorldSession destructor
@@ -120,7 +123,7 @@ WorldSession::~WorldSession()
     }
 
     ///- empty incoming packet queue
-    WorldPacket *packet = NULL;
+    WorldPacket* packet = NULL;
     while (_recvQueue.next(packet))
         delete packet;
 
@@ -134,13 +137,13 @@ void WorldSession::SizeError(WorldPacket const &packet, uint32 size) const
 }
 
 /// Get the player name
-char const *WorldSession::GetPlayerName() const
+char const* WorldSession::GetPlayerName() const
 {
     return GetPlayer() ? GetPlayer()->GetName() : "<none>";
 }
 
 /// Send a packet to the client
-void WorldSession::SendPacket(WorldPacket const *packet)
+void WorldSession::SendPacket(WorldPacket const* packet)
 {
     if (!m_Socket)
         return;
@@ -184,13 +187,13 @@ void WorldSession::SendPacket(WorldPacket const *packet)
 }
 
 /// Add an incoming packet to the queue
-void WorldSession::QueuePacket(WorldPacket *new_packet)
+void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
     _recvQueue.add(new_packet);
 }
 
 /// Logging helper for unexpected opcodes
-void WorldSession::LogUnexpectedOpcode(WorldPacket *packet, const char* status, const char *reason)
+void WorldSession::LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason)
 {
     sLog->outError("SESSION (account: %u, guidlow: %u, char: %s): received unexpected opcode %s (0x%.4X, status: %s) %s",
         GetAccountId(), m_GUIDLow, _player ? _player->GetName() : "<none>",
@@ -198,7 +201,7 @@ void WorldSession::LogUnexpectedOpcode(WorldPacket *packet, const char* status, 
 }
 
 /// Logging helper for unexpected opcodes
-void WorldSession::LogUnprocessedTail(WorldPacket *packet)
+void WorldSession::LogUnprocessedTail(WorldPacket* packet)
 {
     sLog->outError("SESSION: opcode %s (0x%.4X) have unprocessed tail data (read stop at %u from %u)",
         LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode(), uint32(packet->rpos()), uint32(packet->wpos()));
@@ -218,7 +221,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
-    WorldPacket *packet = NULL;
+    WorldPacket* packet = NULL;
     while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
     {
         if (packet->GetOpcode() >= NUM_MSG_TYPES)
@@ -374,10 +377,10 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->RemoveAllAurasOnDeath();
 
             // build set of player who attack _player or who have pet attacking of _player
-            std::set<Player *> aset;
+            std::set<Player*> aset;
             for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
             {
-                Unit *owner = (*itr)->GetOwner();           // including player controlled case
+                Unit* owner = (*itr)->GetOwner();           // including player controlled case
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
                     aset.insert(owner->ToPlayer());
                 else if ((*itr)->GetTypeId() == TYPEID_PLAYER)
@@ -390,13 +393,13 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->RepopAtGraveyard();
 
             // give honor to all attackers from set like group case
-            for (std::set<Player *>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+            for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
                 (*itr)->RewardHonor(_player, aset.size());
 
             // give bg rewards and update counters like kill by first from attackers
             // this can't be called for all attackers.
             if (!aset.empty())
-                if (Battleground *bg = _player->GetBattleground())
+                if (Battleground* bg = _player->GetBattleground())
                     bg->HandleKillPlayer(_player, *aset.begin());
         }
         else if (_player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
@@ -410,11 +413,11 @@ void WorldSession::LogoutPlayer(bool Save)
         else if (_player->HasPendingBind())
         {
             _player->RepopAtGraveyard();
-            _player->SetPendingBind(NULL, 0);
+            _player->SetPendingBind(0, 0);
         }
 
         //drop a flag if player is carrying it
-        if (Battleground *bg = _player->GetBattleground())
+        if (Battleground* bg = _player->GetBattleground())
             bg->EventPlayerLoggedOut(_player);
 
         ///- Teleport to home if the player is in an invalid instance
@@ -438,8 +441,8 @@ void WorldSession::LogoutPlayer(bool Save)
             HandleMoveWorldportAckOpcode();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        if (Guild *pGuild = sGuildMgr->GetGuildById(_player->GetGuildId()))
-            pGuild->HandleMemberLogout(this);
+        if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+            guild->HandleMemberLogout(this);
 
         ///- Remove pet
         _player->RemovePet(NULL, PET_SAVE_AS_CURRENT, true);
@@ -489,9 +492,9 @@ void WorldSession::LogoutPlayer(bool Save)
         // e.g if he got disconnected during a transfer to another map
         // calls to GetMap in this case may cause crashes
         _player->CleanupsBeforeDelete();
-        sLog->outChar("Account: %d (IP: %s) Logout Character:[%s] (GUID: %u)", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName() , _player->GetGUIDLow());
-        Map *_map = _player->GetMap();
-        _map->Remove(_player, true);
+        sLog->outChar("Account: %d (IP: %s) Logout Character:[%s] (GUID: %u)", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName(), _player->GetGUIDLow());
+        Map* _map = _player->GetMap();
+        _map->RemovePlayerFromMap(_player, true);
         SetPlayer(NULL);                                    // deleted in Remove call
 
         ///- Send the 'logout complete' packet to the client
@@ -536,7 +539,7 @@ void WorldSession::SendNotification(const char *format, ...)
 
 void WorldSession::SendNotification(uint32 string_id, ...)
 {
-    char const *format = GetTrinityString(string_id);
+    char const* format = GetTrinityString(string_id);
     if (format)
     {
         va_list ap;
@@ -613,7 +616,7 @@ void WorldSession::LoadAccountData(PreparedQueryResult result, uint32 mask)
 
     do
     {
-        Field *fields = result->Fetch();
+        Field* fields = result->Fetch();
         uint32 type = fields[0].GetUInt8();
         if (type >= NUM_ACCOUNT_DATA_TYPES)
         {
@@ -714,7 +717,7 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
     m_TutorialsChanged = false;
 }
 
-void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi)
+void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
 {
     data >> mi->flags;
     data >> mi->flags2;
@@ -752,9 +755,39 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi)
 
     if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
         data >> mi->splineElevation;
+
+    // This must be a packet spoofing attempt. MOVEMENTFLAG_ROOT sent from the client is not valid,
+    // and when used in conjunction with any of the moving movement flags such as MOVEMENTFLAG_FORWARD
+    // it will freeze clients that receive this player's movement info.
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ROOT))
+        mi->flags &= ~MOVEMENTFLAG_ROOT;
+
+    // Cannot hover and jump at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && mi->HasMovementFlag(MOVEMENTFLAG_JUMPING))
+        mi->flags &= ~MOVEMENTFLAG_JUMPING;
+
+    // Cannot ascend and descend at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ASCENDING) && mi->HasMovementFlag(MOVEMENTFLAG_DESCENDING))
+        mi->flags &= ~(MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING);
+
+    // Cannot move left and right at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_RIGHT))
+        mi->flags &= ~(MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT);
+
+    // Cannot strafe left and right at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+        mi->flags &= ~(MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT);
+
+    // Cannot pitch up and down at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_PITCH_UP) && mi->HasMovementFlag(MOVEMENTFLAG_PITCH_DOWN))
+        mi->flags &= ~(MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN);
+
+    // Cannot move forwards and backwards at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_FORWARD) && mi->HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+        mi->flags &= ~(MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
 }
 
-void WorldSession::WriteMovementInfo(WorldPacket *data, MovementInfo *mi)
+void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 {
     data->appendPackGUID(mi->guid);
 
@@ -835,7 +868,7 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
 
             AddonInfo addon(addonName, enabled, crc, 2, true);
 
-            SavedAddon const* savedAddon = sAddonMgr->GetAddonInfo(addonName);
+            SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
             if (savedAddon)
             {
                 bool match = true;
@@ -850,7 +883,7 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
             }
             else
             {
-                sAddonMgr->SaveAddon(addon);
+                AddonMgr::SaveAddon(addon);
 
                 sLog->outDetail("ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
             }
@@ -931,110 +964,109 @@ void WorldSession::SendAddonsInfo()
     SendPacket(&data);
 }
 
-void WorldSession::SetPlayer(Player *plr)
+void WorldSession::SetPlayer(Player* player)
 {
-    _player = plr;
+    _player = player;
 
     // set m_GUID that can be used while player loggined and later until m_playerRecentlyLogout not reset
     if (_player)
         m_GUIDLow = _player->GetGUIDLow();
 }
 
+void WorldSession::InitializeQueryCallbackParameters()
+{
+    // Callback parameters that have pointers in them should be properly
+    // initialized to NULL here.
+    _charCreateCallback.SetParam(NULL);
+}
+
 void WorldSession::ProcessQueryCallbacks()
 {
     QueryResult result;
 
-    //! HandleNameQueryOpcode
-    while (!m_nameQueryCallbacks.is_empty())
+    //! HandleCharEnumOpcode
+    if (_charEnumCallback.ready())
     {
-        QueryResultFuture lResult;
-        ACE_Time_Value timeout = ACE_Time_Value::zero;
-        if (m_nameQueryCallbacks.next_readable(lResult, &timeout) != 1)
-           break;
-
-        if (lResult.ready())
-        {
-            lResult.get(result);
-            SendNameQueryOpcodeFromDBCallBack(result);
-            lResult.cancel();
-        }
+        _charEnumCallback.get(result);
+        HandleCharEnum(result);
+        _charEnumCallback.cancel();
     }
 
-    //! HandleCharEnumOpcode
-    if (m_charEnumCallback.ready())
+    if (_charCreateCallback.IsReady())
     {
-        m_charEnumCallback.get(result);
-        HandleCharEnum(result);
-        m_charEnumCallback.cancel();
+        PreparedQueryResult pResult;
+        _charCreateCallback.GetResult(pResult);
+        HandleCharCreateCallback(pResult, _charCreateCallback.GetParam());
+        // Don't call FreeResult() here, the callback handler will do that depending on the events in the callback chain
     }
 
     //! HandlePlayerLoginOpcode
-    if (m_charLoginCallback.ready())
+    if (_charLoginCallback.ready())
     {
         SQLQueryHolder* param;
-        m_charLoginCallback.get(param);
+        _charLoginCallback.get(param);
         HandlePlayerLogin((LoginQueryHolder*)param);
-        m_charLoginCallback.cancel();
+        _charLoginCallback.cancel();
     }
 
     //! HandleAddFriendOpcode
-    if (m_addFriendCallback.IsReady())
+    if (_addFriendCallback.IsReady())
     {
-        std::string param = m_addFriendCallback.GetParam();
-        m_addFriendCallback.GetResult(result);
+        std::string param = _addFriendCallback.GetParam();
+        _addFriendCallback.GetResult(result);
         HandleAddFriendOpcodeCallBack(result, param);
-        m_addFriendCallback.FreeResult();
+        _addFriendCallback.FreeResult();
     }
 
     //- HandleCharRenameOpcode
-    if (m_charRenameCallback.IsReady())
+    if (_charRenameCallback.IsReady())
     {
-        std::string param = m_charRenameCallback.GetParam();
-        m_charRenameCallback.GetResult(result);
+        std::string param = _charRenameCallback.GetParam();
+        _charRenameCallback.GetResult(result);
         HandleChangePlayerNameOpcodeCallBack(result, param);
-        m_charRenameCallback.FreeResult();
+        _charRenameCallback.FreeResult();
     }
 
     //- HandleCharAddIgnoreOpcode
-    if (m_addIgnoreCallback.ready())
+    if (_addIgnoreCallback.ready())
     {
-        m_addIgnoreCallback.get(result);
+        _addIgnoreCallback.get(result);
         HandleAddIgnoreOpcodeCallBack(result);
-        m_addIgnoreCallback.cancel();
+        _addIgnoreCallback.cancel();
     }
 
     //- SendStabledPet
-    if (m_sendStabledPetCallback.IsReady())
+    if (_sendStabledPetCallback.IsReady())
     {
-        uint64 param = m_sendStabledPetCallback.GetParam();
-        m_sendStabledPetCallback.GetResult(result);
+        uint64 param = _sendStabledPetCallback.GetParam();
+        _sendStabledPetCallback.GetResult(result);
         SendStablePetCallback(result, param);
-        m_sendStabledPetCallback.FreeResult();
+        _sendStabledPetCallback.FreeResult();
     }
 
     //- HandleStablePet
-    if (m_stablePetCallback.ready())
+    if (_stablePetCallback.ready())
     {
-        m_stablePetCallback.get(result);
+        _stablePetCallback.get(result);
         HandleStablePetCallback(result);
-        m_stablePetCallback.cancel();
+        _stablePetCallback.cancel();
     }
 
     //- HandleUnstablePet
-    if (m_unstablePetCallback.IsReady())
+    if (_unstablePetCallback.IsReady())
     {
-        uint32 param = m_unstablePetCallback.GetParam();
-        m_unstablePetCallback.GetResult(result);
+        uint32 param = _unstablePetCallback.GetParam();
+        _unstablePetCallback.GetResult(result);
         HandleUnstablePetCallback(result, param);
-        m_unstablePetCallback.FreeResult();
+        _unstablePetCallback.FreeResult();
     }
 
     //- HandleStableSwapPet
-    if (m_stableSwapCallback.IsReady())
+    if (_stableSwapCallback.IsReady())
     {
-        uint32 param = m_stableSwapCallback.GetParam();
-        m_stableSwapCallback.GetResult(result);
+        uint32 param = _stableSwapCallback.GetParam();
+        _stableSwapCallback.GetResult(result);
         HandleStableSwapPetCallback(result, param);
-        m_stableSwapCallback.FreeResult();
+        _stableSwapCallback.FreeResult();
     }
 }

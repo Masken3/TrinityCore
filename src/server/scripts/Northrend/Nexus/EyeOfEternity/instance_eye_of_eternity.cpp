@@ -86,6 +86,7 @@ public:
             return true;
         }
 
+        //TODO: this should be handled in map, maybe add a summon function in map
         // There is no other way afaik...
         void SpawnGameObject(uint32 entry, Position& pos)
         {
@@ -98,7 +99,7 @@ public:
                 return;
             }
 
-            instance->Add(go);
+            instance->AddToMap(go);
         }
 
         void OnGameObjectCreate(GameObject* go)
@@ -138,22 +139,19 @@ public:
             }
         }
 
-        void ProcessEvent(GameObject* go, uint32 eventId)
+        void ProcessEvent(WorldObject* obj, uint32 eventId)
         {
             if (eventId == EVENT_FOCUSING_IRIS)
             {
-                go->Delete(); // this is not the best way.
+                if (GameObject* go = obj->ToGameObject())
+                    go->Delete(); // this is not the best way.
+
                 if (Creature* malygos = instance->GetCreature(malygosGUID))
                     malygos->GetMotionMaster()->MovePoint(4, 770.10f, 1275.33f, 267.23f); // MOVE_INIT_PHASE_ONE
 
                 if (GameObject* exitPortal = instance->GetGameObject(exitPortalGUID))
                     exitPortal->Delete();
             }
-        }
-
-        // eliminate compile warning
-        void ProcessEvent(Unit* /*unit*/, uint32 /*eventId*/)
-        {
         }
 
         void VortexHandling()

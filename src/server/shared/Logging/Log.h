@@ -102,16 +102,21 @@ const int Colors = int(WHITE)+1;
 class Log
 {
     friend class ACE_Singleton<Log, ACE_Thread_Mutex>;
-    Log();
-    ~Log();
+
+    private:
+        Log();
+        ~Log();
 
     public:
         void Initialize();
+
+        void ReloadConfig();
 
         void InitColors(const std::string& init_str);
         void SetColor(bool stdout_stream, ColorTypes color);
         void ResetColor(bool stdout_stream);
 
+        void outErrorST( const char * err, ... )                ATTR_PRINTF(2, 3);
         void outDB( LogTypes type, const char * str );
         void outString( const char * str, ... )                 ATTR_PRINTF(2, 3);
         void outString( );
@@ -120,6 +125,7 @@ class Log
         void outCrash( const char * err, ... )                  ATTR_PRINTF(2, 3);
         void outBasic( const char * str, ... )                  ATTR_PRINTF(2, 3);
         void outDetail( const char * str, ... )                 ATTR_PRINTF(2, 3);
+        void outSQLDev( const char * str, ... )                 ATTR_PRINTF(2, 3);
         void outDebug(DebugLogFilters f, const char* str, ...)  ATTR_PRINTF(3, 4);
         void outStaticDebug( const char * str, ... )            ATTR_PRINTF(2, 3);
         void outDebugInLine( const char * str, ... )            ATTR_PRINTF(2, 3);
@@ -161,6 +167,7 @@ class Log
         FILE* chatLogfile;
         FILE* arenaLogFile;
         FILE* sqlLogFile;
+        FILE* sqlDevLogFile;
 
         // cache values for after initilization use (like gm log per account case)
         std::string m_logsDir;

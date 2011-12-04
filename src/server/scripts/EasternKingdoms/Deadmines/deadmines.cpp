@@ -38,19 +38,18 @@ public:
 
     bool OnUse(Player* player, Item* item, SpellCastTargets const& targets)
     {
-        InstanceScript *pInstance = player->GetInstanceScript();
+        InstanceScript* instance = player->GetInstanceScript();
 
-        if (!pInstance)
+        if (!instance)
         {
             player->GetSession()->SendNotification("Instance script not initialized");
             return true;
         }
-        if (pInstance->GetData(EVENT_STATE)!= CANNON_NOT_USED)
+        if (instance->GetData(EVENT_STATE)!= CANNON_NOT_USED)
             return false;
-        if (targets.getGOTarget() && targets.getGOTarget()->GetTypeId() == TYPEID_GAMEOBJECT &&
-           targets.getGOTarget()->GetEntry() == GO_DEFIAS_CANNON)
+        if (targets.GetGOTarget() && targets.GetGOTarget()->GetEntry() == GO_DEFIAS_CANNON)
         {
-            pInstance->SetData(EVENT_STATE, CANNON_GUNPOWDER_USED);
+            instance->SetData(EVENT_STATE, CANNON_GUNPOWDER_USED);
         }
 
         player->DestroyItemCount(item->GetEntry(), 1, true);

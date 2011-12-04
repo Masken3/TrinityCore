@@ -21,24 +21,8 @@
 #include "BattlegroundWS.h"
 #include "BattlegroundIC.h"
 #include "BattlegroundSA.h"
-
-class achievement_storm_glory : public AchievementCriteriaScript
-{
-    public:
-        achievement_storm_glory() : AchievementCriteriaScript("achievement_storm_glory") { }
-
-        bool OnCheck(Player* source, Unit* /*target*/)
-        {
-            if (source->GetBattlegroundTypeId() != BATTLEGROUND_EY)
-                return false;
-
-            Battleground *pEotS = source->GetBattleground();
-            if (!pEotS)
-                return false;
-
-            return pEotS->IsAllNodesConrolledByTeam(source->GetTeam());
-        }
-};
+#include "BattlegroundAV.h"
+#include "Vehicle.h"
 
 class achievement_resilient_victory : public AchievementCriteriaScript
 {
@@ -89,13 +73,16 @@ class achievement_save_the_day : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (Player const* pTarget = target->ToPlayer())
+            if (Player const* player = target->ToPlayer())
             {
-                if (source->GetBattlegroundTypeId() != BATTLEGROUND_WS || !source->GetBattleground())
+                Battleground* bg = source->GetBattleground();
+                if (!bg)
                     return false;
 
-                BattlegroundWS* pWSG = static_cast<BattlegroundWS*>(source->GetBattleground());
-                if (pWSG->GetFlagState(pTarget->GetTeam()) == BG_WS_FLAG_STATE_ON_BASE)
+                if (bg->GetTypeID(true) != BATTLEGROUND_WS)
+                    return false;
+
+                if (static_cast<BattlegroundWS*>(bg)->GetFlagState(player->GetTeam()) == BG_WS_FLAG_STATE_ON_BASE)
                     return true;
             }
             return false;
@@ -188,9 +175,118 @@ class achievement_arena_kills : public AchievementCriteriaScript
         uint8 const _arenaType;
 };
 
+class achievement_sickly_gazelle : public AchievementCriteriaScript
+{
+public:
+    achievement_sickly_gazelle() : AchievementCriteriaScript("achievement_sickly_gazelle") { }
+
+    bool OnCheck(Player* /*source*/, Unit* target)
+    {
+        if (!target)
+            return false;
+
+        if (Player* victim = target->ToPlayer())
+            if (victim->IsMounted())
+                return true;
+
+        return false;
+    }
+};
+
+class achievement_everything_counts : public AchievementCriteriaScript
+{
+    public:
+        achievement_everything_counts() : AchievementCriteriaScript("achievement_everything_counts") { }
+
+        bool OnCheck(Player* source, Unit* /*target*/)
+        {
+            Battleground* bg = source->GetBattleground();
+            if (!bg)
+                return false;
+
+            if (bg->GetTypeID(true) != BATTLEGROUND_AV)
+                return false;
+
+            if (static_cast<BattlegroundAV*>(bg)->IsBothMinesControlledByTeam(source->GetTeam()))
+                return true;
+
+            return false;
+        }
+};
+
+class achievement_bg_av_perfection : public AchievementCriteriaScript
+{
+    public:
+        achievement_bg_av_perfection() : AchievementCriteriaScript("achievement_bg_av_perfection") { }
+
+        bool OnCheck(Player* source, Unit* /*target*/)
+        {
+            Battleground* bg = source->GetBattleground();
+            if (!bg)
+                return false;
+
+            if (bg->GetTypeID(true) != BATTLEGROUND_AV)
+                return false;
+
+            if (static_cast<BattlegroundAV*>(bg)->IsAllTowersControlledAndCaptainAlive(source->GetTeam()))
+                return true;
+
+            return false;
+        }
+};
+
+class achievement_wg_didnt_stand_a_chance : public AchievementCriteriaScript
+{
+public:
+    achievement_wg_didnt_stand_a_chance() : AchievementCriteriaScript("achievement_wg_didnt_stand_a_chance") { }
+
+    bool OnCheck(Player* source, Unit* target)
+    {
+        if (!target)
+            return false;
+
+        if (Player* victim = target->ToPlayer())
+        {
+            if (!victim->IsMounted())
+                return false;
+
+            if (Vehicle* vehicle = source->GetVehicle())
+                if (vehicle->GetVehicleInfo()->m_ID == 244) // Wintergrasp Tower Cannon
+                    return true;
+        }
+
+        return false;
+    }
+};
+
+class achievement_bg_sa_defense_of_ancients : public AchievementCriteriaScript
+{
+    public:
+        achievement_bg_sa_defense_of_ancients() : AchievementCriteriaScript("achievement_bg_sa_defense_of_ancients")
+        {
+        }
+
+        bool OnCheck(Player* player, Unit* /*target*/)
+        {
+            if (!player)
+                return false;
+
+            Battleground* battleground = player->GetBattleground();
+            if (!battleground)
+                return false;
+
+            if (player->GetTeamId() == static_cast<BattlegroundSA*>(battleground)->Attackers)
+                return false;
+
+            if (!static_cast<BattlegroundSA*>(battleground)->gateDestroyed)
+                return true;
+
+            return false;
+        }
+};
+
 void AddSC_achievement_scripts()
 {
-    new achievement_storm_glory();
     new achievement_resilient_victory();
     new achievement_bg_control_all_nodes();
     new achievement_save_the_day();
@@ -198,7 +294,12 @@ void AddSC_achievement_scripts()
     new achievement_bg_ic_glaive_grave();
     new achievement_bg_ic_mowed_down();
     new achievement_bg_sa_artillery();
+    new achievement_sickly_gazelle();
+    new achievement_wg_didnt_stand_a_chance();
+    new achievement_everything_counts();
+    new achievement_bg_av_perfection();
     new achievement_arena_kills("achievement_arena_2v2_kills", ARENA_TYPE_2v2);
     new achievement_arena_kills("achievement_arena_3v3_kills", ARENA_TYPE_3v3);
     new achievement_arena_kills("achievement_arena_5v5_kills", ARENA_TYPE_5v5);
+    new achievement_bg_sa_defense_of_ancients();
 }

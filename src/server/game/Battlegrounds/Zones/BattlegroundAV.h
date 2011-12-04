@@ -1534,39 +1534,42 @@ class BattlegroundAVScore : public BattlegroundScore
 
 class BattlegroundAV : public Battleground
 {
-    friend class BattlegroundMgr;
-
     public:
         BattlegroundAV();
         ~BattlegroundAV();
-        void Update(uint32 diff);
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(Player *plr, uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
         virtual void ResetBGSubclass();
 
         /*general stuff*/
         void UpdateScore(uint16 team, int16 points);
-       void UpdatePlayerScore(Player *Source, uint32 type, uint32 value, bool doAddHonor = true);
+       void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         /*handlestuff*/ //these are functions which get called from extern
-        virtual void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj);
-        void HandleKillPlayer(Player* player, Player *killer);
-        void HandleKillUnit(Creature *unit, Player *killer);
-        void HandleQuestComplete(uint32 questid, Player *player);
+        virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj);
+        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillUnit(Creature* unit, Player* killer);
+        void HandleQuestComplete(uint32 questid, Player* player);
         bool PlayerCanDoMineQuest(int32 GOId, uint32 team);
 
         void EndBattleground(uint32 winner);
 
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
+        /* achievement req. */
+        bool IsBothMinesControlledByTeam(uint32 team) const;
+        bool IsAllTowersControlledAndCaptainAlive(uint32 team) const;
+
     private:
+        virtual void PostUpdateImpl(uint32 diff);
+
         /* Nodes occupying */
         void EventPlayerAssaultsPoint(Player* player, uint32 object);
         void EventPlayerDefendsPoint(Player* player, uint32 object);

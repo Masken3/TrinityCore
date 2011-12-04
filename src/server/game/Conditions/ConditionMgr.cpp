@@ -29,7 +29,7 @@
 
 // Checks if player meets the condition
 // Can have CONDITION_SOURCE_TYPE_NONE && !mReferenceId if called from a special event (ie: eventAI)
-bool Condition::Meets(Player * player, Unit* invoker)
+bool Condition::Meets(Player* player, Unit* invoker)
 {
     if (!player)
     {
@@ -113,7 +113,7 @@ bool Condition::Meets(Player * player, Unit* invoker)
             break;
         case CONDITION_INSTANCE_DATA:
         {
-            Map *map = player->GetMap();
+            Map* map = player->GetMap();
             if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 condMeets = ((InstanceMap*)map)->GetInstanceScript()->GetData(mConditionValue1) == mConditionValue2;
             break;
@@ -167,42 +167,42 @@ bool Condition::Meets(Player * player, Unit* invoker)
             condMeets = !player->HasItemCount(mConditionValue1, 1, mConditionValue2 ? true : false);
             break;
         case CONDITION_LEVEL:
+        {
+            switch (mConditionValue2)
             {
-                switch (mConditionValue2)
-                {
-                    case LVL_COND_EQ:
-                        condMeets = player->getLevel() == mConditionValue1;
-                        break;
-                    case LVL_COND_HIGH:
-                        condMeets = player->getLevel() > mConditionValue1;
-                        break;
-                    case LVL_COND_LOW:
-                        condMeets = player->getLevel() < mConditionValue1;
-                        break;
-                    case LVL_COND_HIGH_EQ:
-                        condMeets = player->getLevel() >= mConditionValue1;
-                        break;
-                    case LVL_COND_LOW_EQ:
-                        condMeets = player->getLevel() <= mConditionValue1;
-                        break;
-                }
-                break;
+                case LVL_COND_EQ:
+                    condMeets = player->getLevel() == mConditionValue1;
+                    break;
+                case LVL_COND_HIGH:
+                    condMeets = player->getLevel() > mConditionValue1;
+                    break;
+                case LVL_COND_LOW:
+                    condMeets = player->getLevel() < mConditionValue1;
+                    break;
+                case LVL_COND_HIGH_EQ:
+                    condMeets = player->getLevel() >= mConditionValue1;
+                    break;
+                case LVL_COND_LOW_EQ:
+                    condMeets = player->getLevel() <= mConditionValue1;
+                    break;
             }
+            break;
+        }
         case CONDITION_DRUNKENSTATE:
-            {
-                condMeets = (uint32)Player::GetDrunkenstateByValue(player->GetDrunkValue()) >= mConditionValue1;
-                break;
-            }
+        {
+            condMeets = (uint32)Player::GetDrunkenstateByValue(player->GetDrunkValue()) >= mConditionValue1;
+            break;
+        }
         case CONDITION_NEAR_CREATURE:
-            {
-                condMeets = GetClosestCreatureWithEntry(player, mConditionValue1, (float)mConditionValue2) ? true : false;
-                break;
-            }
+        {
+            condMeets = GetClosestCreatureWithEntry(player, mConditionValue1, (float)mConditionValue2) ? true : false;
+            break;
+        }
         case CONDITION_NEAR_GAMEOBJECT:
-            {
-                condMeets = GetClosestGameObjectWithEntry(player, mConditionValue1, (float)mConditionValue2) ? true : false;
-                break;
-            }
+        {
+            condMeets = GetClosestGameObjectWithEntry(player, mConditionValue1, (float)mConditionValue2) ? true : false;
+            break;
+        }
         default:
             condMeets = false;
             refId = 0;
@@ -271,7 +271,7 @@ bool ConditionMgr::IsPlayerMeetToConditionList(Player* player, ConditionList con
                 ConditionReferenceMap::const_iterator ref = m_ConditionReferenceMap.find((*i)->mReferenceId);
                 if (ref != m_ConditionReferenceMap.end())
                 {
-                    if(!IsPlayerMeetToConditionList(player, (*ref).second, invoker))
+                    if (!IsPlayerMeetToConditionList(player, (*ref).second, invoker))
                         ElseGroupMap[(*i)->mElseGroup] = false;
                 }
                 else
@@ -382,7 +382,7 @@ void ConditionMgr::LoadConditions(bool isReload)
 
     if (!result)
     {
-        sLog->outErrorDb(">> Loaded 0 conditions. DB table `groups` is empty!");
+        sLog->outErrorDb(">> Loaded 0 conditions. DB table `conditions` is empty!");
         sLog->outString();
         return;
     }
@@ -392,7 +392,7 @@ void ConditionMgr::LoadConditions(bool isReload)
     do
     {
 
-        Field *fields = result->Fetch();
+        Field* fields = result->Fetch();
 
         Condition* cond = new Condition();
         int32 iSourceTypeOrReferenceId   = fields[0].GetInt32();
@@ -854,7 +854,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
 
-            SpellEntry const* spellProto = sSpellStore.LookupEntry(cond->mSourceEntry);
+            SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(cond->mSourceEntry);
             if (!spellProto)
             {
                 sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->mSourceEntry);
@@ -864,22 +864,22 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             bool targetfound = false;
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
-                if (spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENTRY_SRC ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_SRC ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_AREA_ENTRY_DST ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_AREA_ENTRY_DST ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_AREA_SRC ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_GAMEOBJECT_AREA_SRC ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_AREA_DST ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_GAMEOBJECT_AREA_DST ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_DST_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_DST_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_CONE_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_CONE_ENTRY)
+                if (spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_GAMEOBJECT_SRC_AREA ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_GAMEOBJECT_SRC_AREA ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_GAMEOBJECT_DEST_AREA ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_GAMEOBJECT_DEST_AREA ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_DEST_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_DEST_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CONE_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_CONE_ENTRY)
                 {
                     targetfound = true;
                     //break;
@@ -887,21 +887,21 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 else if (cond->mConditionValue3 & (1 << i))
                 {
                     cond->mConditionValue3 &= ~(1 << i);
-                    sLog->outErrorDb("SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DST_NEARBY_ENTRY (46)"
-                                    ", TARGET_UNIT_AREA_ENTRY_SRC(7), TARGET_UNIT_AREA_ENTRY_DST(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)"
-                                    "TARGET_GAMEOBJECT_AREA_SRC(51), TARGET_GAMEOBJECT_AREA_DST(52) in effect %u", cond->mSourceEntry, uint32(i));
+                    sLog->outErrorDb("SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DEST_NEARBY_ENTRY (46)"
+                                    ", TARGET_UNIT_SRC_AREA_ENTRY(7), TARGET_UNIT_DEST_AREA_ENTRY(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)"
+                                    "TARGET_GAMEOBJECT_SRC_AREA(51), TARGET_GAMEOBJECT_DEST_AREA(52) in effect %u", cond->mSourceEntry, uint32(i));
                 }
             }
             if (!targetfound && !cond->mConditionValue3) // cond->mConditionValue3 already errored up there
             {
-                sLog->outErrorDb("SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DST_NEARBY_ENTRY (46)"
-                                ", TARGET_UNIT_AREA_ENTRY_SRC(7), TARGET_UNIT_AREA_ENTRY_DST(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)"
-                                "TARGET_GAMEOBJECT_AREA_SRC(51), TARGET_GAMEOBJECT_AREA_DST(52)", cond->mSourceEntry);
+                sLog->outErrorDb("SourceEntry %u in `condition` table does not have any implicit target TARGET_UNIT_NEARBY_ENTRY(38) or TARGET_DEST_NEARBY_ENTRY (46)"
+                                ", TARGET_UNIT_SRC_AREA_ENTRY(7), TARGET_UNIT_DEST_AREA_ENTRY(8), TARGET_UNIT_CONE_ENTRY(60), TARGET_GAMEOBJECT_NEARBY_ENTRY(40)"
+                                "TARGET_GAMEOBJECT_SRC_AREA(51), TARGET_GAMEOBJECT_DEST_AREA(52)", cond->mSourceEntry);
                 return false;
             }
-            if ((cond->mConditionValue1 == SPELL_TARGET_TYPE_DEAD) && !IsAllowingDeadTargetSpell(spellProto))
+            if ((cond->mConditionValue1 == SPELL_TARGET_TYPE_DEAD) && !spellProto->IsAllowingDeadTarget())
             {
-                sLog->outErrorDb("SourceEntry %u in `condition` table does have SPELL_TARGET_TYPE_DEAD specified but spell does not have SPELL_ATTR2_ALLOW_DEAD_TARGET", cond->mSourceEntry);
+                sLog->outErrorDb("SourceEntry %u in `condition` table does have SPELL_TARGET_TYPE_DEAD specified but spell does not have SPELL_ATTR2_CAN_TARGET_DEAD", cond->mSourceEntry);
                 return false;
             }
             break;
@@ -917,7 +917,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
         }
         case CONDITION_SOURCE_TYPE_SPELL:
         {
-            SpellEntry const* spellProto = sSpellStore.LookupEntry(cond->mSourceEntry);
+            SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(cond->mSourceEntry);
             if (!spellProto)
             {
                 sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->mSourceEntry);
@@ -933,7 +933,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 return false;
             }
 
-            ItemTemplate const *pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
+            ItemTemplate const* pItemProto = sObjectMgr->GetItemTemplate(cond->mSourceEntry);
             if (!pItemProto)
             {
                 sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `item_tamplate`, ignoring.", cond->mSourceEntry);
@@ -943,7 +943,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             bool bIsItemSpellValid = false;
             for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             {
-                if (SpellEntry const* pSpellInfo = sSpellStore.LookupEntry(pItemProto->Spells[i].SpellId))
+                if (SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(pItemProto->Spells[i].SpellId))
                 {
                     if (pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE ||
                         pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
@@ -954,10 +954,10 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
 
                         for (int j = 0; j < MAX_SPELL_EFFECTS; ++j)
                         {
-                            if (pSpellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ENEMY ||
-                                pSpellInfo->EffectImplicitTargetB[j] == TARGET_UNIT_TARGET_ENEMY ||
-                                pSpellInfo->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ANY ||
-                                pSpellInfo->EffectImplicitTargetB[j] == TARGET_UNIT_TARGET_ANY)
+                            if (pSpellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                                pSpellInfo->Effects[j].TargetB.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                                pSpellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ANY ||
+                                pSpellInfo->Effects[j].TargetB.GetTarget() == TARGET_UNIT_TARGET_ANY)
                             {
                                 bIsItemSpellValid = true;
                                 break;
@@ -979,40 +979,32 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             break;
         }
         case CONDITION_SOURCE_TYPE_QUEST_ACCEPT:
+            if (!sObjectMgr->GetQuestTemplate(cond->mSourceEntry))
             {
-                Quest const *Quest = sObjectMgr->GetQuestTemplate(cond->mSourceEntry);
-                if (!Quest)
-                {
-                    sLog->outErrorDb("CONDITION_SOURCE_TYPE_QUEST_ACCEPT specifies non-existing quest (%u), skipped", cond->mSourceEntry);
-                    return false;
-                }
+                sLog->outErrorDb("CONDITION_SOURCE_TYPE_QUEST_ACCEPT specifies non-existing quest (%u), skipped", cond->mSourceEntry);
+                return false;
             }
             break;
         case CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK:
+            if (!sObjectMgr->GetQuestTemplate(cond->mSourceEntry))
             {
-                Quest const *Quest = sObjectMgr->GetQuestTemplate(cond->mSourceEntry);
-                if (!Quest)
-                {
-                    sLog->outErrorDb("CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK specifies non-existing quest (%u), skipped", cond->mSourceEntry);
-                    return false;
-                }
+                sLog->outErrorDb("CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK specifies non-existing quest (%u), skipped", cond->mSourceEntry);
+                return false;
             }
             break;
         case CONDITION_SOURCE_TYPE_VEHICLE_SPELL:
+            if (!sObjectMgr->GetCreatureTemplate(cond->mSourceGroup))
             {
-                if (!sObjectMgr->GetCreatureTemplate(cond->mSourceGroup))
-                {
-                    sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `creature_template`, ignoring.", cond->mSourceGroup);
-                    return false;
-                }
-                SpellEntry const* spellProto = sSpellStore.LookupEntry(cond->mSourceEntry);
-                if (!spellProto)
-                {
-                    sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->mSourceEntry);
-                    return false;
-                }
-                break;
+                sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `creature_template`, ignoring.", cond->mSourceGroup);
+                return false;
             }
+
+            if (!sSpellMgr->GetSpellInfo(cond->mSourceEntry))
+            {
+                sLog->outErrorDb("SourceEntry %u in `condition` table, does not exist in `spell.dbc`, ignoring.", cond->mSourceEntry);
+                return false;
+            }
+            break;
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU:
         case CONDITION_SOURCE_TYPE_GOSSIP_MENU_OPTION:
         case CONDITION_SOURCE_TYPE_NONE:
@@ -1034,7 +1026,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
     {
         case CONDITION_AURA:
         {
-            if (!sSpellStore.LookupEntry(cond->mConditionValue1))
+            if (!sSpellMgr->GetSpellInfo(cond->mConditionValue1))
             {
                 sLog->outErrorDb("Aura condition has non existing spell (Id: %d), skipped", cond->mConditionValue1);
                 return false;
@@ -1049,7 +1041,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_ITEM:
         {
-            ItemTemplate const *proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
             if (!proto)
             {
                 sLog->outErrorDb("Item condition has non existing item (%u), skipped", cond->mConditionValue1);
@@ -1065,7 +1057,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_ITEM_EQUIPPED:
         {
-            ItemTemplate const *proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
             if (!proto)
             {
                 sLog->outErrorDb("ItemEquipped condition has non existing item (%u), skipped", cond->mConditionValue1);
@@ -1119,7 +1111,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_SKILL:
         {
-            SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(cond->mConditionValue1);
+            SkillLineEntry const* pSkill = sSkillLineStore.LookupEntry(cond->mConditionValue1);
             if (!pSkill)
             {
                 sLog->outErrorDb("Skill condition specifies non-existing skill (%u), skipped", cond->mConditionValue1);
@@ -1138,8 +1130,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         case CONDITION_QUEST_NONE:
         case CONDITION_QUEST_COMPLETE:
         {
-            Quest const *Quest = sObjectMgr->GetQuestTemplate(cond->mConditionValue1);
-            if (!Quest)
+            if (!sObjectMgr->GetQuestTemplate(cond->mConditionValue1))
             {
                 sLog->outErrorDb("Quest condition specifies non-existing quest (%u), skipped", cond->mConditionValue1);
                 return false;
@@ -1151,7 +1142,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NO_AURA:
         {
-            if (!sSpellStore.LookupEntry(cond->mConditionValue1))
+            if (!sSpellMgr->GetSpellInfo(cond->mConditionValue1))
             {
                 sLog->outErrorDb("Aura condition has non existing spell (Id: %d), skipped", cond->mConditionValue1);
                 return false;
@@ -1222,7 +1213,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
                 return false;
             }
 
-            switch(cond->mConditionValue1)
+            switch (cond->mConditionValue1)
             {
                 case SPELL_TARGET_TYPE_GAMEOBJECT:
                 {
@@ -1289,7 +1280,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_MAPID:
         {
-            MapEntry const * me = sMapStore.LookupEntry(cond->mConditionValue1);
+            MapEntry const* me = sMapStore.LookupEntry(cond->mConditionValue1);
             if (!me)
             {
                 sLog->outErrorDb("Map condition has non existing map (%u), skipped", cond->mConditionValue1);
@@ -1320,7 +1311,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_SPELL:
         {
-            if (!sSpellStore.LookupEntry(cond->mConditionValue1))
+            if (!sSpellMgr->GetSpellInfo(cond->mConditionValue1))
             {
                 sLog->outErrorDb("Spell condition has non existing spell (Id: %d), skipped", cond->mConditionValue1);
                 return false;
@@ -1332,7 +1323,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_NOITEM:
         {
-            ItemTemplate const *proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(cond->mConditionValue1);
             if (!proto)
             {
                 sLog->outErrorDb("NoItem condition has non existing item (%u), skipped", cond->mConditionValue1);
@@ -1341,23 +1332,23 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
             break;
         }
         case CONDITION_LEVEL:
+        {
+            if (cond->mConditionValue2 >= LVL_COND_MAX)
             {
-                if (cond->mConditionValue2 >= LVL_COND_MAX)
-                {
-                    sLog->outErrorDb("Level condition has invalid option (%u), skipped", cond->mConditionValue2);
-                    return false;
-                }
-                break;
+                sLog->outErrorDb("Level condition has invalid option (%u), skipped", cond->mConditionValue2);
+                return false;
             }
+            break;
+        }
         case CONDITION_DRUNKENSTATE:
+        {
+            if (cond->mConditionValue1 > DRUNKEN_SMASHED)
             {
-                if (cond->mConditionValue1 > DRUNKEN_SMASHED)
-                {
-                    sLog->outErrorDb("DrunkState condition has invalid state (%u), skipped", cond->mConditionValue1);
-                    return false;
-                }
-                break;
+                sLog->outErrorDb("DrunkState condition has invalid state (%u), skipped", cond->mConditionValue1);
+                return false;
             }
+            break;
+        }
         case CONDITION_NEAR_CREATURE:
         {
             if (!sObjectMgr->GetCreatureTemplate(cond->mConditionValue1))

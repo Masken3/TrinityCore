@@ -57,31 +57,25 @@ class boss_anetheron : public CreatureScript
 public:
     boss_anetheron() : CreatureScript("boss_anetheron") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_anetheronAI (pCreature);
+        return new boss_anetheronAI (creature);
     }
 
     struct boss_anetheronAI : public hyjal_trashAI
     {
-        boss_anetheronAI(Creature *c) : hyjal_trashAI(c)
+        boss_anetheronAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
-            SpellEntry *TempSpell = GET_SPELL(SPELL_SLEEP);
-            if (TempSpell && TempSpell->EffectImplicitTargetA[0] != 1)
-            {
-                TempSpell->EffectImplicitTargetA[0] = 1;
-                TempSpell->EffectImplicitTargetB[0] = 0;
-            }
         }
 
         uint32 SwarmTimer;
         uint32 SleepTimer;
         uint32 AuraTimer;
         uint32 InfernoTimer;
-        bool pGo;
+        bool go;
         uint32 pos;
 
         void Reset()
@@ -92,19 +86,19 @@ public:
             AuraTimer = 5000;
             InfernoTimer = 45000;
 
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
+            if (instance && IsEvent)
+                instance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_ANETHERONEVENT, IN_PROGRESS);
+            if (instance && IsEvent)
+                instance->SetData(DATA_ANETHERONEVENT, IN_PROGRESS);
             DoPlaySoundToSet(me, SOUND_ONAGGRO);
             me->MonsterYell(SAY_ONAGGRO, LANG_UNIVERSAL, 0);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             switch (urand(0, 2))
             {
@@ -126,19 +120,19 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance)
+            if (i == 7 && instance)
             {
-                Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                if (pTarget && pTarget->isAlive())
-                    me->AddThreat(pTarget, 0.0f);
+                Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                if (target && target->isAlive())
+                    me->AddThreat(target, 0.0f);
             }
         }
 
-        void JustDied(Unit *victim)
+        void JustDied(Unit* victim)
         {
             hyjal_trashAI::JustDied(victim);
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_ANETHERONEVENT, DONE);
+            if (instance && IsEvent)
+                instance->SetData(DATA_ANETHERONEVENT, DONE);
             DoPlaySoundToSet(me, SOUND_ONDEATH);
             me->MonsterYell(SAY_ONDEATH, LANG_UNIVERSAL, 0);
         }
@@ -149,10 +143,10 @@ public:
             {
                 //Must update npc_escortAI
                 npc_escortAI::UpdateAI(diff);
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         AddWaypoint(0, 4896.08f,    -1576.35f,    1333.65f);
                         AddWaypoint(1, 4898.68f,    -1615.02f,    1329.48f);
@@ -174,8 +168,8 @@ public:
 
             if (SwarmTimer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_CARRION_SWARM);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_CARRION_SWARM);
 
                 SwarmTimer = urand(45000, 60000);
                 switch (urand(0, 1))
@@ -195,8 +189,8 @@ public:
             {
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        pTarget->CastSpell(pTarget, SPELL_SLEEP, true);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        target->CastSpell(target, SPELL_SLEEP, true);
                 }
                 SleepTimer = 60000;
                 switch (urand(0, 1))
@@ -247,24 +241,24 @@ class mob_towering_infernal : public CreatureScript
 public:
     mob_towering_infernal() : CreatureScript("mob_towering_infernal") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_towering_infernalAI (pCreature);
+        return new mob_towering_infernalAI (creature);
     }
 
     struct mob_towering_infernalAI : public ScriptedAI
     {
-        mob_towering_infernalAI(Creature *c) : ScriptedAI(c)
+        mob_towering_infernalAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            if (pInstance)
-                AnetheronGUID = pInstance->GetData64(DATA_ANETHERON);
+            instance = c->GetInstanceScript();
+            if (instance)
+                AnetheronGUID = instance->GetData64(DATA_ANETHERON);
         }
 
         uint32 ImmolationTimer;
         uint32 CheckTimer;
         uint64 AnetheronGUID;
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -273,21 +267,21 @@ public:
             CheckTimer = 5000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
-            if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsHostileTo(who))
+            if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsValidAttackTarget(who))
                 AttackStart(who);
         }
 

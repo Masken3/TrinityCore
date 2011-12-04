@@ -42,19 +42,19 @@ class boss_mr_smite : public CreatureScript
 public:
     boss_mr_smite() : CreatureScript("boss_mr_smite") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_mr_smiteAI (pCreature);
+        return new boss_mr_smiteAI (creature);
     }
 
     struct boss_mr_smiteAI : public ScriptedAI
     {
-        boss_mr_smiteAI(Creature* pCreature) : ScriptedAI(pCreature)
+        boss_mr_smiteAI(Creature* creature) : ScriptedAI(creature)
         {
-            pInstance = pCreature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 uiTrashTimer;
         uint32 uiSlamTimer;
@@ -79,7 +79,7 @@ public:
             SetEquipmentSlots(false, EQUIP_SWORD, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
         }
 
-        void EnterCombat(Unit* /*pWho*/)
+        void EnterCombat(Unit* /*who*/)
         {
            DoScriptText(SAY_AGGRO, me);
         }
@@ -126,11 +126,11 @@ public:
                 ++uiHealth;
                 DoCastAOE(SPELL_SMITE_STOMP, false);
                 SetCombatMovement(false);
-                if (pInstance)
-                    if (GameObject* pGo = GameObject::GetGameObject((*me), pInstance->GetData64(DATA_SMITE_CHEST)))
+                if (instance)
+                    if (GameObject* go = GameObject::GetGameObject((*me), instance->GetData64(DATA_SMITE_CHEST)))
                     {
                         me->GetMotionMaster()->Clear();
-                        me->GetMotionMaster()->MovePoint(1, pGo->GetPositionX() - 3.0f, pGo->GetPositionY(), pGo->GetPositionZ());
+                        me->GetMotionMaster()->MovePoint(1, go->GetPositionX() - 3.0f, go->GetPositionY(), go->GetPositionZ());
                     }
             }
 
@@ -138,7 +138,7 @@ public:
             {
                 if (uiTimer <= uiDiff)
                 {
-                    switch(uiPhase)
+                    switch (uiPhase)
                     {
                         case 1:
                             me->HandleEmoteCommand(EMOTE_STATE_KNEEL); //dosen't work?

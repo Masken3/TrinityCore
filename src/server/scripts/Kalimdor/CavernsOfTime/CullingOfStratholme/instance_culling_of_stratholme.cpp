@@ -40,14 +40,14 @@ class instance_culling_of_stratholme : public InstanceMapScript
     public:
         instance_culling_of_stratholme() : InstanceMapScript("instance_culling_of_stratholme", 595) { }
 
-        InstanceScript* GetInstanceScript(InstanceMap* pMap) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
-            return new instance_culling_of_stratholme_InstanceMapScript(pMap);
+            return new instance_culling_of_stratholme_InstanceMapScript(map);
         }
 
         struct instance_culling_of_stratholme_InstanceMapScript : public InstanceScript
         {
-            instance_culling_of_stratholme_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
+            instance_culling_of_stratholme_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 _arthasGUID = 0;
                 _meathookGUID = 0;
@@ -182,8 +182,8 @@ class instance_culling_of_stratholme : public InstanceMapScript
                             // Summon Chromie and global whisper
                             if (Creature* chromie = instance->SummonCreature(NPC_CHROMIE_2, ChromieSummonPos))
                                 if (!instance->GetPlayers().isEmpty())
-                                    if (Player* plr = instance->GetPlayers().getFirst()->getSource())
-                                        sCreatureTextMgr->SendChat(chromie, SAY_CRATES_COMPLETED, plr->GetGUID(), CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_MAP);
+                                    if (Player* player = instance->GetPlayers().getFirst()->getSource())
+                                        sCreatureTextMgr->SendChat(chromie, SAY_CRATES_COMPLETED, player->GetGUID(), CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_MAP);
                         }
                         DoUpdateWorldState(WORLDSTATE_CRATES_REVEALED, _crateCount);
                         break;
@@ -248,8 +248,8 @@ class instance_culling_of_stratholme : public InstanceMapScript
                 OUT_SAVE_INST_DATA;
 
                 std::ostringstream saveStream;
-                saveStream << "C S " << _encounterState[0] << " " << _encounterState[1] << " "
-                    << _encounterState[2] << " " << _encounterState[3] << " " << _encounterState[4];
+                saveStream << "C S " << _encounterState[0] << ' ' << _encounterState[1] << ' '
+                    << _encounterState[2] << ' ' << _encounterState[3] << ' ' << _encounterState[4];
 
                 OUT_SAVE_INST_DATA_COMPLETE;
                 return saveStream.str();

@@ -21,6 +21,7 @@
 #include "PoolMgr.h"
 #include "Group.h"
 #include "icecrown_citadel.h"
+#include "SpellInfo.h"
 
 enum ScriptTexts
 {
@@ -113,45 +114,44 @@ enum EventTypes
     EVENT_INTRO_5                       = 4,
     EVENT_INTRO_6                       = 5,
     EVENT_INTRO_7                       = 6,
-    EVENT_INTRO_FINISH                  = 7,
-    EVENT_BERSERK                       = 8,
-    EVENT_DEATH_AND_DECAY               = 9,
-    EVENT_DOMINATE_MIND_H               = 10,
+    EVENT_BERSERK                       = 7,
+    EVENT_DEATH_AND_DECAY               = 8,
+    EVENT_DOMINATE_MIND_H               = 9,
 
     // Phase 1 only
-    EVENT_P1_SUMMON_WAVE                = 11,
-    EVENT_P1_SHADOW_BOLT                = 12,
-    EVENT_P1_EMPOWER_CULTIST            = 13,
-    EVENT_P1_REANIMATE_CULTIST          = 14,
+    EVENT_P1_SUMMON_WAVE                = 10,
+    EVENT_P1_SHADOW_BOLT                = 11,
+    EVENT_P1_EMPOWER_CULTIST            = 12,
+    EVENT_P1_REANIMATE_CULTIST          = 13,
 
     // Phase 2 only
-    EVENT_P2_SUMMON_WAVE                = 15,
-    EVENT_P2_FROSTBOLT                  = 16,
-    EVENT_P2_FROSTBOLT_VOLLEY           = 17,
-    EVENT_P2_TOUCH_OF_INSIGNIFICANCE    = 18,
-    EVENT_P2_SUMMON_SHADE               = 19,
+    EVENT_P2_SUMMON_WAVE                = 14,
+    EVENT_P2_FROSTBOLT                  = 15,
+    EVENT_P2_FROSTBOLT_VOLLEY           = 16,
+    EVENT_P2_TOUCH_OF_INSIGNIFICANCE    = 17,
+    EVENT_P2_SUMMON_SHADE               = 18,
 
     // Shared adds events
-    EVENT_CULTIST_DARK_MARTYRDOM        = 20,
+    EVENT_CULTIST_DARK_MARTYRDOM        = 19,
 
     // Cult Fanatic
-    EVENT_FANATIC_NECROTIC_STRIKE       = 21,
-    EVENT_FANATIC_SHADOW_CLEAVE         = 22,
-    EVENT_FANATIC_VAMPIRIC_MIGHT        = 23,
+    EVENT_FANATIC_NECROTIC_STRIKE       = 20,
+    EVENT_FANATIC_SHADOW_CLEAVE         = 21,
+    EVENT_FANATIC_VAMPIRIC_MIGHT        = 22,
 
     // Cult Adherent
-    EVENT_ADHERENT_FROST_FEVER          = 24,
-    EVENT_ADHERENT_DEATHCHILL           = 25,
-    EVENT_ADHERENT_CURSE_OF_TORPOR      = 26,
-    EVENT_ADHERENT_SHORUD_OF_THE_OCCULT = 27,
+    EVENT_ADHERENT_FROST_FEVER          = 23,
+    EVENT_ADHERENT_DEATHCHILL           = 24,
+    EVENT_ADHERENT_CURSE_OF_TORPOR      = 25,
+    EVENT_ADHERENT_SHORUD_OF_THE_OCCULT = 26,
 
     // Darnavan
-    EVENT_DARNAVAN_BLADESTORM           = 28,
-    EVENT_DARNAVAN_CHARGE               = 29,
-    EVENT_DARNAVAN_INTIMIDATING_SHOUT   = 30,
-    EVENT_DARNAVAN_MORTAL_STRIKE        = 31,
-    EVENT_DARNAVAN_SHATTERING_THROW     = 32,
-    EVENT_DARNAVAN_SUNDER_ARMOR         = 33,
+    EVENT_DARNAVAN_BLADESTORM           = 27,
+    EVENT_DARNAVAN_CHARGE               = 28,
+    EVENT_DARNAVAN_INTIMIDATING_SHOUT   = 29,
+    EVENT_DARNAVAN_MORTAL_STRIKE        = 30,
+    EVENT_DARNAVAN_SHATTERING_THROW     = 31,
+    EVENT_DARNAVAN_SUNDER_ARMOR         = 32,
 };
 
 enum Phases
@@ -181,6 +181,7 @@ enum DeprogrammingData
 #define QUEST_DEPROGRAMMING RAID_MODE<uint32>(QUEST_DEPROGRAMMING_10, QUEST_DEPROGRAMMING_25, QUEST_DEPROGRAMMING_10, QUEST_DEPROGRAMMING_25)
 
 uint32 const SummonEntries[2] = {NPC_CULT_FANATIC, NPC_CULT_ADHERENT};
+
 #define GUID_CULTIST    1
 
 Position const SummonPositions[7] =
@@ -225,7 +226,6 @@ class boss_lady_deathwhisper : public CreatureScript
             {
                 _Reset();
                 me->SetPower(POWER_MANA, me->GetMaxPower(POWER_MANA));
-                me->SetLastManaUse(0xFFFFFFFF); // hacky, but no other way atm to prevent mana regen
                 events.SetPhase(PHASE_ONE);
                 _waveCounter = 0;
                 _nextVengefulShadeTargetGUID = 0;
@@ -239,9 +239,8 @@ class boss_lady_deathwhisper : public CreatureScript
 
             void MoveInLineOfSight(Unit* who)
             {
-                if (!_introDone && me->IsWithinDistInMap(who, 100.0f))
+                if (!_introDone && me->IsWithinDistInMap(who, 110.0f))
                 {
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     _introDone = true;
                     Talk(SAY_INTRO_1);
                     events.SetPhase(PHASE_INTRO);
@@ -251,7 +250,6 @@ class boss_lady_deathwhisper : public CreatureScript
                     events.ScheduleEvent(EVENT_INTRO_5, 39500, 0, PHASE_INTRO);
                     events.ScheduleEvent(EVENT_INTRO_6, 48500, 0, PHASE_INTRO);
                     events.ScheduleEvent(EVENT_INTRO_7, 58000, 0, PHASE_INTRO);
-                    events.ScheduleEvent(EVENT_INTRO_FINISH, 76000, 0, PHASE_INTRO);
                 }
             }
 
@@ -324,7 +322,7 @@ class boss_lady_deathwhisper : public CreatureScript
                         {
                             if (Group* group = owner->GetGroup())
                             {
-                                for (GroupReference *itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                                for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
                                     if (Player* member = itr->getSource())
                                         member->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, 0);
                             }
@@ -377,7 +375,7 @@ class boss_lady_deathwhisper : public CreatureScript
                     {
                         me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
                         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
-                        events.ScheduleEvent(EVENT_P2_SUMMON_WAVE, urand(30000, 60000), 0, PHASE_TWO);
+                        events.ScheduleEvent(EVENT_P2_SUMMON_WAVE, 45000, 0, PHASE_TWO);
                     }
                 }
             }
@@ -437,13 +435,10 @@ class boss_lady_deathwhisper : public CreatureScript
                         case EVENT_INTRO_7:
                             Talk(SAY_INTRO_7);
                             break;
-                        case EVENT_INTRO_FINISH:
-                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                            break;
                         case EVENT_DEATH_AND_DECAY:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                                 DoCast(target, SPELL_DEATH_AND_DECAY);
-                            events.ScheduleEvent(EVENT_DEATH_AND_DECAY, urand(10000, 12000));
+                            events.ScheduleEvent(EVENT_DEATH_AND_DECAY, urand(22000, 30000));
                             break;
                         case EVENT_DOMINATE_MIND_H:
                             Talk(SAY_DOMINATE_MIND);
@@ -454,7 +449,7 @@ class boss_lady_deathwhisper : public CreatureScript
                             break;
                         case EVENT_P1_SUMMON_WAVE:
                             SummonWaveP1();
-                            events.ScheduleEvent(EVENT_P1_SUMMON_WAVE, 60000, 0, PHASE_ONE);
+                            events.ScheduleEvent(EVENT_P1_SUMMON_WAVE, IsHeroic() ? 45000 : 60000, 0, PHASE_ONE);
                             break;
                         case EVENT_P1_SHADOW_BOLT:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
@@ -490,7 +485,7 @@ class boss_lady_deathwhisper : public CreatureScript
                             break;
                         case EVENT_P2_SUMMON_WAVE:
                             SummonWaveP2();
-                            events.ScheduleEvent(EVENT_P2_SUMMON_WAVE, 60000, 0, PHASE_TWO);
+                            events.ScheduleEvent(EVENT_P2_SUMMON_WAVE, 45000, 0, PHASE_TWO);
                             break;
                         case EVENT_BERSERK:
                             DoCast(me, SPELL_BERSERK);
@@ -554,7 +549,7 @@ class boss_lady_deathwhisper : public CreatureScript
                     summon->AI()->DoCast(summon, SPELL_TELEPORT_VISUAL);
             }
 
-            void SetGUID(uint64 const& guid, int32 id/* = 0*/)
+            void SetGUID(uint64 guid, int32 id/* = 0*/)
             {
                 if (id != GUID_CULTIST)
                     return;
@@ -578,7 +573,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 DoCast(cultist, SPELL_DARK_MARTYRDOM_T);
             }
 
-            void SpellHitTarget(Unit* target, SpellEntry const* spell)
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_DARK_MARTYRDOM_T)
                 {
@@ -610,10 +605,7 @@ class boss_lady_deathwhisper : public CreatureScript
                     return;
 
                 // select random cultist
-                std::list<Creature*>::iterator cultistItr = temp.begin();
-                std::advance(cultistItr, urand(0, temp.size()-1));
-
-                Creature* cultist = *cultistItr;
+                Creature* cultist = SelectRandomContainerElement(temp);
                 DoCast(cultist, cultist->GetEntry() == NPC_CULT_FANATIC ? SPELL_DARK_TRANSFORMATION_T : SPELL_DARK_EMPOWERMENT_T, true);
                 Talk(uint8(cultist->GetEntry() == NPC_CULT_FANATIC ? SAY_DARK_TRANSFORMATION : SAY_DARK_EMPOWERMENT));
             }
@@ -654,7 +646,7 @@ class npc_cult_fanatic : public CreatureScript
                     Events.ScheduleEvent(EVENT_CULTIST_DARK_MARTYRDOM, urand(18000, 32000));
             }
 
-            void SpellHit(Unit* /*caster*/, SpellEntry const* spell)
+            void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_DARK_TRANSFORMATION)
                     me->UpdateEntry(NPC_DEFORMED_FANATIC);
@@ -732,7 +724,7 @@ class npc_cult_adherent : public CreatureScript
                     Events.ScheduleEvent(EVENT_CULTIST_DARK_MARTYRDOM, urand(18000, 32000));
             }
 
-            void SpellHit(Unit* /*caster*/, SpellEntry const* spell)
+            void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_DARK_EMPOWERMENT)
                     me->UpdateEntry(NPC_EMPOWERED_ADHERENT);
@@ -816,7 +808,7 @@ class npc_vengeful_shade : public CreatureScript
                 me->AddAura(SPELL_VENGEFUL_BLAST_PASSIVE, me);
             }
 
-            void SpellHitTarget(Unit* /*target*/, SpellEntry const* spell)
+            void SpellHitTarget(Unit* /*target*/, SpellInfo const* spell)
             {
                 switch (spell->Id)
                 {
@@ -867,7 +859,7 @@ class npc_darnavan : public CreatureScript
                 {
                     if (Group* group = owner->GetGroup())
                     {
-                        for (GroupReference *itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                        for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
                             if (Player* member = itr->getSource())
                                 member->FailQuest(QUEST_DEPROGRAMMING);
                     }
@@ -899,7 +891,7 @@ class npc_darnavan : public CreatureScript
                 if (me->HasUnitState(UNIT_STAT_CASTING))
                     return;
 
-                if (_canShatter && me->getVictim()->IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL))
+                if (_canShatter && me->getVictim() && me->getVictim()->IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL))
                 {
                     DoCastVictim(SPELL_SHATTERING_THROW);
                     _canShatter = false;
@@ -1012,7 +1004,7 @@ class spell_cultist_dark_martyrdom : public SpellScriptLoader
 
             void Register()
             {
-                OnEffect += SpellEffectFn(spell_cultist_dark_martyrdom_SpellScript::HandleEffect, EFFECT_2, SPELL_EFFECT_FORCE_DESELECT);
+                OnEffectHitTarget += SpellEffectFn(spell_cultist_dark_martyrdom_SpellScript::HandleEffect, EFFECT_2, SPELL_EFFECT_FORCE_DESELECT);
             }
         };
 

@@ -51,17 +51,17 @@ class boss_rage_winterchill : public CreatureScript
 public:
     boss_rage_winterchill() : CreatureScript("boss_rage_winterchill") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_rage_winterchillAI (pCreature);
+        return new boss_rage_winterchillAI (creature);
     }
 
     struct boss_rage_winterchillAI : public hyjal_trashAI
     {
-        boss_rage_winterchillAI(Creature *c) : hyjal_trashAI(c)
+        boss_rage_winterchillAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
         }
 
@@ -69,7 +69,7 @@ public:
         uint32 DecayTimer;
         uint32 NovaTimer;
         uint32 IceboltTimer;
-        bool pGo;
+        bool go;
         uint32 pos;
 
         void Reset()
@@ -80,19 +80,19 @@ public:
             NovaTimer = 15000;
             IceboltTimer = 10000;
 
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
+            if (instance && IsEvent)
+                instance->SetData(DATA_RAGEWINTERCHILLEVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, IN_PROGRESS);
+            if (instance && IsEvent)
+                instance->SetData(DATA_RAGEWINTERCHILLEVENT, IN_PROGRESS);
             DoPlaySoundToSet(me, SOUND_ONAGGRO);
             me->MonsterYell(SAY_ONAGGRO, LANG_UNIVERSAL, 0);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             switch (urand(0, 1))
             {
@@ -110,19 +110,19 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance)
+            if (i == 7 && instance)
             {
-                Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                if (pTarget && pTarget->isAlive())
-                    me->AddThreat(pTarget, 0.0f);
+                Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                if (target && target->isAlive())
+                    me->AddThreat(target, 0.0f);
             }
         }
 
-        void JustDied(Unit *victim)
+        void JustDied(Unit* victim)
         {
             hyjal_trashAI::JustDied(victim);
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_RAGEWINTERCHILLEVENT, DONE);
+            if (instance && IsEvent)
+                instance->SetData(DATA_RAGEWINTERCHILLEVENT, DONE);
             DoPlaySoundToSet(me, SOUND_ONDEATH);
             me->MonsterYell(SAY_ONDEATH, LANG_UNIVERSAL, 0);
         }
@@ -133,10 +133,10 @@ public:
             {
                 //Must update npc_escortAI
                 npc_escortAI::UpdateAI(diff);
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         AddWaypoint(0, 4896.08f,    -1576.35f,    1333.65f);
                         AddWaypoint(1, 4898.68f,    -1615.02f,    1329.48f);

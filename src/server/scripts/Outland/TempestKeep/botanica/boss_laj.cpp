@@ -60,7 +60,7 @@ class boss_laj : public CreatureScript
 
         struct boss_lajAI : public ScriptedAI
         {
-            boss_lajAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+            boss_lajAI(Creature* creature) : ScriptedAI(creature) {}
 
             bool CanSummon;
             uint32 Teleport_Timer;
@@ -86,7 +86,7 @@ class boss_laj : public CreatureScript
 
             void DoTransform()
             {
-                switch(rand()%5)
+                switch (rand()%5)
                 {
                     case 0:
                         me->SetDisplayId(MODEL_DEFAULT);
@@ -133,7 +133,7 @@ class boss_laj : public CreatureScript
 
             void DoSummons()
             {
-                switch(rand()%4)
+                switch (rand()%4)
                 {
                     case 0:
                         DoCast(me, SPELL_SUMMON_LASHER_1, true);
@@ -155,11 +155,11 @@ class boss_laj : public CreatureScript
                 CanSummon = false;
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void JustSummoned(Creature *summon)
+            void JustSummoned(Creature* summon)
             {
                 if (summon && me->getVictim())
                     summon->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0));

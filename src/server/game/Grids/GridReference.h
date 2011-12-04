@@ -37,7 +37,7 @@ class GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
         void targetObjectDestroyLink()
         {
             // called from unlink()
-            if(this->isValid()) this->getTarget()->decSize();
+            if (this->isValid()) this->getTarget()->decSize();
         }
         void sourceObjectDestroyLink()
         {
@@ -47,7 +47,7 @@ class GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
     public:
         GridReference() : Reference<GridRefManager<OBJECT>, OBJECT>() {}
         ~GridReference() { this->unlink(); }
-        GridReference *next() { return (GridReference*)Reference<GridRefManager<OBJECT>, OBJECT>::next(); }
+        GridReference* next() { return (GridReference*)Reference<GridRefManager<OBJECT>, OBJECT>::next(); }
 };
 #endif
 

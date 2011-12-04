@@ -89,7 +89,7 @@ class OPvPCapturePointHP : public OPvPCapturePoint
 {
     public:
 
-        OPvPCapturePointHP(OutdoorPvP * pvp, OutdoorPvPHPTowerType type);
+        OPvPCapturePointHP(OutdoorPvP* pvp, OutdoorPvPHPTowerType type);
 
         void ChangeState();
 
@@ -98,8 +98,8 @@ class OPvPCapturePointHP : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
     private:
 
@@ -108,24 +108,28 @@ class OPvPCapturePointHP : public OPvPCapturePoint
 
 class OutdoorPvPHP : public OutdoorPvP
 {
-    friend class OPvPCapturePointHP;
-
     public:
 
         OutdoorPvPHP();
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(Player *plr, uint32 zone);
-        void HandlePlayerLeaveZone(Player *plr, uint32 zone);
+        void HandlePlayerEnterZone(Player* player, uint32 zone);
+        void HandlePlayerLeaveZone(Player* player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(Player * plr);
+        void SendRemoveWorldStates(Player* player);
 
-        void HandleKillImpl(Player * plr, Unit * killed);
+        void HandleKillImpl(Player* player, Unit* killed);
+
+        uint32 GetAllianceTowersControlled() const;
+        void SetAllianceTowersControlled(uint32 count);
+
+        uint32 GetHordeTowersControlled() const;
+        void SetHordeTowersControlled(uint32 count);
 
     private:
 

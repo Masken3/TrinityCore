@@ -16,13 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Grizzle
-SD%Complete: 100
-SDComment:
-SDCategory: Blackrock Depths
-EndScriptData */
-
 #include "ScriptPCH.h"
 
 enum Spells
@@ -36,27 +29,25 @@ class boss_grizzle : public CreatureScript
 public:
     boss_grizzle() : CreatureScript("boss_grizzle") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_grizzleAI (pCreature);
+        return new boss_grizzleAI (creature);
     }
 
     struct boss_grizzleAI : public ScriptedAI
     {
-        boss_grizzleAI(Creature *c) : ScriptedAI(c) {}
+        boss_grizzleAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 GroundTremor_Timer;
         uint32 Frenzy_Timer;
 
         void Reset()
         {
-            GroundTremor_Timer = 12000;
-            Frenzy_Timer =0;
+            GroundTremor_Timer   = 12000;
+            Frenzy_Timer         = 0;
         }
 
-        void EnterCombat(Unit * /*who*/)
-        {
-        }
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -86,7 +77,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 void AddSC_boss_grizzle()

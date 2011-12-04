@@ -44,19 +44,8 @@ BattlegroundDS::~BattlegroundDS()
 
 }
 
-void BattlegroundDS::Update(uint32 diff)
+void BattlegroundDS::PostUpdateImpl(uint32 diff)
 {
-    Battleground::Update(diff);
-
-    if (GetStatus() == STATUS_IN_PROGRESS)
-    {
-        if (GetStartTime() >= 47*MINUTE*IN_MILLISECONDS)    // after 47 minutes without one team losing, the arena closes with no winner and no rating change
-        {
-            UpdateArenaWorldState();
-            CheckArenaAfterTimerConditions();
-        }
-    }
-
     if (getWaterFallTimer() < diff)
     {
         if (isWaterFallActive())
@@ -99,18 +88,18 @@ void BattlegroundDS::StartingEventOpenDoors()
         SpawnBGObject(i, getWaterFallTimer());
 }
 
-void BattlegroundDS::AddPlayer(Player *plr)
+void BattlegroundDS::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(plr);
+    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
     BattlegroundDSScore* sc = new BattlegroundDSScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    m_PlayerScores[player->GetGUID()] = sc;
 
     UpdateArenaWorldState();
 }
 
-void BattlegroundDS::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
+void BattlegroundDS::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -136,12 +125,12 @@ void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-void BattlegroundDS::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    switch(Trigger)
+    switch (Trigger)
     {
         case 5347:
         case 5348:
@@ -153,7 +142,7 @@ void BattlegroundDS::HandleAreaTrigger(Player *Source, uint32 Trigger)
     }
 }
 
-bool BattlegroundDS::HandlePlayerUnderMap(Player *player)
+bool BattlegroundDS::HandlePlayerUnderMap(Player* player)
 {
     player->TeleportTo(GetMapId(), 1299.046f, 784.825f, 9.338f, 2.422f, false);
     return true;

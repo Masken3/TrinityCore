@@ -35,11 +35,6 @@ BattlegroundRB::~BattlegroundRB()
 
 }
 
-void BattlegroundRB::Update(uint32 diff)
-{
-    Battleground::Update(diff);
-}
-
 void BattlegroundRB::StartingEventCloseDoors()
 {
 }
@@ -48,20 +43,20 @@ void BattlegroundRB::StartingEventOpenDoors()
 {
 }
 
-void BattlegroundRB::AddPlayer(Player *plr)
+void BattlegroundRB::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(plr);
+    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
     BattlegroundRBScore* sc = new BattlegroundRBScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    m_PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundRB::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundRB::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
 }
 
-void BattlegroundRB::HandleAreaTrigger(Player * /*Source*/, uint32 /*Trigger*/)
+void BattlegroundRB::HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)

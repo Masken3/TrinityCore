@@ -155,9 +155,9 @@ float HordeOverrunWP[21][3]=//waypoints in the horde base used in the end in the
     {5429.91f, -2718.44f, 1493.42f}//20 end 2
 };
 
-hyjal_trashAI::hyjal_trashAI(Creature *c) : npc_escortAI(c)
+hyjal_trashAI::hyjal_trashAI(Creature* c) : npc_escortAI(c)
 {
-    pInstance = c->GetInstanceScript();
+    instance = c->GetInstanceScript();
     IsEvent = false;
     Delay = 0;
     LastOverronPos = 0;
@@ -170,13 +170,13 @@ hyjal_trashAI::hyjal_trashAI(Creature *c) : npc_escortAI(c)
     Reset();
 }
 
-void hyjal_trashAI::DamageTaken(Unit *done_by, uint32 &damage)
+void hyjal_trashAI::DamageTaken(Unit* done_by, uint32 &damage)
 {
     if (done_by->GetTypeId() == TYPEID_PLAYER || (done_by->GetTypeId() == TYPEID_UNIT && CAST_CRE(done_by)->isPet()))
     {
         damageTaken += damage;
-        if (pInstance)
-            pInstance->SetData(DATA_RAIDDAMAGE, damage);//store raid's damage
+        if (instance)
+            instance->SetData(DATA_RAIDDAMAGE, damage);//store raid's damage
     }
 }
 
@@ -197,7 +197,7 @@ void hyjal_trashAI::UpdateAI(const uint32 /*diff*/)
             {
                 for (uint8 i = 0; i < 4; ++i)
                     AddWaypoint(i, AllianceWPs[i][0]+irand(-3, 3), AllianceWPs[i][1]+irand(-3, 3), AllianceWPs[i][2]);
-                switch(OverrunType)
+                switch (OverrunType)
                 {
                     case 0:
                         AddWaypoint(4, AllianceOverrunWP[22][0]+irand(-3, 3), AllianceOverrunWP[22][1]+irand(-3, 3), AllianceOverrunWP[22][2]);
@@ -257,7 +257,7 @@ void hyjal_trashAI::UpdateAI(const uint32 /*diff*/)
             {
                 for (uint8 i = 0; i < 4; ++i)
                     AddWaypoint(i, AllianceWPs[i][0]+irand(-3, 3), AllianceWPs[i][1]+irand(-3, 3), AllianceWPs[i][2]);
-                switch(OverrunType)
+                switch (OverrunType)
                 {
                     case 0:
                         AddWaypoint(4, AllianceOverrunWP[1][0]+irand(-3, 3), AllianceOverrunWP[1][1]+irand(-3, 3), AllianceOverrunWP[1][2]);
@@ -332,7 +332,7 @@ void hyjal_trashAI::UpdateAI(const uint32 /*diff*/)
             {
                 for (uint8 i = 0; i < 6; ++i)
                     AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3), HordeWPs[i][1]+irand(-3, 3), HordeWPs[i][2]);
-                switch(OverrunType)
+                switch (OverrunType)
                 {
                     case 0:
                         AddWaypoint(5, HordeOverrunWP[16][0]+irand(-10, 10), HordeOverrunWP[16][1]+irand(-10, 10), HordeOverrunWP[16][2]);
@@ -377,14 +377,14 @@ void hyjal_trashAI::UpdateAI(const uint32 /*diff*/)
     }
 }
 
-void hyjal_trashAI::JustDied(Unit * /*victim*/)
+void hyjal_trashAI::JustDied(Unit* /*victim*/)
 {
-    if (!pInstance)
+    if (!instance)
         return;
     if (IsEvent && !me->isWorldBoss())
-        pInstance->SetData(DATA_TRASH, 0);//signal trash is dead
+        instance->SetData(DATA_TRASH, 0);//signal trash is dead
 
-    if ((pInstance->GetData(DATA_RAIDDAMAGE) < MINRAIDDAMAGE && !me->isWorldBoss()) || (damageTaken < me->GetMaxHealth()/4 && me->isWorldBoss()))
+    if ((instance->GetData(DATA_RAIDDAMAGE) < MINRAIDDAMAGE && !me->isWorldBoss()) || (damageTaken < me->GetMaxHealth()/4 && me->isWorldBoss()))
         me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);//no loot
 }
 
@@ -397,14 +397,14 @@ public:
     {
         mob_giant_infernalAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             meteor = false;//call once!
             CanMove = false;
             Delay = rand()%30000;
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->SetDisplayId(MODEL_INVIS);
-            pGo = false;
+            go = false;
             pos = 0;
             Reset();
         }
@@ -412,7 +412,7 @@ public:
         bool meteor;
         bool CanMove;
         bool WpEnabled;
-        bool pGo;
+        bool go;
         uint32 pos;
         uint32 spawnTimer;
         uint32 FlameBuffetTimer;
@@ -430,13 +430,13 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 0 && pInstance && !IsOverrun)
+            if (i == 0 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
         }
@@ -471,14 +471,14 @@ public:
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->SetDisplayId(me->GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID));
                     CanMove = true;
-                    if (pInstance)
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT) && !pInstance->GetData(DATA_HORDE_RETREAT))
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT) && !instance->GetData(DATA_HORDE_RETREAT))
                         {
-                            Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                            if (pTarget && pTarget->isAlive())
-                                me->AddThreat(pTarget, 0.0f);
-                        } else if (pInstance->GetData(DATA_ALLIANCE_RETREAT) && pInstance->GetData(DATA_HORDE_RETREAT)){
+                            Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                            if (target && target->isAlive())
+                                me->AddThreat(target, 0.0f);
+                        } else if (instance->GetData(DATA_ALLIANCE_RETREAT) && instance->GetData(DATA_HORDE_RETREAT)){
                             //do overrun
                         }
                     }
@@ -490,10 +490,10 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         AddWaypoint(0, HordeWPs[7][0]+irand(-3, 3),    HordeWPs[7][1]+irand(-3, 3),    HordeWPs[7][2]);//HordeWPs[7] infront of thrall
                         Start(true, true);
@@ -518,9 +518,9 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_giant_infernalAI(pCreature);
+        return new mob_giant_infernalAI(creature);
     }
 };
 
@@ -532,22 +532,22 @@ class mob_abomination : public CreatureScript
 public:
     mob_abomination() : CreatureScript("mob_abomination") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_abominationAI(pCreature);
+        return new mob_abominationAI(creature);
     }
 
     struct mob_abominationAI : public hyjal_trashAI
     {
         mob_abominationAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 KnockDownTimer;
         uint32 pos;
         void Reset()
@@ -558,17 +558,17 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
             if (i == LastOverronPos && IsOverrun)
@@ -590,12 +590,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -633,22 +633,22 @@ class mob_ghoul : public CreatureScript
 public:
     mob_ghoul() : CreatureScript("mob_ghoul") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_ghoulAI(pCreature);
+        return new mob_ghoulAI(creature);
     }
 
     struct mob_ghoulAI : public hyjal_trashAI
     {
         mob_ghoulAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 FrenzyTimer;
         uint32 pos;
         uint32 MoveTimer;
@@ -663,17 +663,17 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
             if (i == LastOverronPos && IsOverrun)
@@ -697,12 +697,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -742,22 +742,22 @@ class mob_necromancer : public CreatureScript
 public:
     mob_necromancer() : CreatureScript("mob_necromancer") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_necromancerAI(pCreature);
+        return new mob_necromancerAI(creature);
     }
 
     struct mob_necromancerAI : public hyjal_trashAI
     {
         mob_necromancerAI(Creature* c) : hyjal_trashAI(c), summons(me)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
         SummonList summons;
-        bool pGo;
+        bool go;
         uint32 ShadowBoltTimer;
         uint32 pos;
         void Reset()
@@ -768,26 +768,26 @@ public:
 
         void JustSummoned(Creature* summon)
         {
-            Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true);
-            if (pTarget && summon)
-                summon->Attack(pTarget, false);
+            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true);
+            if (target && summon)
+                summon->Attack(target, false);
             summons.Summon(summon);
         }
-        void SummonedCreatureDespawn(Creature *summon) {summons.Despawn(summon);}
+        void SummonedCreatureDespawn(Creature* summon) {summons.Despawn(summon);}
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
         }
@@ -819,12 +819,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -863,22 +863,22 @@ class mob_banshee : public CreatureScript
 public:
     mob_banshee() : CreatureScript("mob_banshee") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_bansheeAI(pCreature);
+        return new mob_bansheeAI(creature);
     }
 
     struct mob_bansheeAI : public hyjal_trashAI
     {
         mob_bansheeAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 CourseTimer;
         uint32 WailTimer;
         uint32 ShellTimer;
@@ -893,17 +893,17 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
         }
@@ -917,12 +917,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -968,22 +968,22 @@ class mob_crypt_fiend : public CreatureScript
 public:
     mob_crypt_fiend() : CreatureScript("mob_crypt_fiend") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_crypt_fiendAI(pCreature);
+        return new mob_crypt_fiendAI(creature);
     }
 
     struct mob_crypt_fiendAI : public hyjal_trashAI
     {
         mob_crypt_fiendAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 WebTimer;
         uint32 pos;
         void Reset()
@@ -994,17 +994,17 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
         }
@@ -1018,12 +1018,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -1060,22 +1060,22 @@ class mob_fel_stalker : public CreatureScript
 public:
     mob_fel_stalker() : CreatureScript("mob_fel_stalker") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_fel_stalkerAI(pCreature);
+        return new mob_fel_stalkerAI(creature);
     }
 
     struct mob_fel_stalkerAI : public hyjal_trashAI
     {
         mob_fel_stalkerAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 ManaBurnTimer;
         uint32 pos;
         void Reset()
@@ -1086,17 +1086,17 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance && !IsOverrun)
+            if (i == 7 && instance && !IsOverrun)
             {
-                if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
+                if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }else{
-                    Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_JAINAPROUDMOORE));
-                    if (pTarget && pTarget->isAlive())
-                        me->AddThreat(pTarget, 0.0f);
+                    Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    if (target && target->isAlive())
+                        me->AddThreat(target, 0.0f);
                 }
             }
         }
@@ -1110,12 +1110,12 @@ public:
                 npc_escortAI::UpdateAI(diff);
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
-                        if (pInstance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
+                        if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, use horde WPs
                         {
                             for (uint8 i = 0; i < 8; ++i)
                                 AddWaypoint(i, HordeWPs[i][0]+irand(-3, 3),    HordeWPs[i][1]+irand(-3, 3),    HordeWPs[i][2]);
@@ -1152,22 +1152,22 @@ class mob_frost_wyrm : public CreatureScript
 public:
     mob_frost_wyrm() : CreatureScript("mob_frost_wyrm") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_frost_wyrmAI(pCreature);
+        return new mob_frost_wyrmAI(creature);
     }
 
     struct mob_frost_wyrmAI : public hyjal_trashAI
     {
         mob_frost_wyrmAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 FrostBreathTimer;
         uint32 pos;
         uint32 MoveTimer;
@@ -1182,27 +1182,27 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 2 && pInstance && !IsOverrun)
+            if (i == 2 && instance && !IsOverrun)
             {
-                Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                if (pTarget && pTarget->isAlive())
+                Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                if (target && target->isAlive())
                 {
-                    me->AddThreat(pTarget, 0.0f);
-                    DoCast(pTarget, SPELL_FROST_BREATH, true);
+                    me->AddThreat(target, 0.0f);
+                    DoCast(target, SPELL_FROST_BREATH, true);
                 }
             }
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_TRASH, 0);//signal trash is dead
+            if (instance && IsEvent)
+                instance->SetData(DATA_TRASH, 0);//signal trash is dead
 
             float x, y, z;
             me->GetPosition(x, y, z);
             z = me->GetMap()->GetHeight(x, y, z);
             me->GetMotionMaster()->MovePoint(0, x, y, z);
-            me->GetMap()->CreatureRelocation(me, x, y, z, 0);
+            me->SetPosition(x, y, z, 0);
         }
 
         void EnterCombat(Unit* /*who*/) {}
@@ -1217,10 +1217,10 @@ public:
             }
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         if (!useFlyPath)
                         {
@@ -1269,23 +1269,23 @@ class mob_gargoyle : public CreatureScript
 public:
     mob_gargoyle() : CreatureScript("mob_gargoyle") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_gargoyleAI(pCreature);
+        return new mob_gargoyleAI(creature);
     }
 
     struct mob_gargoyleAI : public hyjal_trashAI
     {
         mob_gargoyleAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
             DummyTarget[0] = 0;DummyTarget[1] = 0;DummyTarget[2] = 0;
             Reset();
         }
 
-        bool pGo;
+        bool go;
         uint32 StrikeTimer;
         uint32 pos;
         uint32 MoveTimer;
@@ -1304,24 +1304,24 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 2 && pInstance && !IsOverrun)
+            if (i == 2 && instance && !IsOverrun)
             {
-                Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                if (pTarget && pTarget->isAlive())
+                Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                if (target && target->isAlive())
                 {
-                    me->AddThreat(pTarget, 0.0f);
-                    DoCast(pTarget, SPELL_GARGOYLE_STRIKE, true);
+                    me->AddThreat(target, 0.0f);
+                    DoCast(target, SPELL_GARGOYLE_STRIKE, true);
                 }
             }
         }
 
-        void JustDied(Unit *victim)
+        void JustDied(Unit* victim)
         {
             float x, y, z;
             me->GetPosition(x, y, z);
             z = me->GetMap()->GetHeight(x, y, z);
             me->GetMotionMaster()->MovePoint(0, x, y, z);
-            me->GetMap()->CreatureRelocation(me, x, y, z, 0);
+            me->SetPosition(x, y, z, 0);
             hyjal_trashAI::JustDied(victim);
         }
 
@@ -1335,10 +1335,10 @@ public:
             }
             if (IsEvent)
             {
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         if (!useFlyPath)
                         {
@@ -1373,9 +1373,9 @@ public:
                 forcemove = false;
                 if (forcemove)
                 {
-                    Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                    if (pTarget)
-                        me->Attack(pTarget, false);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    if (target)
+                        me->Attack(target, false);
                 }
                 if (MoveTimer <= diff)
                 {
@@ -1409,14 +1409,14 @@ class alliance_rifleman : public CreatureScript
 public:
     alliance_rifleman() : CreatureScript("alliance_rifleman") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new alliance_riflemanAI(pCreature);
+        return new alliance_riflemanAI(creature);
     }
 
     struct alliance_riflemanAI : public Scripted_NoMovementAI
     {
-        alliance_riflemanAI(Creature *c) : Scripted_NoMovementAI(c)
+        alliance_riflemanAI(Creature* c) : Scripted_NoMovementAI(c)
         {
             Reset();
         }
@@ -1432,12 +1432,12 @@ public:
             ExplodeTimer = 5000+rand()%5000;
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || me->getVictim())
                 return;
 
-            if (who->isTargetableForAttack() && me->IsHostileTo(who))
+            if (me->IsValidAttackTarget(who))
             {
                 //float attackRadius = me->GetAttackDistance(who);
                 if (me->IsWithinDistInMap(who, 30))
@@ -1445,7 +1445,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

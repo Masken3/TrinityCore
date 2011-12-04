@@ -28,8 +28,7 @@
 #include "SpellAuras.h"
 
 template<class T>
-inline void
-Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
+inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
 {
     for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
@@ -38,8 +37,7 @@ Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
     }
 }
 
-inline void
-Trinity::ObjectUpdater::Visit(CreatureMapType &m)
+inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (iter->getSource()->IsInWorld())
@@ -395,6 +393,19 @@ void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
             i_object = itr->getSource();
             return;
         }
+    }
+}
+
+template<class Check>
+void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
+{
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    {
+        if (!itr->getSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->getSource()))
+            i_object = itr->getSource();
     }
 }
 

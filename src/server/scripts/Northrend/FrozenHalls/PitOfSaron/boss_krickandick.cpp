@@ -136,14 +136,14 @@ class boss_ick : public CreatureScript
 
         struct boss_ickAI : public BossAI
         {
-            boss_ickAI(Creature *creature) : BossAI(creature, DATA_ICK), _vehicle(creature->GetVehicleKit())
+            boss_ickAI(Creature* creature) : BossAI(creature, DATA_ICK), _vehicle(creature->GetVehicleKit())
             {
                 ASSERT(_vehicle);
             }
 
             void InitializeAI()
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != GetScriptId(PoSScriptName))
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -160,7 +160,7 @@ class boss_ick : public CreatureScript
                 return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KRICK));
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 if (Creature* krick = GetKrick())
                     DoScriptText(SAY_KRICK_AGGRO, krick);
@@ -179,7 +179,7 @@ class boss_ick : public CreatureScript
                 ScriptedAI::EnterEvadeMode();
             }
 
-            void JustDied(Unit* /*pKiller*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (Creature* krick = GetKrick())
                 {
@@ -297,7 +297,7 @@ class boss_krick : public CreatureScript
 
             void InitializeAI()
             {
-                if (!_instanceScript || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != GetScriptId(PoSScriptName))
+                if (!_instanceScript || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -578,7 +578,7 @@ class spell_ick_explosive_barrage : public SpellScriptLoader
             }
         };
 
-        AuraScript *GetAuraScript() const
+        AuraScript* GetAuraScript() const
         {
             return new spell_ick_explosive_barrage_AuraScript();
         }
@@ -598,7 +598,6 @@ class spell_exploding_orb_hasty_grow : public SpellScriptLoader
                 if (GetStackAmount() == 15)
                 {
                     Unit* target = GetTarget(); // store target because aura gets removed
-                    PreventDefaultAction();
                     target->CastSpell(target, SPELL_EXPLOSIVE_BARRAGE_DAMAGE, false);
                     target->RemoveAurasDueToSpell(SPELL_HASTY_GROW);
                     target->RemoveAurasDueToSpell(SPELL_AUTO_GROW);
@@ -648,7 +647,7 @@ class spell_krick_pursuit : public SpellScriptLoader
 
             void Register()
             {
-                OnEffect += SpellEffectFn(spell_krick_pursuit_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnEffectHitTarget += SpellEffectFn(spell_krick_pursuit_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 

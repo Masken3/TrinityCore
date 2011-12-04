@@ -241,35 +241,33 @@ class BattlegroundABScore : public BattlegroundScore
 
 class BattlegroundAB : public Battleground
 {
-    friend class BattlegroundMgr;
-
     public:
         BattlegroundAB();
         ~BattlegroundAB();
 
-        void Update(uint32 diff);
-        void AddPlayer(Player *plr);
+        void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
-        void RemovePlayer(Player *plr, uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         virtual bool SetupBattleground();
         virtual void Reset();
         void EndBattleground(uint32 winner);
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
         /* Scorekeeping */
-        virtual void UpdatePlayerScore(Player *Source, uint32 type, uint32 value, bool doAddHonor = true);
+        virtual void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         virtual void FillInitialWorldStates(WorldPacket& data);
 
         /* Nodes occupying */
-        virtual void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj);
+        virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj);
 
         /* achievement req. */
         bool IsAllNodesConrolledByTeam(uint32 team) const;  // overwrited
         bool IsTeamScores500Disadvantage(uint32 team) const { return m_TeamScores500Disadvantage[GetTeamIndexByTeamId(team)]; }
     private:
+        virtual void PostUpdateImpl(uint32 diff);
         /* Gameobject spawning/despawning */
         void _CreateBanner(uint8 node, uint8 type, uint8 teamIndex, bool delay);
         void _DelBanner(uint8 node, uint8 type, uint8 teamIndex);

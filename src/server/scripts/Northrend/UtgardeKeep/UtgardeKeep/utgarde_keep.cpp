@@ -30,20 +30,20 @@ class npc_dragonflayer_forge_master : public CreatureScript
 public:
     npc_dragonflayer_forge_master() : CreatureScript("npc_dragonflayer_forge_master") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_dragonflayer_forge_masterAI(pCreature);
+        return new npc_dragonflayer_forge_masterAI(creature);
     }
 
     struct npc_dragonflayer_forge_masterAI : public ScriptedAI
     {
-        npc_dragonflayer_forge_masterAI(Creature *c) : ScriptedAI(c)
+        npc_dragonflayer_forge_masterAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             fm_Type = 0;
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
         uint8 fm_Type;
 
         void Reset()
@@ -54,62 +54,62 @@ public:
 
         void CheckForge()
         {
-           if (pInstance)
+           if (instance)
             {
-                switch(fm_Type)
+                switch (fm_Type)
                 {
                 case 1:
-                    pInstance->SetData(EVENT_FORGE_1, me->isAlive() ? NOT_STARTED : DONE);
+                    instance->SetData(EVENT_FORGE_1, me->isAlive() ? NOT_STARTED : DONE);
                     break;
                 case 2:
-                    pInstance->SetData(EVENT_FORGE_2, me->isAlive() ? NOT_STARTED : DONE);
+                    instance->SetData(EVENT_FORGE_2, me->isAlive() ? NOT_STARTED : DONE);
                     break;
                 case 3:
-                    pInstance->SetData(EVENT_FORGE_3, me->isAlive() ? NOT_STARTED : DONE);
+                    instance->SetData(EVENT_FORGE_3, me->isAlive() ? NOT_STARTED : DONE);
                     break;
                 }
             }
         }
 
-        void JustDied(Unit * /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (fm_Type == 0) fm_Type = GetForgeMasterType();
-            if (pInstance)
+            if (instance)
             {
-                switch(fm_Type)
+                switch (fm_Type)
                 {
                 case 1:
-                    pInstance->SetData(EVENT_FORGE_1, DONE);
+                    instance->SetData(EVENT_FORGE_1, DONE);
                     break;
                 case 2:
-                    pInstance->SetData(EVENT_FORGE_2, DONE);
+                    instance->SetData(EVENT_FORGE_2, DONE);
                     break;
                 case 3:
-                    pInstance->SetData(EVENT_FORGE_3, DONE);
+                    instance->SetData(EVENT_FORGE_3, DONE);
                     break;
                 }
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (fm_Type == 0) fm_Type = GetForgeMasterType();
-            if (pInstance)
+            if (instance)
             {
-                switch(fm_Type)
+                switch (fm_Type)
                 {
                 case 1:
-                    pInstance->SetData(EVENT_FORGE_1, IN_PROGRESS);
+                    instance->SetData(EVENT_FORGE_1, IN_PROGRESS);
                     break;
                 case 2:
-                    pInstance->SetData(EVENT_FORGE_2, IN_PROGRESS);
+                    instance->SetData(EVENT_FORGE_2, IN_PROGRESS);
                     break;
                 case 3:
-                    pInstance->SetData(EVENT_FORGE_3, IN_PROGRESS);
+                    instance->SetData(EVENT_FORGE_3, IN_PROGRESS);
                     break;
                 }
             }
-            me->SetUInt32Value(UNIT_NPC_EMOTESTATE , EMOTE_ONESHOT_NONE);
+            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
         }
 
         uint8 GetForgeMasterType()

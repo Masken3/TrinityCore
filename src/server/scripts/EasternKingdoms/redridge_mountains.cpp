@@ -43,25 +43,25 @@ class npc_corporal_keeshan : public CreatureScript
 public:
     npc_corporal_keeshan() : CreatureScript("npc_corporal_keeshan") { }
 
-    bool OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const *pQuest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
-        if (pQuest->GetQuestId() == QUEST_MISSING_IN_ACTION)
+        if (quest->GetQuestId() == QUEST_MISSING_IN_ACTION)
         {
-            CAST_AI(npc_corporal_keeshan::npc_corporal_keeshanAI, pCreature->AI())->Start(true, false, pPlayer->GetGUID(), pQuest);
-            DoScriptText(SAY_CORPORAL_1, pCreature);
+            CAST_AI(npc_corporal_keeshan::npc_corporal_keeshanAI, creature->AI())->Start(true, false, player->GetGUID(), quest);
+            DoScriptText(SAY_CORPORAL_1, creature);
         }
 
         return false;
     }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_corporal_keeshanAI(pCreature);
+        return new npc_corporal_keeshanAI(creature);
     }
 
     struct npc_corporal_keeshanAI : public npc_escortAI
     {
-        npc_corporal_keeshanAI(Creature* pCreature) : npc_escortAI(pCreature) {}
+        npc_corporal_keeshanAI(Creature* creature) : npc_escortAI(creature) {}
 
         uint32 uiPhase;
         uint32 uiTimer;
@@ -78,15 +78,15 @@ public:
 
         void WaypointReached(uint32 uiI)
         {
-            Player* pPlayer = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
 
-            if (!pPlayer)
+            if (!player)
                 return;
 
             if (uiI >= 65 && me->GetUnitMovementFlags() == MOVEMENTFLAG_WALKING)
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
-            switch(uiI)
+            switch (uiI)
             {
                 case 39:
                     SetEscortPaused(true);
@@ -97,7 +97,7 @@ public:
                     me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
                     break;
                 case 115:
-                    pPlayer->AreaExploredOrEventHappens(QUEST_MISSING_IN_ACTION);
+                    player->AreaExploredOrEventHappens(QUEST_MISSING_IN_ACTION);
                     uiTimer = 2000;
                     uiPhase = 4;
                     break;
@@ -115,7 +115,7 @@ public:
             {
                 if (uiTimer <= uiDiff)
                 {
-                    switch(uiPhase)
+                    switch (uiPhase)
                     {
                         case 1:
                             me->SetStandState(UNIT_STAND_STATE_SIT);

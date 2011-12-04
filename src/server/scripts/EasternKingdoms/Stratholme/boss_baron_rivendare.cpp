@@ -82,19 +82,19 @@ class boss_baron_rivendare : public CreatureScript
 public:
     boss_baron_rivendare() : CreatureScript("boss_baron_rivendare") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_baron_rivendareAI (pCreature);
+        return new boss_baron_rivendareAI (creature);
     }
 
     struct boss_baron_rivendareAI : public ScriptedAI
     {
-        boss_baron_rivendareAI(Creature *c) : ScriptedAI(c)
+        boss_baron_rivendareAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = me->GetInstanceScript();
+            instance = me->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 ShadowBolt_Timer;
         uint32 Cleave_Timer;
@@ -109,27 +109,27 @@ public:
             MortalStrike_Timer = 12000;
             //        RaiseDead_Timer = 30000;
             SummonSkeletons_Timer = 34000;
-            if (pInstance && pInstance->GetData(TYPE_RAMSTEIN) == DONE)
-                pInstance->SetData(TYPE_BARON, NOT_STARTED);
+            if (instance && instance->GetData(TYPE_RAMSTEIN) == DONE)
+                instance->SetData(TYPE_BARON, NOT_STARTED);
         }
 
         void AttackStart(Unit* who)
         {
-            if (pInstance)//can't use entercombat(), boss' dmg aura sets near players in combat, before entering the room's door
-                pInstance->SetData(TYPE_BARON, IN_PROGRESS);
+            if (instance)//can't use entercombat(), boss' dmg aura sets near players in combat, before entering the room's door
+                instance->SetData(TYPE_BARON, IN_PROGRESS);
             ScriptedAI::AttackStart(who);
         }
 
         void JustSummoned(Creature* summoned)
         {
-            if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                summoned->AI()->AttackStart(pTarget);
+            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                summoned->AI()->AttackStart(target);
         }
 
          void JustDied(Unit* /*Killer*/)
          {
-             if (pInstance)
-                 pInstance->SetData(TYPE_BARON, DONE);
+             if (instance)
+                 instance->SetData(TYPE_BARON, DONE);
          }
 
         void UpdateAI(const uint32 diff)

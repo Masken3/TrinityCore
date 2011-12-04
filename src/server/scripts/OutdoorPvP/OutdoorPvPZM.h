@@ -168,11 +168,9 @@ class OutdoorPvPZM;
 
 class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
 {
-    friend class OutdoorPvPZM;
-
     public:
 
-        OPvPCapturePointZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
+        OPvPCapturePointZM_Beacon(OutdoorPvP* pvp, ZM_BeaconType type);
 
         void ChangeState();
 
@@ -181,8 +179,8 @@ class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player * plr);
-        void HandlePlayerLeave(Player * plr);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
         void UpdateTowerState();
 
@@ -201,11 +199,9 @@ enum ZM_GraveYardState
 
 class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 {
-    friend class OutdoorPvPZM;
-
     public:
 
-        OPvPCapturePointZM_GraveYard(OutdoorPvP * pvp);
+        OPvPCapturePointZM_GraveYard(OutdoorPvP* pvp);
 
         bool Update(uint32 diff);
 
@@ -215,15 +211,17 @@ class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 
         void UpdateTowerState();
 
-        int32 HandleOpenGo(Player *plr, uint64 guid);
+        int32 HandleOpenGo(Player* player, uint64 guid);
 
         void SetBeaconState(uint32 controlling_team); // not good atm
 
-        bool HandleGossipOption(Player * plr, uint64 guid, uint32 gossipid);
+        bool HandleGossipOption(Player* player, uint64 guid, uint32 gossipid);
 
-        bool HandleDropFlag(Player * plr, uint32 spellId);
+        bool HandleDropFlag(Player* player, uint32 spellId);
 
-        bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso);
+        bool CanTalkTo(Player* player, Creature* c, GossipMenuItems const& gso);
+
+        uint32 GetGraveYardState() const;
 
     private:
 
@@ -238,24 +236,28 @@ class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 
 class OutdoorPvPZM : public OutdoorPvP
 {
-    friend class OPvPCapturePointZM_Beacon;
-
     public:
 
         OutdoorPvPZM();
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(Player *plr, uint32 zone);
-        void HandlePlayerLeaveZone(Player *plr, uint32 zone);
+        void HandlePlayerEnterZone(Player* player, uint32 zone);
+        void HandlePlayerLeaveZone(Player* player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(Player * plr);
+        void SendRemoveWorldStates(Player* player);
 
-        void HandleKillImpl(Player * plr, Unit * killed);
+        void HandleKillImpl(Player* player, Unit* killed);
+
+        uint32 GetAllianceTowersControlled() const;
+        void SetAllianceTowersControlled(uint32 count);
+
+        uint32 GetHordeTowersControlled() const;
+        void SetHordeTowersControlled(uint32 count);
 
     private:
 

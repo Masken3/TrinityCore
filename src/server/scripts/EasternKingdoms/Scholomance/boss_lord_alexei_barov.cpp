@@ -34,14 +34,14 @@ class boss_lord_alexei_barov : public CreatureScript
 public:
     boss_lord_alexei_barov() : CreatureScript("boss_lord_alexei_barov") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_lordalexeibarovAI (pCreature);
+        return new boss_lordalexeibarovAI (creature);
     }
 
     struct boss_lordalexeibarovAI : public ScriptedAI
     {
-        boss_lordalexeibarovAI(Creature *c) : ScriptedAI(c) {}
+        boss_lordalexeibarovAI(Creature* c) : ScriptedAI(c) {}
 
         uint32 Immolate_Timer;
         uint32 VeilofShadow_Timer;
@@ -54,19 +54,19 @@ public:
             me->LoadCreaturesAddon();
         }
 
-        void JustDied(Unit * /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            InstanceScript *pInstance = me->GetInstanceScript();
-            if (pInstance)
+            InstanceScript* instance = me->GetInstanceScript();
+            if (instance)
             {
-                pInstance->SetData(DATA_LORDALEXEIBAROV_DEATH, 0);
+                instance->SetData(DATA_LORDALEXEIBAROV_DEATH, 0);
 
-                if (pInstance->GetData(TYPE_GANDLING) == IN_PROGRESS)
+                if (instance->GetData(TYPE_GANDLING) == IN_PROGRESS)
                     me->SummonCreature(1853, 180.73f, -9.43856f, 75.507f, 1.61399f, TEMPSUMMON_DEAD_DESPAWN, 0);
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -78,9 +78,9 @@ public:
             //Immolate_Timer
             if (Immolate_Timer <= diff)
             {
-                Unit *pTarget = NULL;
-                pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                if (pTarget) DoCast(pTarget, SPELL_IMMOLATE);
+                Unit* target = NULL;
+                target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                if (target) DoCast(target, SPELL_IMMOLATE);
 
                 Immolate_Timer = 12000;
             } else Immolate_Timer -= diff;

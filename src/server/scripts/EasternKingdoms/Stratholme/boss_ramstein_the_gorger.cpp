@@ -36,19 +36,19 @@ class boss_ramstein_the_gorger : public CreatureScript
 public:
     boss_ramstein_the_gorger() : CreatureScript("boss_ramstein_the_gorger") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_ramstein_the_gorgerAI (pCreature);
+        return new boss_ramstein_the_gorgerAI (creature);
     }
 
     struct boss_ramstein_the_gorgerAI : public ScriptedAI
     {
-        boss_ramstein_the_gorgerAI(Creature *c) : ScriptedAI(c)
+        boss_ramstein_the_gorgerAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = me->GetInstanceScript();
+            instance = me->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 Trample_Timer;
         uint32 Knockout_Timer;
@@ -59,7 +59,7 @@ public:
             Knockout_Timer = 12000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -71,8 +71,8 @@ public:
                     mob->AI()->AttackStart(me->SelectNearestTarget(100.0f));
             }
 
-            if (pInstance)
-                pInstance->SetData(TYPE_RAMSTEIN, DONE);
+            if (instance)
+                instance->SetData(TYPE_RAMSTEIN, DONE);
         }
 
         void UpdateAI(const uint32 diff)

@@ -36,8 +36,7 @@ struct Traveller
     Traveller(const Traveller &obj) : i_traveller(obj) {}
     Traveller& operator=(const Traveller &obj)
     {
-        this->~Traveller();
-        new (this) Traveller(obj);
+        this.i_traveller = obj.i_traveller;
         return *this;
     }
 
@@ -86,7 +85,7 @@ inline float Traveller<Creature>::Speed()
 template<>
 inline void Traveller<Creature>::Relocation(float x, float y, float z, float orientation)
 {
-    i_traveller.SetPosition(x, y, z, orientation);
+    i_traveller.UpdatePosition(x, y, z, orientation);
 }
 
 template<>
@@ -137,7 +136,7 @@ inline float Traveller<Player>::GetMoveDestinationTo(float x, float y, float z)
 template<>
 inline void Traveller<Player>::Relocation(float x, float y, float z, float orientation)
 {
-    i_traveller.SetPosition(x, y, z, orientation);
+    i_traveller.UpdatePosition(x, y, z, orientation);
 }
 
 template<>

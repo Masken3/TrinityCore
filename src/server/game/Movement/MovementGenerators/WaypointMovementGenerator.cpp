@@ -126,14 +126,14 @@ void WaypointMovementGenerator<Player>::InitTraveller(Player & /*unit*/, const W
 
 template<class T>
 bool
-WaypointMovementGenerator<T>::Update(T & /*unit*/, const uint32 & /*diff*/)
+WaypointMovementGenerator<T>::Update(T & /*unit*/, const uint32 /*diff*/)
 {
     return false;
 }
 
 template<>
 bool
-WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
+WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 diff)
 {
     if (!&unit)
         return true;
@@ -206,7 +206,13 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
             MovementInform(unit);
             unit.UpdateWaypointID(i_currentNode);
             unit.ClearUnitState(UNIT_STAT_ROAMING);
-            unit.Relocate(node->x, node->y, node->z);
+            if (node->orientation)
+            {
+                unit.Relocate(node->x, node->y, node->z, node->orientation);
+                unit.SetFacing(node->orientation, NULL);
+            }
+            else
+                unit.Relocate(node->x, node->y, node->z);
         }
     }
     else
@@ -225,7 +231,7 @@ WaypointMovementGenerator<Creature>::Update(Creature &unit, const uint32 &diff)
 }
 
 template void WaypointMovementGenerator<Player>::Initialize(Player &);
-template bool WaypointMovementGenerator<Player>::Update(Player &, const uint32 &);
+template bool WaypointMovementGenerator<Player>::Update(Player &, const uint32);
 template void WaypointMovementGenerator<Player>::MovementInform(Player &);
 
 //----------------------------------------------------//
@@ -266,11 +272,11 @@ void FlightPathMovementGenerator::Finalize(Player & player)
     float y = 0;
     float z = 0;
     i_destinationHolder.GetLocationNow(player.GetBaseMap(), x, y, z);
-    player.SetPosition(x, y, z, player.GetOrientation());
+    player.UpdatePosition(x, y, z, player.GetOrientation());
 
 }
 
-bool FlightPathMovementGenerator::Update(Player &player, const uint32 &diff)
+bool FlightPathMovementGenerator::Update(Player &player, const uint32 diff)
 {
     if (MovementInProgress())
     {
@@ -345,7 +351,7 @@ void FlightPathMovementGenerator::InitEndGridInfo()
 void FlightPathMovementGenerator::PreloadEndGrid()
 {
     // used to preload the final grid where the flightmaster is
-    Map *endMap = sMapMgr->FindMap(m_endMapId);
+    Map* endMap = sMapMgr->FindBaseNonInstanceMap(m_endMapId);
 
     // Load the grid
     if (endMap)

@@ -172,7 +172,6 @@ class boss_gothik : public CreatureScript
                 LiveTriggerGUID.clear();
                 DeadTriggerGUID.clear();
 
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                 me->SetReactState(REACT_PASSIVE);
                 if (instance)
                     instance->SetData(DATA_GOTHIK_GATE, GO_STATE_ACTIVE);
@@ -182,7 +181,7 @@ class boss_gothik : public CreatureScript
                 thirtyPercentReached = false;
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 for (uint32 i = 0; i < POS_LIVE; ++i)
                     if (Creature* trigger = DoSummon(WORLD_TRIGGER, PosSummonLive[i]))
@@ -199,7 +198,6 @@ class boss_gothik : public CreatureScript
                 }
 
                 _EnterCombat();
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                 waveCount = 0;
                 events.ScheduleEvent(EVENT_SUMMON, 30000);
                 DoTeleportTo(PosPlatform);
@@ -225,7 +223,7 @@ class boss_gothik : public CreatureScript
                 summons.Summon(summon);
             }
 
-            void SummonedCreatureDespawn(Creature *summon)
+            void SummonedCreatureDespawn(Creature* summon)
             {
                 summons.Despawn(summon);
             }
@@ -280,7 +278,7 @@ class boss_gothik : public CreatureScript
                 }
                 else
                 {
-                    switch(entry)
+                    switch (entry)
                     {
                         case MOB_LIVE_TRAINEE:
                         {
@@ -345,10 +343,10 @@ class boss_gothik : public CreatureScript
                 return false;
             }
 
-            void SpellHit(Unit* /*caster*/, SpellEntry const* spell)
+            void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
             {
                 uint32 spellId = 0;
-                switch(spell->Id)
+                switch (spell->Id)
                 {
                     case SPELL_INFORM_LIVE_TRAINEE: spellId = SPELL_INFORM_DEAD_TRAINEE;    break;
                     case SPELL_INFORM_LIVE_KNIGHT:  spellId = SPELL_INFORM_DEAD_KNIGHT;     break;
@@ -357,17 +355,23 @@ class boss_gothik : public CreatureScript
                 if (spellId && me->isInCombat())
                 {
                     me->HandleEmoteCommand(EMOTE_ONESHOT_SPELLCAST);
-                    if (Creature *pRandomDeadTrigger = Unit::GetCreature(*me, DeadTriggerGUID[rand() % POS_DEAD]))
+                    if (Creature* pRandomDeadTrigger = Unit::GetCreature(*me, DeadTriggerGUID[rand() % POS_DEAD]))
                         me->CastSpell(pRandomDeadTrigger, spellId, true);
                 }
             }
 
-            void SpellHitTarget(Unit* target, SpellEntry const* spell)
+            void DamageTaken(Unit* /*who*/, uint32& damage)
+            {
+                if (!phaseTwo)
+                    damage = 0;
+            }
+
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
                 if (!me->isInCombat())
                     return;
 
-                switch(spell->Id)
+                switch (spell->Id)
                 {
                     case SPELL_INFORM_DEAD_TRAINEE:
                         DoSummon(MOB_DEAD_TRAINEE, target, 0);
@@ -401,7 +405,7 @@ class boss_gothik : public CreatureScript
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
-                    switch(eventId)
+                    switch (eventId)
                     {
                         case EVENT_SUMMON:
                             if (waves[waveCount].entry)
@@ -443,7 +447,6 @@ class boss_gothik : public CreatureScript
                                 DoScriptText(SAY_TELEPORT, me);
                                 DoTeleportTo(PosGroundLiveSide);
                                 me->SetReactState(REACT_AGGRESSIVE);
-                                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                                 summons.DoAction(0, 0);
                                 summons.DoZoneInCombat();
                                 events.ScheduleEvent(EVENT_BOLT, 1000);
@@ -469,10 +472,10 @@ class boss_gothik : public CreatureScript
                                     DoTeleportTo(PosGroundLiveSide);
 
                                 me->getThreatManager().resetAggro(NotOnSameSide(me));
-                                if (Unit *pTarget = SelectTarget(SELECT_TARGET_NEAREST, 0))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST, 0))
                                 {
-                                    me->getThreatManager().addThreat(pTarget, 100.0f);
-                                    AttackStart(pTarget);
+                                    me->getThreatManager().addThreat(target, 100.0f);
+                                    AttackStart(target);
                                 }
 
                                 events.ScheduleEvent(EVENT_TELEPORT, 20000);
@@ -481,7 +484,8 @@ class boss_gothik : public CreatureScript
                     }
                 }
 
-                DoMeleeAttackIfReady();
+                if (!phaseTwo)
+                    DoMeleeAttackIfReady();
             }
         };
 

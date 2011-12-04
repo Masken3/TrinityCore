@@ -48,21 +48,18 @@ class boss_azgalor : public CreatureScript
 public:
     boss_azgalor() : CreatureScript("boss_azgalor") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_azgalorAI (pCreature);
+        return new boss_azgalorAI (creature);
     }
 
     struct boss_azgalorAI : public hyjal_trashAI
     {
-        boss_azgalorAI(Creature *c) : hyjal_trashAI(c)
+        boss_azgalorAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            pGo = false;
+            instance = c->GetInstanceScript();
+            go = false;
             pos = 0;
-            SpellEntry *TempSpell = GET_SPELL(SPELL_HOWL_OF_AZGALOR);
-            if (TempSpell)
-                TempSpell->EffectRadiusIndex[0] = 12;//100yards instead of 50000?!
         }
 
         uint32 RainTimer;
@@ -72,7 +69,7 @@ public:
         uint32 EnrageTimer;
         bool enraged;
 
-        bool pGo;
+        bool go;
         uint32 pos;
 
         void Reset()
@@ -85,19 +82,19 @@ public:
             EnrageTimer = 600000;
             enraged = false;
 
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_AZGALOREVENT, NOT_STARTED);
+            if (instance && IsEvent)
+                instance->SetData(DATA_AZGALOREVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_AZGALOREVENT, IN_PROGRESS);
+            if (instance && IsEvent)
+                instance->SetData(DATA_AZGALOREVENT, IN_PROGRESS);
             DoPlaySoundToSet(me, SOUND_ONAGGRO);
             me->MonsterYell(SAY_ONAGGRO, LANG_UNIVERSAL, 0);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             switch (urand(0, 2))
             {
@@ -119,19 +116,19 @@ public:
         void WaypointReached(uint32 i)
         {
             pos = i;
-            if (i == 7 && pInstance)
+            if (i == 7 && instance)
             {
-                Unit *pTarget = Unit::GetUnit((*me), pInstance->GetData64(DATA_THRALL));
-                if (pTarget && pTarget->isAlive())
-                    me->AddThreat(pTarget, 0.0f);
+                Unit* target = Unit::GetUnit((*me), instance->GetData64(DATA_THRALL));
+                if (target && target->isAlive())
+                    me->AddThreat(target, 0.0f);
             }
         }
 
-        void JustDied(Unit *victim)
+        void JustDied(Unit* victim)
         {
             hyjal_trashAI::JustDied(victim);
-            if (pInstance && IsEvent)
-                pInstance->SetData(DATA_AZGALOREVENT, DONE);
+            if (instance && IsEvent)
+                instance->SetData(DATA_AZGALOREVENT, DONE);
             DoPlaySoundToSet(me, SOUND_ONDEATH);
         }
 
@@ -141,10 +138,10 @@ public:
             {
                 //Must update npc_escortAI
                 npc_escortAI::UpdateAI(diff);
-                if (!pGo)
+                if (!go)
                 {
-                    pGo = true;
-                    if (pInstance)
+                    go = true;
+                    if (instance)
                     {
                         AddWaypoint(0, 5492.91f,    -2404.61f,    1462.63f);
                         AddWaypoint(1, 5531.76f,    -2460.87f,    1469.55f);
@@ -211,25 +208,25 @@ class mob_lesser_doomguard : public CreatureScript
 public:
     mob_lesser_doomguard() : CreatureScript("mob_lesser_doomguard") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_lesser_doomguardAI (pCreature);
+        return new mob_lesser_doomguardAI (creature);
     }
 
     struct mob_lesser_doomguardAI : public hyjal_trashAI
     {
-        mob_lesser_doomguardAI(Creature *c) : hyjal_trashAI(c)
+        mob_lesser_doomguardAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            if (pInstance)
-                AzgalorGUID = pInstance->GetData64(DATA_AZGALOR);
+            instance = c->GetInstanceScript();
+            if (instance)
+                AzgalorGUID = instance->GetData64(DATA_AZGALOR);
         }
 
         uint32 CrippleTimer;
         uint32 WarstompTimer;
         uint32 CheckTimer;
         uint64 AzgalorGUID;
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -239,11 +236,11 @@ public:
             CheckTimer = 5000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
         }
 
@@ -251,13 +248,13 @@ public:
         {
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
-            if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsHostileTo(who))
+            if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsValidAttackTarget(who))
                 AttackStart(who);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
         }
 

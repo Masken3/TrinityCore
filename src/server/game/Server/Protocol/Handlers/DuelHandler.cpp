@@ -27,35 +27,37 @@
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
     uint64 guid;
-    Player *pl;
-    Player *plTarget;
+    Player* player;
+    Player* plTarget;
+
+    recvPacket >> guid;
 
     if (!GetPlayer()->duel)                                  // ignore accept from duel-sender
         return;
 
-    recvPacket >> guid;
+    player       = GetPlayer();
+    plTarget = player->duel->opponent;
 
-    pl       = GetPlayer();
-    plTarget = pl->duel->opponent;
-
-    if (pl == pl->duel->initiator || !plTarget || pl == plTarget || pl->duel->startTime != 0 || plTarget->duel->startTime != 0)
+    if (player == player->duel->initiator || !plTarget || player == plTarget || player->duel->startTime != 0 || plTarget->duel->startTime != 0)
         return;
 
     //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: Received CMSG_DUEL_ACCEPTED");
-    sLog->outStaticDebug("Player 1 is: %u (%s)", pl->GetGUIDLow(), pl->GetName());
+    sLog->outStaticDebug("Player 1 is: %u (%s)", player->GetGUIDLow(), player->GetName());
     sLog->outStaticDebug("Player 2 is: %u (%s)", plTarget->GetGUIDLow(), plTarget->GetName());
 
     time_t now = time(NULL);
-    pl->duel->startTimer = now;
+    player->duel->startTimer = now;
     plTarget->duel->startTimer = now;
 
-    pl->SendDuelCountdown(3000);
+    player->SendDuelCountdown(3000);
     plTarget->SendDuelCountdown(3000);
 }
 
 void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 {
-    //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: Received CMSG_DUEL_CANCELLED");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_DUEL_CANCELLED");
+    uint64 guid;
+    recvPacket >> guid;
 
     // no duel requested
     if (!GetPlayer()->duel)
@@ -72,11 +74,6 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
         GetPlayer()->DuelComplete(DUEL_WON);
         return;
     }
-
-    // player either discarded the duel using the "discard button"
-    // or used "/forfeit" before countdown reached 0
-    uint64 guid;
-    recvPacket >> guid;
 
     GetPlayer()->DuelComplete(DUEL_INTERRUPTED);
 }

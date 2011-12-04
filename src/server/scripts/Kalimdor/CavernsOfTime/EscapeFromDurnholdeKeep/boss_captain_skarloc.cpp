@@ -45,19 +45,19 @@ class boss_captain_skarloc : public CreatureScript
 public:
     boss_captain_skarloc() : CreatureScript("boss_captain_skarloc") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_captain_skarlocAI (pCreature);
+        return new boss_captain_skarlocAI (creature);
     }
 
     struct boss_captain_skarlocAI : public ScriptedAI
     {
-        boss_captain_skarlocAI(Creature *c) : ScriptedAI(c)
+        boss_captain_skarlocAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript *pInstance;
+        InstanceScript* instance;
 
         uint32 Holy_Light_Timer;
         uint32 Cleanse_Timer;
@@ -76,24 +76,24 @@ public:
             Consecration_Timer = 8000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             //This is not correct. Should taunt Thrall before engage in combat
             DoScriptText(SAY_TAUNT1, me);
             DoScriptText(SAY_TAUNT2, me);
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (pInstance && pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
-                pInstance->SetData(TYPE_THRALL_PART1, DONE);
+            if (instance && instance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
+                instance->SetData(TYPE_THRALL_PART1, DONE);
         }
 
         void UpdateAI(const uint32 diff)

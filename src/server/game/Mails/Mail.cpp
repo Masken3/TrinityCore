@@ -29,7 +29,7 @@
 
 MailSender::MailSender(Object* sender, MailStationery stationery) : m_stationery(stationery)
 {
-    switch(sender->GetTypeId())
+    switch (sender->GetTypeId())
     {
         case TYPEID_UNIT:
             m_messageType = MAIL_CREATURE;
@@ -128,7 +128,7 @@ void MailDraft::deleteIncludedItems(SQLTransaction& trans, bool inDB /*= false*/
 
 void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, SQLTransaction& trans)
 {
-    Player *receiver = sObjectMgr->GetPlayer(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
+    Player* receiver = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
 
     uint32 rc_account = 0;
     if (!receiver)
@@ -230,7 +230,7 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
 
         if (pReceiver->IsMailsLoaded())
         {
-            Mail * m = new Mail;
+            Mail* m = new Mail;
             m->messageID = mailId;
             m->mailTemplateId = GetMailTemplateId();
             m->subject = GetSubject();

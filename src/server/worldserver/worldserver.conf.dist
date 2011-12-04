@@ -447,7 +447,7 @@ LogFileLevel = 0
 #                   1 - Anything related to units that doesn't fit in other
 #                          categories.
 #                   2 - Anything related to pets.
-#                   4 - Anything related to vehicles. 
+#                   4 - Anything related to vehicles.
 #                   8 - Anything related to C++ AI, instance scripts, etc.
 #                  16 - Anything related to DB AI, such as SAI, EAI, CreatureAI
 #                  32 - Anything related to DB map scripts
@@ -467,7 +467,7 @@ LogFileLevel = 0
 #              131072 - Anything related to player loading from DB
 #                      (Player::_LoadXXX functions)
 #              262144 - Anything related to items
-#              524288 - Anything related to player skills 
+#              524288 - Anything related to player skills
 #                      (do not confuse with spells)
 #             1048576 - Anything related to loot
 #             2097152 - Anything related to guilds
@@ -591,6 +591,14 @@ ArenaLogFile = ""
 #                     1 - (Enabled)
 
 ArenaLog.ExtendedInfo = 0
+
+#
+#    SQLDeveloperLogFile
+#        Description: Log file for core-generated SQL queries/dumps
+#        Example:     "SQLDev.log"    - (Enabled)
+#        Default:      ""             - (Disabled)
+
+SQLDeveloperLogFile = ""
 
 #
 #    SQLDriverLogFile
@@ -1894,16 +1902,6 @@ GM.AllowFriend = 0
 GM.LowerSecurity = 0
 
 #
-#    GM.AllowAchievementGain.Level
-#        Description: Max GM level that can obtain achievements.
-#        Default:     3 - (Anyone)
-#                     0 - (Only players)
-#                     1 - (Only moderators)
-#                     2 - (Only gamemasters)
-
-GM.AllowAchievementGain.Level = 3
-
-#
 #    GM.TicketSystem.ChanceOfGMSurvey
 #        Description: Chance of sending a GM survey after ticket completion.
 #        Default:     50 - (Enabled)
@@ -2046,7 +2044,7 @@ Rate.Drop.Item.ReferencedAmount = 1
 #        Description: Experience rates.
 #        Default:     1 - (Rate.XP.Kill)
 #                     1 - (Rate.XP.Quest)
-#                     1 - ( Rate.XP.Explore)
+#                     1 - (Rate.XP.Explore)
 
 Rate.XP.Kill    = 1
 Rate.XP.Quest   = 1
@@ -2158,8 +2156,10 @@ Rate.MoveSpeed = 1
 
 #
 #    Rate.InstanceResetTime
-#        Description: Multiplier for the number of days in between global raid/heroic instance
-#                     resets.
+#        Description: Multiplier for the rate between global raid/heroic instance resets 
+#                     (dbc value). Higher value increases the time between resets, 
+#                     lower value lowers the time, you need clean instance_reset in 
+#                     characters db in order to let new values work.
 #        Default:     1
 
 Rate.InstanceResetTime = 1
@@ -2768,6 +2768,20 @@ LevelReq.Auction = 1
 #        Default:     1
 
 LevelReq.Mail = 1
+
+#
+#     PlayerDump.DisallowPaths
+#        Description: Disallow using paths in PlayerDump output files
+#        Default:     1
+
+PlayerDump.DisallowPaths = 1
+
+#
+#     PlayerDump.DisallowOverwrite
+#        Description: Disallow overwriting existing files with PlayerDump
+#        Default:     1
+
+PlayerDump.DisallowOverwrite = 1
 
 #
 ###################################################################################################

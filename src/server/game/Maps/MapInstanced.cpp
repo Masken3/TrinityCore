@@ -44,7 +44,7 @@ void MapInstanced::InitVisibilityDistance()
     }
 }
 
-void MapInstanced::Update(const uint32& t)
+void MapInstanced::Update(const uint32 t)
 {
     // take care of loaded GridMaps (when unused, unload it!)
     Map::Update(t);
@@ -64,7 +64,10 @@ void MapInstanced::Update(const uint32& t)
         else
         {
             // update only here, because it may schedule some bad things before delete
-            i->second->Update(t);
+            if (sMapMgr->GetMapUpdater()->activated())
+                sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
+            else
+                i->second->Update(t);
             ++i;
         }
     }
@@ -107,7 +110,7 @@ void MapInstanced::UnloadAll()
 - create the instance if it's not created already
 - the player is not actually added to the instance (only in InstanceMap::Add)
 */
-Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
+Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player)
 {
     if (GetId() != mapId || !player)
         return NULL;
@@ -121,21 +124,21 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
         // the instance id is set in battlegroundid
         NewInstanceId = player->GetBattlegroundId();
         if (!NewInstanceId) return NULL;
-        map = _FindMap(NewInstanceId);
+        map = FindInstanceMap(NewInstanceId);
         if (!map)
             map = CreateBattleground(NewInstanceId, player->GetBattleground());
     }
     else
     {
-        InstancePlayerBind *pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
-        InstanceSave *pSave = pBind ? pBind->save : NULL;
+        InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
+        InstanceSave* pSave = pBind ? pBind->save : NULL;
 
         // the player's permanent player bind is taken into consideration first
         // then the player's group bind and finally the solo bind.
         if (!pBind || !pBind->perm)
         {
-            InstanceGroupBind *groupBind = NULL;
-            Group *group = player->GetGroup();
+            InstanceGroupBind* groupBind = NULL;
+            Group* group = player->GetGroup();
             // use the player's difficulty setting (it may not be the same as the group's)
             if (group)
             {
@@ -148,7 +151,7 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
         {
             // solo/perm/group
             NewInstanceId = pSave->GetInstanceId();
-            map = _FindMap(NewInstanceId);
+            map = FindInstanceMap(NewInstanceId);
             // it is possible that the save exists but the map doesn't
             if (!map)
                 map = CreateInstance(NewInstanceId, pSave, pSave->GetDifficulty());
@@ -160,17 +163,21 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player * player)
             NewInstanceId = sMapMgr->GenerateInstanceId();
 
             Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
-            map = CreateInstance(NewInstanceId, NULL, diff);
+            //Seems it is now possible, but I do not know if it should be allowed
+            //ASSERT(!FindInstanceMap(NewInstanceId));
+            map = FindInstanceMap(NewInstanceId);
+            if (!map)
+                map = CreateInstance(NewInstanceId, NULL, diff);
         }
     }
 
     return map;
 }
 
-InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty)
+InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty)
 {
     // load/create a map
-    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
+    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
     // make sure we have a valid map id
     const MapEntry* entry = sMapStore.LookupEntry(GetId());
@@ -179,7 +186,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
         sLog->outError("CreateInstance: no entry for map %d", GetId());
         ASSERT(false);
     }
-    const InstanceTemplate * iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
+    const InstanceTemplate* iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
     if (!iTemplate)
     {
         sLog->outError("CreateInstance: no instance template for map %d", GetId());
@@ -191,7 +198,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
 
-    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
+    InstanceMap* map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
     ASSERT(map->IsDungeon());
 
     bool load_data = save != NULL;
@@ -204,7 +211,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battleground* bg)
 {
     // load/create a map
-    ACE_GUARD_RETURN(ACE_Thread_Mutex, Guard, Lock, NULL);
+    TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
     sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
@@ -217,7 +224,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
     else
         spawnMode = REGULAR_DIFFICULTY;
 
-    BattlegroundMap *map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this, spawnMode);
+    BattlegroundMap* map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this, spawnMode);
     ASSERT(map->IsBattlegroundOrArena());
     map->SetBG(bg);
     bg->SetBgMap(map);
@@ -257,7 +264,7 @@ bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     return true;
 }
 
-bool MapInstanced::CanEnter(Player * /*player*/)
+bool MapInstanced::CanEnter(Player* /*player*/)
 {
     //ASSERT(false);
     return true;

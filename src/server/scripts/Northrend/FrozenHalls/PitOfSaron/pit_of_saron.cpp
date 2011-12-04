@@ -17,6 +17,7 @@
 
 #include "ScriptPCH.h"
 #include "pit_of_saron.h"
+#include "Vehicle.h"
 
 enum eSpells
 {
@@ -114,7 +115,7 @@ class mob_iceborn_protodrake : public CreatureScript
 
         struct mob_iceborn_protodrakeAI: public ScriptedAI
         {
-            mob_iceborn_protodrakeAI(Creature *creature) : ScriptedAI(creature), _vehicle(creature->GetVehicleKit())
+            mob_iceborn_protodrakeAI(Creature* creature) : ScriptedAI(creature), _vehicle(creature->GetVehicleKit())
             {
                 ASSERT(_vehicle);
             }
@@ -191,7 +192,7 @@ class mob_wrathbone_laborer : public CreatureScript
 
                 while (uint32 eventId = _events.ExecuteEvent())
                 {
-                    switch(eventId)
+                    switch (eventId)
                     {
                         case EVENT_BLINDING_DIRT:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 10.0f, true))

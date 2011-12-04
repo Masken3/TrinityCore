@@ -17,6 +17,7 @@
 
 #include "ScriptPCH.h"
 #include "pit_of_saron.h"
+#include "Vehicle.h"
 
 enum Yells
 {
@@ -127,7 +128,7 @@ class boss_tyrannus : public CreatureScript
 
             void InitializeAI()
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != GetScriptId(PoSScriptName))
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (instance->GetBossState(DATA_TYRANNUS) != DONE)
                     Reset();
@@ -240,7 +241,7 @@ class boss_tyrannus : public CreatureScript
                             events.ScheduleEvent(EVENT_MARK_OF_RIMEFANG, urand(25000, 27000));
                             break;
                         case EVENT_OVERLORD_BRAND:
-                            if (Unit *target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                 DoCast(target, SPELL_OVERLORD_BRAND);
                             events.ScheduleEvent(EVENT_OVERLORD_BRAND, urand(11000, 12000));
                             break;
@@ -317,7 +318,7 @@ class boss_rimefang : public CreatureScript
                     _EnterEvadeMode();
             }
 
-            void SetGUID(const uint64& guid, int32 type)
+            void SetGUID(uint64 guid, int32 type)
             {
                 if (type == GUID_HOARFROST)
                 {
@@ -383,7 +384,7 @@ class player_overlord_brandAI : public PlayerAI
             tyrannus = NULL;
         }
 
-        void SetGUID(const uint64& guid, int32 /*type*/)
+        void SetGUID(uint64 guid, int32 /*type*/)
         {
             tyrannus = ObjectAccessor::GetCreature(*me, guid);
             if (!tyrannus)
@@ -465,7 +466,7 @@ class spell_tyrannus_mark_of_rimefang : public SpellScriptLoader
 
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit * caster = GetCaster();
+                Unit* caster = GetCaster();
                 if (!caster || caster->GetTypeId() != TYPEID_UNIT)
                     return;
 

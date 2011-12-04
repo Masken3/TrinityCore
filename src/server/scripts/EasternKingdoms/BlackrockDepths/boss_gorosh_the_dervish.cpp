@@ -16,13 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Gorosh_the_Dervish
-SD%Complete: 100
-SDComment:
-SDCategory: Blackrock Depths
-EndScriptData */
-
 #include "ScriptPCH.h"
 
 enum Spells
@@ -36,25 +29,25 @@ class boss_gorosh_the_dervish : public CreatureScript
 public:
     boss_gorosh_the_dervish() : CreatureScript("boss_gorosh_the_dervish") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_gorosh_the_dervishAI (pCreature);
+        return new boss_gorosh_the_dervishAI (creature);
     }
 
     struct boss_gorosh_the_dervishAI : public ScriptedAI
     {
-        boss_gorosh_the_dervishAI(Creature *c) : ScriptedAI(c) {}
+        boss_gorosh_the_dervishAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 WhirlWind_Timer;
         uint32 MortalStrike_Timer;
 
         void Reset()
         {
-            WhirlWind_Timer = 12000;
-            MortalStrike_Timer = 22000;
+            WhirlWind_Timer     = 12000;
+            MortalStrike_Timer  = 22000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -81,7 +74,6 @@ public:
             DoMeleeAttackIfReady();
         }
     };
-
 };
 
 void AddSC_boss_gorosh_the_dervish()

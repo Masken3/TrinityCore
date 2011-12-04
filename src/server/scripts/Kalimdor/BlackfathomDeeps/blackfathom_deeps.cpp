@@ -37,10 +37,10 @@ class go_blackfathom_altar : public GameObjectScript
 public:
     go_blackfathom_altar() : GameObjectScript("go_blackfathom_altar") { }
 
-    bool OnGossipHello(Player *pPlayer, GameObject* /*pGo*/)
+    bool OnGossipHello(Player* player, GameObject* /*go*/)
     {
-        if (!pPlayer->HasAura(SPELL_BLESSING_OF_BLACKFATHOM))
-            pPlayer->AddAura(SPELL_BLESSING_OF_BLACKFATHOM, pPlayer);
+        if (!player->HasAura(SPELL_BLESSING_OF_BLACKFATHOM))
+            player->AddAura(SPELL_BLESSING_OF_BLACKFATHOM, player);
         return true;
     }
 
@@ -51,15 +51,15 @@ class go_blackfathom_fire : public GameObjectScript
 public:
     go_blackfathom_fire() : GameObjectScript("go_blackfathom_fire") { }
 
-    bool OnGossipHello(Player * /*pPlayer*/, GameObject* pGo)
+    bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
-        InstanceScript *pInstance = pGo->GetInstanceScript();
+        InstanceScript* instance = go->GetInstanceScript();
 
-        if (pInstance)
+        if (instance)
         {
-            pGo->SetGoState(GO_STATE_ACTIVE);
-            pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_UNK1);
-            pInstance->SetData(DATA_FIRE, pInstance->GetData(DATA_FIRE) + 1);
+            go->SetGoState(GO_STATE_ACTIVE);
+            go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
+            instance->SetData(DATA_FIRE, instance->GetData(DATA_FIRE) + 1);
             return true;
         }
         return false;
@@ -72,25 +72,25 @@ class npc_blackfathom_deeps_event : public CreatureScript
 public:
     npc_blackfathom_deeps_event() : CreatureScript("npc_blackfathom_deeps_event") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_blackfathom_deeps_eventAI (pCreature);
+        return new npc_blackfathom_deeps_eventAI (creature);
     }
 
     struct npc_blackfathom_deeps_eventAI : public ScriptedAI
     {
-        npc_blackfathom_deeps_eventAI(Creature* pCreature) : ScriptedAI(pCreature)
+        npc_blackfathom_deeps_eventAI(Creature* creature) : ScriptedAI(creature)
         {
-            if (pCreature->isSummon())
+            if (creature->isSummon())
             {
-                pCreature->SetHomePosition(HomePosition);
+                creature->SetHomePosition(HomePosition);
                 AttackPlayer();
             }
 
-            pInstance = pCreature->GetInstanceScript();
+            instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 uiRavageTimer;
         uint32 uiFrostNovaTimer;
@@ -116,16 +116,16 @@ public:
 
             for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
             {
-                if (Player* pPlayer = i->getSource())
+                if (Player* player = i->getSource())
                 {
-                    if (pPlayer->isGameMaster())
+                    if (player->isGameMaster())
                         continue;
 
-                    if (pPlayer->isAlive())
+                    if (player->isAlive())
                     {
-                        me->SetInCombatWith(pPlayer);
-                        pPlayer->SetInCombatWith(me);
-                        me->AddThreat(pPlayer, 0.0f);
+                        me->SetInCombatWith(player);
+                        player->SetInCombatWith(me);
+                        me->AddThreat(player, 0.0f);
                     }
                 }
             }
@@ -161,10 +161,10 @@ public:
                 {
                     if (uiFrostBoltVolleyTimer <= uiDiff)
                     {
-                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
-                            if (pTarget)
-                                DoCast(pTarget, SPELL_FROST_BOLT_VOLLEY);
+                            if (target)
+                                DoCast(target, SPELL_FROST_BOLT_VOLLEY);
                         }
                         uiFrostBoltVolleyTimer = urand(5000, 8000);
                     } else uiFrostBoltVolleyTimer -= uiDiff;
@@ -180,11 +180,11 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*pKiller*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (me->isSummon()) //we are not a normal spawn.
-                if (pInstance)
-                    pInstance->SetData(DATA_EVENT, pInstance->GetData(DATA_EVENT) + 1);
+                if (instance)
+                    instance->SetData(DATA_EVENT, instance->GetData(DATA_EVENT) + 1);
         }
     };
 
@@ -201,44 +201,44 @@ class npc_morridune : public CreatureScript
 public:
     npc_morridune() : CreatureScript("npc_morridune") { }
 
-    bool OnGossipSelect(Player* pPlayer, Creature* /*pCreature*/, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*uiSender*/, uint32 uiAction)
     {
-        pPlayer->PlayerTalkClass->ClearMenus();
-        switch(uiAction)
+        player->PlayerTalkClass->ClearMenus();
+        switch (uiAction)
         {
             case GOSSIP_ACTION_INFO_DEF+1:
-                pPlayer->TeleportTo(1, 9952.239f, 2284.277f, 1341.394f, 1.595f);
-                pPlayer->CLOSE_GOSSIP_MENU();
+                player->TeleportTo(1, 9952.239f, 2284.277f, 1341.394f, 1.595f);
+                player->CLOSE_GOSSIP_MENU();
                 break;
         }
         return true;
     }
 
-    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_MORRIDUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_MORRIDUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
         return true;
     }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_morriduneAI (pCreature);
+        return new npc_morriduneAI (creature);
     }
 
     struct npc_morriduneAI : public npc_escortAI
     {
-        npc_morriduneAI(Creature* pCreature) : npc_escortAI(pCreature)
+        npc_morriduneAI(Creature* creature) : npc_escortAI(creature)
         {
-            DoScriptText(SAY_MORRIDUNE_1, pCreature);
+            DoScriptText(SAY_MORRIDUNE_1, creature);
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             Start(false, false, 0);
         }
 
         void WaypointReached(uint32 uiPoint)
         {
-            switch(uiPoint)
+            switch (uiPoint)
             {
                 case 4:
                     SetEscortPaused(true);

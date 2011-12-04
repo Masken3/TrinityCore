@@ -53,12 +53,12 @@ public:
     {
         boss_hadronoxAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             fMaxDistance = 50.0f;
             bFirstTime = true;
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 uiAcidTimer;
         uint32 uiLeechTimer;
@@ -83,8 +83,8 @@ public:
             uiDoorsTimer = urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
             uiCheckDistanceTimer = 2*IN_MILLISECONDS;
 
-            if (pInstance && (pInstance->GetData(DATA_HADRONOX_EVENT) != DONE && !bFirstTime))
-                pInstance->SetData(DATA_HADRONOX_EVENT, FAIL);
+            if (instance && (instance->GetData(DATA_HADRONOX_EVENT) != DONE && !bFirstTime))
+                instance->SetData(DATA_HADRONOX_EVENT, FAIL);
 
             bFirstTime = false;
         }
@@ -101,14 +101,14 @@ public:
 
         void JustDied(Unit* /*Killer*/)
         {
-            if (pInstance)
-                pInstance->SetData(DATA_HADRONOX_EVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_HADRONOX_EVENT, DONE);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance)
-                pInstance->SetData(DATA_HADRONOX_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_HADRONOX_EVENT, IN_PROGRESS);
             me->SetInCombatWithZone();
         }
 
@@ -118,7 +118,7 @@ public:
                 return;
 
             float x=0.0f, y=0.0f, z=0.0f;
-            me->GetRespawnCoord(x, y, z);
+            me->GetRespawnPosition(x, y, z);
 
             if (uiCheckDistanceTimer <= uiDiff)
                 uiCheckDistanceTimer = 5*IN_MILLISECONDS;
@@ -157,24 +157,24 @@ public:
 
             if (uiAcidTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_ACID_CLOUD);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_ACID_CLOUD);
 
                 uiAcidTimer = urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
             } else uiAcidTimer -= diff;
 
             if (uiLeechTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_LEECH_POISON);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_LEECH_POISON);
 
                 uiLeechTimer = urand(11*IN_MILLISECONDS, 14*IN_MILLISECONDS);
             } else uiLeechTimer -= diff;
 
             if (uiGrabTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
-                    DoCast(pTarget, SPELL_WEB_GRAB);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
+                    DoCast(target, SPELL_WEB_GRAB);
 
                 uiGrabTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
             } else uiGrabTimer -= diff;
@@ -188,7 +188,7 @@ public:
         }
     };
 
-    CreatureAI *GetAI(Creature *creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_hadronoxAI(creature);
     }

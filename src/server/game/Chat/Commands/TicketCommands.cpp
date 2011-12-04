@@ -81,7 +81,7 @@ bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
 
     // Detect target's GUID
     uint64 guid = 0;
-    if (Player *player = sObjectMgr->GetPlayer(name.c_str()))
+    if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
         guid = player->GetGUID();
     else
         guid = sObjectMgr->GetPlayerGUIDByName(name);
@@ -133,7 +133,7 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     SendGlobalGMSysMessage(msg.c_str());
 
     // Inform player, who submitted this ticket, that it is closed
-    if (Player *player = ticket->GetPlayer())
+    if (Player* player = ticket->GetPlayer())
         if (player->IsInWorld())
         {
             WorldPacket data(SMSG_GMTICKET_DELETETICKET, 4);
@@ -169,9 +169,9 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     // Get target information
     uint64 targetGuid = sObjectMgr->GetPlayerGUIDByName(target.c_str());
     uint64 targetAccId = sObjectMgr->GetPlayerAccountIdByGUID(targetGuid);
-    uint32 targetGmLevel = sAccountMgr->GetSecurity(targetAccId, realmID);
+    uint32 targetGmLevel = AccountMgr::GetSecurity(targetAccId, realmID);
     // Target must exist and have administrative rights
-    if (!targetGuid || targetGmLevel == SEC_PLAYER)
+    if (!targetGuid || AccountMgr::IsPlayerAccount(targetGmLevel))
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
         return true;
@@ -183,7 +183,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
         return true;
     }
     // If assigned to different player other than current, leave
-    Player *player = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
     if (ticket->IsAssignedNotTo(player->GetGUID()))
     {
         PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->GetId(), target.c_str());
@@ -191,7 +191,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     }
     // Assign ticket
     SQLTransaction trans = SQLTransaction(NULL);
-    ticket->SetAssignedTo(targetGuid, targetGmLevel == SEC_ADMINISTRATOR);
+    ticket->SetAssignedTo(targetGuid, AccountMgr::IsAdminAccount(targetGmLevel));
     ticket->SaveToDB(trans);
     sTicketMgr->UpdateLastChange();
 
@@ -227,10 +227,10 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
     {
         uint64 guid = ticket->GetAssignedToGUID();
         uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
-        security = sAccountMgr->GetSecurity(accountId, realmID);
+        security = AccountMgr::GetSecurity(accountId, realmID);
     }
     // Check security
-    Player *player = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
     if (security > uint32(player->GetSession()->GetSecurity()))
     {
         SendSysMessage(LANG_COMMAND_TICKETUNASSIGNSECURITY);
@@ -320,6 +320,22 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleGMTicketResetCommand(const char* /* args */)
+{
+    if (sTicketMgr->GetOpenTicketCount() > 0)
+    {
+        SendSysMessage(LANG_COMMAND_TICKETPENDING);
+        return true;
+    }
+    else
+    {
+        sTicketMgr->ResetTickets();
+        SendSysMessage(LANG_COMMAND_TICKETRESET);
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleToggleGMTicketSystem(const char* /* args */)
 {
     bool status = !sTicketMgr->GetStatus();
@@ -364,7 +380,7 @@ bool ChatHandler::HandleGMTicketCompleteCommand(const char* args)
         return true;
     }
 
-    if (Player *player = ticket->GetPlayer())
+    if (Player* player = ticket->GetPlayer())
         if (player->IsInWorld())
             ticket->SendResponse(player->GetSession());
 

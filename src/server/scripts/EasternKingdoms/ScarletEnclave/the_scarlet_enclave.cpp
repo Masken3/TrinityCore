@@ -28,14 +28,14 @@ class npc_valkyr_battle_maiden : public CreatureScript
 public:
     npc_valkyr_battle_maiden() : CreatureScript("npc_valkyr_battle_maiden") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_valkyr_battle_maidenAI (pCreature);
+        return new npc_valkyr_battle_maidenAI (creature);
     }
 
     struct npc_valkyr_battle_maidenAI : public PassiveAI
     {
-        npc_valkyr_battle_maidenAI(Creature *c) : PassiveAI(c) {}
+        npc_valkyr_battle_maidenAI(Creature* c) : PassiveAI(c) {}
 
         uint32 FlyBackTimer;
         float x, y, z;
@@ -51,25 +51,27 @@ public:
             phase = 0;
 
             me->GetPosition(x, y, z);
-            z += 4; x -= 3.5; y -= 5;
+            z += 4.0f;
+            x -= 3.5f;
+            y -= 5.0f;
             me->GetMotionMaster()->Clear(false);
-            me->GetMap()->CreatureRelocation(me, x, y, z, 0.0f);
+            me->SetPosition(x, y, z, 0.0f);
         }
 
         void UpdateAI(const uint32 diff)
         {
             if (FlyBackTimer <= diff)
             {
-                Player *plr = NULL;
+                Player* player = NULL;
                 if (me->isSummon())
-                    if (Unit *summoner = me->ToTempSummon()->GetSummoner())
+                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
                         if (summoner->GetTypeId() == TYPEID_PLAYER)
-                            plr = CAST_PLR(summoner);
+                            player = CAST_PLR(summoner);
 
-                if (!plr)
+                if (!player)
                     phase = 3;
 
-                switch(phase)
+                switch (phase)
                 {
                     case 0:
                         me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
@@ -77,19 +79,21 @@ public:
                         FlyBackTimer = 500;
                         break;
                     case 1:
-                        plr->GetClosePoint(x, y, z, me->GetObjectSize());
-                        z += 2.5; x -= 2; y -= 1.5;
+                        player->GetClosePoint(x, y, z, me->GetObjectSize());
+                        z += 2.5f;
+                        x -= 2.0f;
+                        y -= 1.5f;
                         me->GetMotionMaster()->MovePoint(0, x, y, z);
-                        me->SetUInt64Value(UNIT_FIELD_TARGET, plr->GetGUID());
+                        me->SetTarget(player->GetGUID());
                         me->SetVisible(true);
                         FlyBackTimer = 4500;
                         break;
                     case 2:
-                        if (!plr->isRessurectRequested())
+                        if (!player->isRessurectRequested())
                         {
                             me->HandleEmoteCommand(EMOTE_ONESHOT_CUSTOMSPELL01);
-                            DoCast(plr, SPELL_REVIVE, true);
-                            me->MonsterWhisper(VALK_WHISPER, plr->GetGUID());
+                            DoCast(player, SPELL_REVIVE, true);
+                            me->MonsterWhisper(VALK_WHISPER, player->GetGUID());
                         }
                         FlyBackTimer = 5000;
                         break;

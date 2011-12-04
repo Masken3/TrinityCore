@@ -53,12 +53,12 @@ class boss_void_reaver : public CreatureScript
 
         struct boss_void_reaverAI : public ScriptedAI
         {
-            boss_void_reaverAI(Creature* pCreature) : ScriptedAI(pCreature)
+            boss_void_reaverAI(Creature* creature) : ScriptedAI(creature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = creature->GetInstanceScript();
             }
 
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 Pounding_Timer;
             uint32 ArcaneOrb_Timer;
@@ -76,30 +76,30 @@ class boss_void_reaver : public CreatureScript
 
                 Enraged = false;
 
-                        if (pInstance && me->isAlive())
-                            pInstance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
+                        if (instance && me->isAlive())
+                            instance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
             }
 
-            void KilledUnit(Unit * /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
             }
 
-            void JustDied(Unit * /*victim*/)
+            void JustDied(Unit* /*victim*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 DoZoneInCombat();
 
-                if (pInstance)
-                    pInstance->SetData(DATA_VOIDREAVEREVENT, DONE);
+                if (instance)
+                    instance->SetData(DATA_VOIDREAVEREVENT, DONE);
             }
 
-            void EnterCombat(Unit * /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
 
-                if (pInstance)
-                    pInstance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
+                if (instance)
+                    instance->SetData(DATA_VOIDREAVEREVENT, IN_PROGRESS);
             }
 
             void UpdateAI(const uint32 diff)
@@ -118,27 +118,27 @@ class boss_void_reaver : public CreatureScript
                 // Arcane Orb
                 if (ArcaneOrb_Timer <= diff)
                 {
-                    Unit *pTarget = NULL;
-                    std::list<HostileReference *> t_list = me->getThreatManager().getThreatList();
-                    std::vector<Unit *> target_list;
-                    for (std::list<HostileReference *>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                    Unit* target = NULL;
+                    std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
+                    std::vector<Unit*> target_list;
+                    for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                     {
-                        pTarget = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                        if (!pTarget)
+                        target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                        if (!target)
                             continue;
                         // exclude pets & totems, 18 yard radius minimum
-                        if (pTarget->GetTypeId() == TYPEID_PLAYER && pTarget->isAlive() && !pTarget->IsWithinDist(me, 18, false))
-                            target_list.push_back(pTarget);
-                        pTarget = NULL;
+                        if (target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && !target->IsWithinDist(me, 18, false))
+                            target_list.push_back(target);
+                        target = NULL;
                     }
 
-                    if (target_list.size())
-                        pTarget = *(target_list.begin()+rand()%target_list.size());
+                    if (!target_list.empty())
+                        target = *(target_list.begin()+rand()%target_list.size());
                     else
-                        pTarget = me->getVictim();
+                        target = me->getVictim();
 
-                    if (pTarget)
-                        me->CastSpell(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), SPELL_ARCANE_ORB, false, NULL, NULL, 0, pTarget);
+                    if (target)
+                        me->CastSpell(target, SPELL_ARCANE_ORB, false, NULL, NULL, 0);
                     ArcaneOrb_Timer = 3000;
                 }
                 else

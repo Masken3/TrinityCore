@@ -189,19 +189,11 @@ bool Weather::ReGenerate()
     return m_type != old_type || m_grade != old_grade;
 }
 
-void Weather::SendWeatherUpdateToPlayer(Player *player)
+void Weather::SendWeatherUpdateToPlayer(Player* player)
 {
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
     data << uint32(GetWeatherState()) << (float)m_grade << uint8(0);
-    player->GetSession()->SendPacket(&data);
-}
-
-void Weather::SendFineWeatherUpdateToPlayer(Player *player)
-{
-    WorldPacket data(SMSG_WEATHER, (4+4+4));
-
-    data << (uint32)WEATHER_STATE_FINE << (float)0.0f << uint8(0);
     player->GetSession()->SendPacket(&data);
 }
 
@@ -226,7 +218,7 @@ bool Weather::UpdateWeather()
 
     ///- Log the event
     char const* wthstr;
-    switch(state)
+    switch (state)
     {
         case WEATHER_STATE_LIGHT_RAIN:
             wthstr = "light rain";
@@ -289,7 +281,7 @@ WeatherState Weather::GetWeatherState() const
     if (m_grade<0.27f)
         return WEATHER_STATE_FINE;
 
-    switch(m_type)
+    switch (m_type)
     {
         case WEATHER_TYPE_RAIN:
             if (m_grade<0.40f)

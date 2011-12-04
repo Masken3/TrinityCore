@@ -91,9 +91,9 @@ class boss_urom : public CreatureScript
 public:
     boss_urom() : CreatureScript("boss_urom") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_uromAI (pCreature);
+        return new boss_uromAI (creature);
     }
 
     struct boss_uromAI : public BossAI
@@ -127,7 +127,7 @@ public:
             timeBombTimer = urand(20000, 25000);
         }
 
-        void EnterCombat(Unit* /*pWho*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
 
@@ -139,24 +139,24 @@ public:
                 instance->SetData(DATA_UROM_PLATAFORM, instance->GetData(DATA_UROM_PLATAFORM)+1);
         }
 
-        void AttackStart(Unit* pWho)
+        void AttackStart(Unit* who)
         {
-            if (!pWho)
+            if (!who)
                 return;
 
             if (me->GetPositionZ() > 518.63f)
-                DoStartNoMovement(pWho);
+                DoStartNoMovement(who);
 
             if (me->GetPositionZ() < 518.63f)
             {
-                if (me->Attack(pWho, true))
+                if (me->Attack(who, true))
                 {
                     DoScriptText(SayAggro[3], me);
 
-                    me->SetInCombatWith(pWho);
-                    pWho->SetInCombatWith(me);
+                    me->SetInCombatWith(who);
+                    who->SetInCombatWith(me);
 
-                    me->GetMotionMaster()->MoveChase(pWho, 0, 0);
+                    me->GetMotionMaster()->MoveChase(who, 0, 0);
                 }
             }
         }
@@ -175,7 +175,7 @@ public:
 
         void SetPosition(uint8 i)
         {
-            switch(i)
+            switch (i)
             {
                 case 0:
                     x = me->GetPositionX() + 4;
@@ -276,8 +276,8 @@ public:
 
                 if (timeBombTimer <= uiDiff)
                 {
-                    if (Unit* pUnit = SelectTarget(SELECT_TARGET_RANDOM))
-                        DoCast(pUnit, SPELL_TIME_BOMB);
+                    if (Unit* unit = SelectTarget(SELECT_TARGET_RANDOM))
+                        DoCast(unit, SPELL_TIME_BOMB);
 
                     timeBombTimer = urand(20000, 25000);
                 } else timeBombTimer -= uiDiff;
@@ -298,9 +298,9 @@ public:
             me->DeleteThreatList();
         }
 
-        void SpellHit(Unit* /*pCaster*/, const SpellEntry* pSpell)
+        void SpellHit(Unit* /*pCaster*/, const SpellInfo* pSpell)
         {
-            switch(pSpell->Id)
+            switch (pSpell->Id)
             {
                 case SPELL_SUMMON_MENAGERIE:
                     me->SetHomePosition(968.66f, 1042.53f, 527.32f, 0.077f);

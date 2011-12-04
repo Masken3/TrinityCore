@@ -52,6 +52,7 @@ void AddSC_go_commandscript();
 void AddSC_gobject_commandscript();
 void AddSC_honor_commandscript();
 void AddSC_learn_commandscript();
+void AddSC_misc_commandscript();
 void AddSC_modify_commandscript();
 void AddSC_npc_commandscript();
 void AddSC_quest_commandscript();
@@ -59,6 +60,7 @@ void AddSC_reload_commandscript();
 void AddSC_tele_commandscript();
 void AddSC_titles_commandscript();
 void AddSC_wp_commandscript();
+void AddSC_gps_commandscript();
 
 #ifdef SCRIPTS
 //world
@@ -477,6 +479,7 @@ void AddSC_boss_blood_prince_council();
 void AddSC_boss_blood_queen_lana_thel();
 void AddSC_boss_valithria_dreamwalker();
 void AddSC_boss_sindragosa();
+void AddSC_boss_the_lich_king();
 void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
 void AddSC_icecrown_citadel();
@@ -651,6 +654,7 @@ void AddCommandScripts()
     AddSC_gobject_commandscript();
     AddSC_honor_commandscript();
     AddSC_learn_commandscript();
+    AddSC_misc_commandscript();
     AddSC_modify_commandscript();
     AddSC_npc_commandscript();
     AddSC_quest_commandscript();
@@ -658,6 +662,7 @@ void AddCommandScripts()
     AddSC_tele_commandscript();
     AddSC_titles_commandscript();
     AddSC_wp_commandscript();
+    AddSC_gps_commandscript();
 }
 
 void AddWorldScripts()
@@ -1177,6 +1182,7 @@ void AddNorthrendScripts()
     AddSC_boss_blood_queen_lana_thel();
     AddSC_boss_valithria_dreamwalker();
     AddSC_boss_sindragosa();
+    AddSC_boss_the_lich_king();
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
     AddSC_icecrown_citadel();

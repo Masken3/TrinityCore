@@ -50,17 +50,17 @@ class boss_meathook : public CreatureScript
 public:
     boss_meathook() : CreatureScript("boss_meathook") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_meathookAI (pCreature);
+        return new boss_meathookAI (creature);
     }
 
     struct boss_meathookAI : public ScriptedAI
     {
-        boss_meathookAI(Creature *c) : ScriptedAI(c)
+        boss_meathookAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
-            if (pInstance)
+            instance = c->GetInstanceScript();
+            if (instance)
                 DoScriptText(SAY_SPAWN, me);
         }
 
@@ -68,7 +68,7 @@ public:
         uint32 uiDiseaseTimer;
         uint32 uiFrenzyTimer;
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -76,16 +76,16 @@ public:
             uiDiseaseTimer = urand(2000, 4000);   //approx 3s
             uiFrenzyTimer = urand(21000, 26000);  //made it up
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_MEATHOOK_EVENT, NOT_STARTED);
         }
 
         void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_MEATHOOK_EVENT, IN_PROGRESS);
         }
 
         void UpdateAI(const uint32 diff)
@@ -108,8 +108,8 @@ public:
 
             if (uiChainTimer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_CONSTRICTING_CHAINS); //anyone but the tank
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_CONSTRICTING_CHAINS); //anyone but the tank
                 uiChainTimer = urand(2000, 4000);
             } else uiChainTimer -= diff;
 
@@ -120,11 +120,11 @@ public:
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_MEATHOOK_EVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_MEATHOOK_EVENT, DONE);
         }
 
-        void KilledUnit(Unit * victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

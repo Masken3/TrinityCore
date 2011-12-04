@@ -66,14 +66,14 @@ class instance_dark_portal : public InstanceMapScript
 public:
     instance_dark_portal() : InstanceMapScript("instance_dark_portal", 269) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* pMap) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
-        return new instance_dark_portal_InstanceMapScript(pMap);
+        return new instance_dark_portal_InstanceMapScript(map);
     }
 
     struct instance_dark_portal_InstanceMapScript : public InstanceScript
     {
-        instance_dark_portal_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
+        instance_dark_portal_InstanceMapScript(Map* map) : InstanceScript(map)
         {
         }
 
@@ -116,21 +116,20 @@ public:
             DoUpdateWorldState(WORLD_STATE_BM_RIFT, 0);
         }
 
-        bool IsEncounterInProgress() const
+        bool IsEncounterInProgress()
         {
-            //if (GetData(TYPE_MEDIVH) == IN_PROGRESS)
-            if (m_auiEncounter[0] == IN_PROGRESS)   // compile fix, GetData is not const
+            if (GetData(TYPE_MEDIVH) == IN_PROGRESS)
                 return true;
 
             return false;
         }
 
-        void OnPlayerEnter(Player* pPlayer)
+        void OnPlayerEnter(Player* player)
         {
             if (GetData(TYPE_MEDIVH) == IN_PROGRESS)
                 return;
 
-            pPlayer->SendUpdateWorldState(WORLD_STATE_BM, 0);
+            player->SendUpdateWorldState(WORLD_STATE_BM, 0);
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -150,7 +149,7 @@ public:
 
         uint8 GetRiftWaveId()
         {
-            switch(mRiftPortalCount)
+            switch (mRiftPortalCount)
             {
             case 6:
                 mRiftWaveId = 2;
@@ -167,7 +166,7 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            switch(type)
+            switch (type)
             {
             case TYPE_MEDIVH:
                 if (data == SPECIAL && m_auiEncounter[0] == IN_PROGRESS)
@@ -209,13 +208,13 @@ public:
                         {
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             {
-                                if (Player* pPlayer = itr->getSource())
+                                if (Player* player = itr->getSource())
                                 {
-                                    if (pPlayer->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE)
-                                        pPlayer->AreaExploredOrEventHappens(QUEST_OPENING_PORTAL);
+                                    if (player->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE)
+                                        player->AreaExploredOrEventHappens(QUEST_OPENING_PORTAL);
 
-                                    if (pPlayer->GetQuestStatus(QUEST_MASTER_TOUCH) == QUEST_STATUS_INCOMPLETE)
-                                        pPlayer->AreaExploredOrEventHappens(QUEST_MASTER_TOUCH);
+                                    if (player->GetQuestStatus(QUEST_MASTER_TOUCH) == QUEST_STATUS_INCOMPLETE)
+                                        player->AreaExploredOrEventHappens(QUEST_MASTER_TOUCH);
                                 }
                             }
                         }
@@ -238,7 +237,7 @@ public:
 
         uint32 GetData(uint32 type)
         {
-            switch(type)
+            switch (type)
             {
             case TYPE_MEDIVH:
                 return m_auiEncounter[0];
@@ -295,22 +294,22 @@ public:
 
                 CurrentRiftId = tmp;
 
-                Creature* pTemp = pMedivh->SummonCreature(C_TIME_RIFT,
+                Creature* temp = pMedivh->SummonCreature(C_TIME_RIFT,
                     PortalLocation[tmp][0], PortalLocation[tmp][1], PortalLocation[tmp][2], PortalLocation[tmp][3],
                     TEMPSUMMON_CORPSE_DESPAWN, 0);
-                if (pTemp)
+                if (temp)
                 {
-                    pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    pTemp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                    if (Creature* pBoss = SummonedPortalBoss(pTemp))
+                    if (Creature* pBoss = SummonedPortalBoss(temp))
                     {
                         if (pBoss->GetEntry() == C_AEONUS)
                             pBoss->AddThreat(pMedivh, 0.0f);
                         else
                         {
-                            pBoss->AddThreat(pTemp, 0.0f);
-                            pTemp->CastSpell(pBoss, SPELL_RIFT_CHANNEL, false);
+                            pBoss->AddThreat(temp, 0.0f);
+                            temp->CastSpell(pBoss, SPELL_RIFT_CHANNEL, false);
                         }
                     }
                 }

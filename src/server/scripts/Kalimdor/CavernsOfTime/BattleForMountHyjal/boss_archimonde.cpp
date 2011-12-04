@@ -79,20 +79,20 @@ class mob_ancient_wisp : public CreatureScript
 public:
     mob_ancient_wisp() : CreatureScript("mob_ancient_wisp") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_ancient_wispAI(pCreature);
+        return new mob_ancient_wispAI(creature);
     }
 
     struct mob_ancient_wispAI : public ScriptedAI
     {
         mob_ancient_wispAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             ArchimondeGUID = 0;
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
         uint64 ArchimondeGUID;
         uint32 CheckTimer;
 
@@ -100,8 +100,8 @@ public:
         {
             CheckTimer = 1000;
 
-            if (pInstance)
-                ArchimondeGUID = pInstance->GetData64(DATA_ARCHIMONDE);
+            if (instance)
+                ArchimondeGUID = instance->GetData64(DATA_ARCHIMONDE);
 
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
@@ -135,9 +135,9 @@ class mob_doomfire : public CreatureScript
 public:
     mob_doomfire() : CreatureScript("mob_doomfire") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_doomfireAI(pCreature);
+        return new mob_doomfireAI(creature);
     }
 
     struct mob_doomfireAI : public ScriptedAI
@@ -148,21 +148,21 @@ public:
 
         void MoveInLineOfSight(Unit* /*who*/) {}
         void EnterCombat(Unit* /*who*/) {}
-        void DamageTaken(Unit * /*done_by*/, uint32 &damage) { damage = 0; }
+        void DamageTaken(Unit* /*done_by*/, uint32 &damage) { damage = 0; }
     };
 
 };
 
 /* This is the script for the Doomfire Spirit Mob. This mob simply follow players or
-   travels in random directions if pTarget cannot be found. */
+   travels in random directions if target cannot be found. */
 class mob_doomfire_targetting : public CreatureScript
 {
 public:
     mob_doomfire_targetting() : CreatureScript("mob_doomfire_targetting") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_doomfire_targettingAI(pCreature);
+        return new mob_doomfire_targettingAI(creature);
     }
 
     struct mob_doomfire_targettingAI : public ScriptedAI
@@ -188,13 +188,13 @@ public:
 
         void EnterCombat(Unit* /*who*/) {}
 
-        void DamageTaken(Unit * /*done_by*/, uint32 &damage) { damage = 0; }
+        void DamageTaken(Unit* /*done_by*/, uint32 &damage) { damage = 0; }
 
         void UpdateAI(const uint32 diff)
         {
             if (ChangeTargetTimer <= diff)
             {
-                if (Unit *temp = Unit::GetUnit(*me, TargetGUID))
+                if (Unit* temp = Unit::GetUnit(*me, TargetGUID))
                 {
                     me->GetMotionMaster()->MoveFollow(temp, 0.0f, 0.0f);
                     TargetGUID = 0;
@@ -216,29 +216,29 @@ public:
 /* Finally, Archimonde's script. His script isn't extremely complex, most are simply spells on timers.
    The only complicated aspect of the battle is Finger of Death and Doomfire, with Doomfire being the
    hardest bit to code. Finger of Death is simply a distance check - if no one is in melee range, then
-   select a random pTarget and cast the spell on them. However, if someone IS in melee range, and this
+   select a random target and cast the spell on them. However, if someone IS in melee range, and this
    is NOT the main tank (creature's victim), then we aggro that player and they become the new victim.
    For Doomfire, we summon a mob (Doomfire Spirit) for the Doomfire mob to follow. It's spirit will
-   randomly select it's pTarget to follow and then we create the random movement making it unpredictable. */
+   randomly select it's target to follow and then we create the random movement making it unpredictable. */
 
 class boss_archimonde : public CreatureScript
 {
 public:
     boss_archimonde() : CreatureScript("boss_archimonde") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_archimondeAI (pCreature);
+        return new boss_archimondeAI (creature);
     }
 
     struct boss_archimondeAI : public hyjal_trashAI
     {
-        boss_archimondeAI(Creature *c) : hyjal_trashAI(c)
+        boss_archimondeAI(Creature* c) : hyjal_trashAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint64 DoomfireSpiritGUID;
         uint64 WorldTreeGUID;
@@ -264,8 +264,8 @@ public:
 
         void Reset()
         {
-            if (pInstance)
-                pInstance->SetData(DATA_ARCHIMONDEEVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_ARCHIMONDEEVENT, NOT_STARTED);
 
             DoomfireSpiritGUID = 0;
             damageTaken = 0;
@@ -291,17 +291,17 @@ public:
             IsChanneling = false;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             me->InterruptSpell(CURRENT_CHANNELED_SPELL);
             DoScriptText(SAY_AGGRO, me);
             DoZoneInCombat();
 
-            if (pInstance)
-                pInstance->SetData(DATA_ARCHIMONDEEVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_ARCHIMONDEEVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit * victim)
+        void KilledUnit(Unit* victim)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
 
@@ -311,7 +311,7 @@ public:
 
         void GainSoulCharge(Player* victim)
         {
-            switch(victim->getClass())
+            switch (victim->getClass())
             {
                 case CLASS_PRIEST:
                 case CLASS_PALADIN:
@@ -334,13 +334,13 @@ public:
             ++SoulChargeCount;
         }
 
-        void JustDied(Unit *victim)
+        void JustDied(Unit* victim)
         {
             hyjal_trashAI::JustDied(victim);
             DoScriptText(SAY_DEATH, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_ARCHIMONDEEVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_ARCHIMONDEEVENT, DONE);
         }
 
         bool CanUseFingerOfDeath()
@@ -358,28 +358,28 @@ public:
             std::list<HostileReference*>::const_iterator itr = m_threatlist.begin();
             for (; itr != m_threatlist.end(); ++itr)
             {
-                Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
-                if (pUnit && pUnit->isAlive())
-                    targets.push_back(pUnit);
+                Unit* unit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+                if (unit && unit->isAlive())
+                    targets.push_back(unit);
             }
 
             if (targets.empty())
                 return false;
 
             targets.sort(Trinity::ObjectDistanceOrderPred(me));
-            Unit *pTarget = targets.front();
-            if (pTarget)
+            Unit* target = targets.front();
+            if (target)
             {
-                if (!me->IsWithinDistInMap(pTarget, me->GetAttackDistance(pTarget)))
+                if (!me->IsWithinDistInMap(target, me->GetAttackDistance(target)))
                     return true;                                // Cast Finger of Death
                 else                                            // This target is closest, he is our new tank
-                    me->AddThreat(pTarget, me->getThreatManager().getThreat(me->getVictim()));
+                    me->AddThreat(target, me->getThreatManager().getThreat(me->getVictim()));
             }
 
             return false;
         }
 
-        void JustSummoned(Creature *summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == CREATURE_ANCIENT_WISP)
                 summoned->AI()->AttackStart(me);
@@ -400,7 +400,7 @@ public:
                 summoned->CastSpell(summoned, SPELL_DOOMFIRE_SPAWN, false);
                 summoned->CastSpell(summoned, SPELL_DOOMFIRE, true, 0, 0, me->GetGUID());
 
-                if (Unit *DoomfireSpirit = Unit::GetUnit(*me, DoomfireSpiritGUID))
+                if (Unit* DoomfireSpirit = Unit::GetUnit(*me, DoomfireSpiritGUID))
                 {
                     summoned->GetMotionMaster()->MoveFollow(DoomfireSpirit, 0.0f, 0.0f);
                     DoomfireSpiritGUID = 0;
@@ -409,14 +409,14 @@ public:
         }
 
         //this is code doing close to what the summoning spell would do (spell 31903)
-        void SummonDoomfire(Unit *pTarget)
+        void SummonDoomfire(Unit* target)
         {
             me->SummonCreature(CREATURE_DOOMFIRE_SPIRIT,
-                pTarget->GetPositionX()+15.0f, pTarget->GetPositionY()+15.0f, pTarget->GetPositionZ(), 0,
+                target->GetPositionX()+15.0f, target->GetPositionY()+15.0f, target->GetPositionZ(), 0,
                 TEMPSUMMON_TIMED_DESPAWN, 27000);
 
             me->SummonCreature(CREATURE_DOOMFIRE,
-                pTarget->GetPositionX()-15.0f, pTarget->GetPositionY()-15.0f, pTarget->GetPositionZ(), 0,
+                target->GetPositionX()-15.0f, target->GetPositionY()-15.0f, target->GetPositionZ(), 0,
                 TEMPSUMMON_TIMED_DESPAWN, 27000);
         }
 
@@ -460,15 +460,15 @@ public:
         {
             if (!me->isInCombat())
             {
-                if (pInstance)
+                if (instance)
                 {
                     // Do not let the raid skip straight to Archimonde. Visible and hostile ONLY if Azagalor is finished.
-                    if ((pInstance->GetData(DATA_AZGALOREVENT) < DONE) && (me->IsVisible() || (me->getFaction() != 35)))
+                    if ((instance->GetData(DATA_AZGALOREVENT) < DONE) && (me->IsVisible() || (me->getFaction() != 35)))
                     {
                         me->SetVisible(false);
                         me->setFaction(35);
                     }
-                    else if ((pInstance->GetData(DATA_AZGALOREVENT) >= DONE) && (!me->IsVisible() || (me->getFaction() == 35)))
+                    else if ((instance->GetData(DATA_AZGALOREVENT) >= DONE) && (!me->IsVisible() || (me->getFaction() == 35)))
                     {
                         me->setFaction(1720);
                         me->SetVisible(true);
@@ -479,12 +479,12 @@ public:
                 {
                     if (!IsChanneling)
                     {
-                        Creature *temp = me->SummonCreature(CREATURE_CHANNEL_TARGET, NORDRASSIL_X, NORDRASSIL_Y, NORDRASSIL_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 1200000);
+                        Creature* temp = me->SummonCreature(CREATURE_CHANNEL_TARGET, NORDRASSIL_X, NORDRASSIL_Y, NORDRASSIL_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 1200000);
 
                         if (temp)
                             WorldTreeGUID = temp->GetGUID();
 
-                        if (Unit *Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
+                        if (Unit* Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
                         {
                             Nordrassil->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             Nordrassil->SetDisplayId(11686);
@@ -493,7 +493,7 @@ public:
                         }
                     }
 
-                    if (Unit *Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
+                    if (Unit* Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
                     {
                         Nordrassil->CastSpell(me, SPELL_DRAIN_WORLD_TREE_2, true);
                         DrainNordrassilTimer = 1000;
@@ -611,7 +611,7 @@ public:
                 else
                     DoScriptText(SAY_DOOMFIRE2, me);
 
-                Unit *temp = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                Unit* temp = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (!temp)
                     temp = me->getVictim();
 

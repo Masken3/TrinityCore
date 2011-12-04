@@ -44,20 +44,6 @@ BattlegroundBE::~BattlegroundBE()
 
 }
 
-void BattlegroundBE::Update(uint32 diff)
-{
-    Battleground::Update(diff);
-
-    if (GetStatus() == STATUS_IN_PROGRESS)
-    {
-        if (GetStartTime() >= 47*MINUTE*IN_MILLISECONDS)    // after 47 minutes without one team losing, the arena closes with no winner and no rating change
-        {
-            UpdateArenaWorldState();
-            CheckArenaAfterTimerConditions();
-        }
-    }
-}
-
 void BattlegroundBE::StartingEventCloseDoors()
 {
     for (uint32 i = BG_BE_OBJECT_DOOR_1; i <= BG_BE_OBJECT_DOOR_4; ++i)
@@ -76,18 +62,18 @@ void BattlegroundBE::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 }
 
-void BattlegroundBE::AddPlayer(Player *plr)
+void BattlegroundBE::AddPlayer(Player* player)
 {
-    Battleground::AddPlayer(plr);
+    Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
     BattlegroundBEScore* sc = new BattlegroundBEScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    m_PlayerScores[player->GetGUID()] = sc;
 
     UpdateArenaWorldState();
 }
 
-void BattlegroundBE::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundBE::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -96,7 +82,7 @@ void BattlegroundBE::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     CheckArenaWinConditions();
 }
 
-void BattlegroundBE::HandleKillPlayer(Player *player, Player *killer)
+void BattlegroundBE::HandleKillPlayer(Player* player, Player* killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -113,13 +99,13 @@ void BattlegroundBE::HandleKillPlayer(Player *player, Player *killer)
     CheckArenaWinConditions();
 }
 
-bool BattlegroundBE::HandlePlayerUnderMap(Player *player)
+bool BattlegroundBE::HandlePlayerUnderMap(Player* player)
 {
     player->TeleportTo(GetMapId(), 6238.930176f, 262.963470f, 0.889519f, player->GetOrientation(), false);
     return true;
 }
 
-void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundBE::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -127,7 +113,7 @@ void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
 
     //uint32 SpellId = 0;
     //uint64 buff_guid = 0;
-    switch(Trigger)
+    switch (Trigger)
     {
         case 4538:                                          // buff trigger?
             //buff_guid = m_BgObjects[BG_BE_OBJECT_BUFF_1];

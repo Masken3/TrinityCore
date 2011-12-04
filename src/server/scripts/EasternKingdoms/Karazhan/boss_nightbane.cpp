@@ -63,20 +63,20 @@ class boss_nightbane : public CreatureScript
 public:
     boss_nightbane() : CreatureScript("boss_nightbane") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_nightbaneAI (pCreature);
+        return new boss_nightbaneAI (creature);
     }
 
     struct boss_nightbaneAI : public ScriptedAI
     {
         boss_nightbaneAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             Intro = true;
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 Phase;
 
@@ -125,12 +125,12 @@ public:
             me->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
             me->setActive(true);
 
-            if (pInstance)
+            if (instance)
             {
-                if (pInstance->GetData(TYPE_NIGHTBANE) == DONE || pInstance->GetData(TYPE_NIGHTBANE) == IN_PROGRESS)
+                if (instance->GetData(TYPE_NIGHTBANE) == DONE || instance->GetData(TYPE_NIGHTBANE) == IN_PROGRESS)
                     me->DisappearAndDie();
                 else
-                    pInstance->SetData(TYPE_NIGHTBANE, NOT_STARTED);
+                    instance->SetData(TYPE_NIGHTBANE, NOT_STARTED);
             }
 
             HandleTerraceDoors(true);
@@ -147,17 +147,17 @@ public:
 
         void HandleTerraceDoors(bool open)
         {
-            if (pInstance)
+            if (instance)
             {
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_MASTERS_TERRACE_DOOR_1), open);
-                pInstance->HandleGameObject(pInstance->GetData64(DATA_MASTERS_TERRACE_DOOR_2), open);
+                instance->HandleGameObject(instance->GetData64(DATA_MASTERS_TERRACE_DOOR_1), open);
+                instance->HandleGameObject(instance->GetData64(DATA_MASTERS_TERRACE_DOOR_2), open);
             }
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (pInstance)
-                pInstance->SetData(TYPE_NIGHTBANE, IN_PROGRESS);
+            if (instance)
+                instance->SetData(TYPE_NIGHTBANE, IN_PROGRESS);
 
             HandleTerraceDoors(false);
             me->MonsterYell(YELL_AGGRO, LANG_UNIVERSAL, 0);
@@ -171,13 +171,13 @@ public:
 
         void JustDied(Unit* /*killer*/)
         {
-            if (pInstance)
-                pInstance->SetData(TYPE_NIGHTBANE, DONE);
+            if (instance)
+                instance->SetData(TYPE_NIGHTBANE, DONE);
 
             HandleTerraceDoors(true);
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!Intro && !Flying)
                 ScriptedAI::MoveInLineOfSight(who);
@@ -229,7 +229,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature *summoned)
+        void JustSummoned(Creature* summoned)
         {
             summoned->AI()->AttackStart(me->getVictim());
         }
@@ -321,23 +321,23 @@ public:
 
                 if (CharredEarthTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        DoCast(pTarget, SPELL_CHARRED_EARTH);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        DoCast(target, SPELL_CHARRED_EARTH);
                     CharredEarthTimer = 20000;
                 } else CharredEarthTimer -= diff;
 
                 if (TailSweepTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        if (!me->HasInArc(M_PI, pTarget))
-                            DoCast(pTarget, SPELL_TAIL_SWEEP);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (!me->HasInArc(M_PI, target))
+                            DoCast(target, SPELL_TAIL_SWEEP);
                     TailSweepTimer = 15000;
                 } else TailSweepTimer -= diff;
 
                 if (SearingCindersTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        DoCast(pTarget, SPELL_SEARING_CINDERS);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        DoCast(target, SPELL_SEARING_CINDERS);
                     SearingCindersTimer = 10000;
                 } else SearingCindersTimer -= diff;
 
@@ -378,8 +378,8 @@ public:
 
                     if (DistractingAshTimer <= diff)
                     {
-                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            DoCast(pTarget, SPELL_DISTRACTING_ASH);
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            DoCast(target, SPELL_DISTRACTING_ASH);
                         DistractingAshTimer = 2000; //timer wrong
                     } else DistractingAshTimer -= diff;
                 }
@@ -395,8 +395,8 @@ public:
 
                 if (FireballBarrageTimer <= diff)
                 {
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 0))
-                        DoCast(pTarget, SPELL_FIREBALL_BARRAGE);
+                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0))
+                        DoCast(target, SPELL_FIREBALL_BARRAGE);
                     FireballBarrageTimer = 20000;
                 } else FireballBarrageTimer -= diff;
 

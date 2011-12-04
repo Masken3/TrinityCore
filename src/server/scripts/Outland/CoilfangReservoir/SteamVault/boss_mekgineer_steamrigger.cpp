@@ -19,7 +19,7 @@
 /* ScriptData
 SDName: Boss_Mekgineer_Steamrigger
 SD%Complete: 60
-SDComment: Mechanics' interrrupt heal doesn't work very well, also a proper movement needs to be implemented -> summon further away and move towards pTarget to repair.
+SDComment: Mechanics' interrrupt heal doesn't work very well, also a proper movement needs to be implemented -> summon further away and move towards target to repair.
 SDCategory: Coilfang Resevoir, The Steamvault
 EndScriptData */
 
@@ -53,19 +53,19 @@ class boss_mekgineer_steamrigger : public CreatureScript
 public:
     boss_mekgineer_steamrigger() : CreatureScript("boss_mekgineer_steamrigger") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_mekgineer_steamriggerAI (pCreature);
+        return new boss_mekgineer_steamriggerAI (creature);
     }
 
     struct boss_mekgineer_steamriggerAI : public ScriptedAI
     {
-        boss_mekgineer_steamriggerAI(Creature *c) : ScriptedAI(c)
+        boss_mekgineer_steamriggerAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript *pInstance;
+        InstanceScript* instance;
 
         uint32 Shrink_Timer;
         uint32 Saw_Blade_Timer;
@@ -84,16 +84,16 @@ public:
             Summon50 = false;
             Summon25 = false;
 
-            if (pInstance)
-                pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, NOT_STARTED);
+            if (instance)
+                instance->SetData(TYPE_MEKGINEER_STEAMRIGGER, NOT_STARTED);
         }
 
         void JustDied(Unit* /*Killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (pInstance)
-                pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, DONE);
+            if (instance)
+                instance->SetData(TYPE_MEKGINEER_STEAMRIGGER, DONE);
         }
 
         void KilledUnit(Unit* /*victim*/)
@@ -101,12 +101,12 @@ public:
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
-            if (pInstance)
-                pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, IN_PROGRESS);
+            if (instance)
+                instance->SetData(TYPE_MEKGINEER_STEAMRIGGER, IN_PROGRESS);
         }
 
         //no known summon spells exist
@@ -137,8 +137,8 @@ public:
 
             if (Saw_Blade_Timer <= diff)
             {
-                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
-                    DoCast(pTarget, SPELL_SAW_BLADE);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                    DoCast(target, SPELL_SAW_BLADE);
                 else
                     DoCast(me->getVictim(), SPELL_SAW_BLADE);
 
@@ -197,19 +197,19 @@ class mob_steamrigger_mechanic : public CreatureScript
 public:
     mob_steamrigger_mechanic() : CreatureScript("mob_steamrigger_mechanic") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new mob_steamrigger_mechanicAI (pCreature);
+        return new mob_steamrigger_mechanicAI (creature);
     }
 
     struct mob_steamrigger_mechanicAI : public ScriptedAI
     {
-        mob_steamrigger_mechanicAI(Creature *c) : ScriptedAI(c)
+        mob_steamrigger_mechanicAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 Repair_Timer;
 
@@ -223,15 +223,15 @@ public:
             //react only if attacked
         }
 
-        void EnterCombat(Unit * /*who*/) { }
+        void EnterCombat(Unit* /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
             if (Repair_Timer <= diff)
             {
-                if (pInstance && pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER) && pInstance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
+                if (instance && instance->GetData64(DATA_MEKGINEERSTEAMRIGGER) && instance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
                 {
-                    if (Unit* pMekgineer = Unit::GetUnit((*me), pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
+                    if (Unit* pMekgineer = Unit::GetUnit((*me), instance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
                     {
                         if (me->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
                         {

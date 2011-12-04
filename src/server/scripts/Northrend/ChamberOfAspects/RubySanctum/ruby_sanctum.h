@@ -81,11 +81,13 @@ enum CreaturesIds
     NPC_ORB_ROTATION_FOCUS                  = 40091,
     NPC_SHADOW_ORB_N                        = 40083,
     NPC_SHADOW_ORB_S                        = 40100,
+    NPC_METEOR_STRIKE_MARK                  = 40029,
     NPC_METEOR_STRIKE_NORTH                 = 40041,
     NPC_METEOR_STRIKE_EAST                  = 40042,
     NPC_METEOR_STRIKE_WEST                  = 40043,
     NPC_METEOR_STRIKE_SOUTH                 = 40044,
     NPC_METEOR_STRIKE_FLAME                 = 40055,
+    NPC_COMBUSTION                          = 40001,
 
     // Xerestrasza
     NPC_XERESTRASZA                         = 40429,
@@ -117,7 +119,7 @@ CreatureAI* GetRubySanctumAI(Creature* creature)
 {
     if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
         if (instance->GetInstanceScript())
-            if (instance->GetScriptId() == GetScriptId(RSScriptName))
+            if (instance->GetScriptId() == sObjectMgr->GetScriptId(RSScriptName))
                 return new AI(creature);
     return NULL;
 }

@@ -23,7 +23,7 @@
 
 class Unit;
 class Aura;
-struct SpellEntry;
+class SpellInfo;
 
 enum DynamicObjectType
 {
@@ -41,7 +41,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, bool active, DynamicObjectType type);
+        bool CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, bool active, DynamicObjectType type);
         void Update(uint32 p_time);
         void Remove();
         void SetDuration(int32 newDuration);
@@ -66,6 +66,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
 
     protected:
         Aura* _aura;
+        Aura* _removedAura;
         Unit* _caster;
         int32 _duration; // for non-aura dynobjects
         bool _isViewpoint;

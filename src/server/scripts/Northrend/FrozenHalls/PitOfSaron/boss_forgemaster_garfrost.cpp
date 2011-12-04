@@ -83,13 +83,13 @@ class boss_garfrost : public CreatureScript
 
         struct boss_garfrostAI : public BossAI
         {
-            boss_garfrostAI(Creature *creature) : BossAI(creature, DATA_GARFROST)
+            boss_garfrostAI(Creature* creature) : BossAI(creature, DATA_GARFROST)
             {
             }
 
             void InitializeAI()
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != GetScriptId(PoSScriptName))
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -165,11 +165,11 @@ class boss_garfrost : public CreatureScript
                 events.ScheduleEvent(EVENT_RESUME_ATTACK, 5000);
             }
 
-            void SpellHitTarget(Unit* target, const SpellEntry* spell)
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_PERMAFROST_HELPER)
                 {
-                    if (Aura *aura = target->GetAura(SPELL_PERMAFROST_HELPER))
+                    if (Aura* aura = target->GetAura(SPELL_PERMAFROST_HELPER))
                         _permafrostStack = std::max<uint32>(_permafrostStack, aura->GetStackAmount());
                 }
                 else if (spell->Id == SPELL_FORGE_BLADE)
@@ -270,7 +270,7 @@ class spell_garfrost_permafrost : public SpellScriptLoader
                     {
                         for (std::list<GameObject*>::const_iterator itr = blockList.begin(); itr != blockList.end(); ++itr)
                         {
-                            if ((*itr)->isVisibleForInState(target))
+                            if (!(*itr)->IsInvisibleDueToDespawn())
                             {
                                 if ((*itr)->IsInBetween(caster, target, 4.0f))
                                 {

@@ -71,20 +71,20 @@ class boss_brutallus : public CreatureScript
 public:
     boss_brutallus() : CreatureScript("boss_brutallus") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_brutallusAI (pCreature);
+        return new boss_brutallusAI (creature);
     }
 
     struct boss_brutallusAI : public ScriptedAI
     {
-        boss_brutallusAI(Creature *c) : ScriptedAI(c)
+        boss_brutallusAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
             Intro = true;
         }
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         uint32 SlashTimer;
         uint32 BurnTimer;
@@ -115,16 +115,16 @@ public:
 
             DoCast(me, SPELL_DUAL_WIELD, true);
 
-            if (pInstance)
-                pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(YELL_AGGRO, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_BRUTALLUS_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_BRUTALLUS_EVENT, IN_PROGRESS);
         }
 
         void KilledUnit(Unit* /*victim*/)
@@ -136,9 +136,9 @@ public:
         {
             DoScriptText(YELL_DEATH, me);
 
-            if (pInstance)
+            if (instance)
             {
-                pInstance->SetData(DATA_BRUTALLUS_EVENT, DONE);
+                instance->SetData(DATA_BRUTALLUS_EVENT, DONE);
                 float x, y, z;
                 me->GetPosition(x, y, z);
                 me->SummonCreature(FELMYST, x, y, z+30, me->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0);
@@ -155,7 +155,7 @@ public:
         {
             if (!Intro || IsIntro)
                 return;
-            Creature *Madrigosa = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_MADRIGOSA) : 0);
+            Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
             if (Madrigosa)
             {
                 Madrigosa->Respawn();
@@ -182,16 +182,16 @@ public:
             IsIntro = false;
         }
 
-        void AttackStart(Unit* pWho)
+        void AttackStart(Unit* who)
         {
-            if (!pWho || Intro || IsIntro)
+            if (!who || Intro || IsIntro)
                 return;
-            ScriptedAI::AttackStart(pWho);
+            ScriptedAI::AttackStart(who);
         }
 
         void DoIntro()
         {
-            Creature *Madrigosa = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_MADRIGOSA) : 0);
+            Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
             if (!Madrigosa)
                 return;
 
@@ -267,12 +267,12 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
-            if (!who->isTargetableForAttack() || !me->IsHostileTo(who))
+            if (!me->IsValidAttackTarget(who))
                 return;
-            if (pInstance && Intro)
-                pInstance->SetData(DATA_BRUTALLUS_EVENT, SPECIAL);
+            if (instance && Intro)
+                instance->SetData(DATA_BRUTALLUS_EVENT, SPECIAL);
 
             if (Intro && !IsIntro)
                 StartIntro();
@@ -292,7 +292,7 @@ public:
                 {
                     if (IntroFrostBoltTimer <= diff)
                     {
-                        if (Creature *Madrigosa = Unit::GetCreature(*me, pInstance ? pInstance->GetData64(DATA_MADRIGOSA) : 0))
+                        if (Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0))
                         {
                             Madrigosa->CastSpell(me, SPELL_INTRO_FROSTBOLT, true);
                             IntroFrostBoltTimer = 2000;
@@ -322,9 +322,9 @@ public:
 
             if (BurnTimer <= diff)
             {
-                std::list<Unit*> pTargets;
-                SelectTargetList(pTargets, 10, SELECT_TARGET_RANDOM, 100, true);
-                for (std::list<Unit*>::const_iterator i = pTargets.begin(); i != pTargets.end(); ++i)
+                std::list<Unit*> targets;
+                SelectTargetList(targets, 10, SELECT_TARGET_RANDOM, 100, true);
+                for (std::list<Unit*>::const_iterator i = targets.begin(); i != targets.end(); ++i)
                     if (!(*i)->HasAura(SPELL_BURN))
                     {
                         (*i)->CastSpell((*i), SPELL_BURN, true);

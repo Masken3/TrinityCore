@@ -54,16 +54,16 @@ class boss_krystallus : public CreatureScript
 public:
     boss_krystallus() : CreatureScript("boss_krystallus") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_krystallusAI (pCreature);
+        return new boss_krystallusAI (creature);
     }
 
     struct boss_krystallusAI : public ScriptedAI
     {
-        boss_krystallusAI(Creature *c) : ScriptedAI(c)
+        boss_krystallusAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
         uint32 uiBoulderTossTimer;
@@ -74,7 +74,7 @@ public:
 
         bool bIsSlam;
 
-        InstanceScript* pInstance;
+        InstanceScript* instance;
 
         void Reset()
         {
@@ -86,15 +86,15 @@ public:
             uiStompTimer = 20000 + rand()%9000;
             uiShatterTimer = 0;
 
-            if (pInstance)
-                pInstance->SetData(DATA_KRYSTALLUS_EVENT, NOT_STARTED);
+            if (instance)
+                instance->SetData(DATA_KRYSTALLUS_EVENT, NOT_STARTED);
         }
         void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_KRYSTALLUS_EVENT, IN_PROGRESS);
+            if (instance)
+                instance->SetData(DATA_KRYSTALLUS_EVENT, IN_PROGRESS);
         }
 
         void UpdateAI(const uint32 diff)
@@ -105,15 +105,15 @@ public:
 
             if (uiBoulderTossTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_BOULDER_TOSS);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_BOULDER_TOSS);
                 uiBoulderTossTimer = 9000 + rand()%6000;
             } else uiBoulderTossTimer -= diff;
 
             if (uiGroundSpikeTimer <= diff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    DoCast(pTarget, SPELL_GROUND_SPIKE);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    DoCast(target, SPELL_GROUND_SPIKE);
                 uiGroundSpikeTimer = 12000 + rand()%5000;
             } else uiGroundSpikeTimer -= diff;
 
@@ -146,27 +146,27 @@ public:
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (pInstance)
-                pInstance->SetData(DATA_KRYSTALLUS_EVENT, DONE);
+            if (instance)
+                instance->SetData(DATA_KRYSTALLUS_EVENT, DONE);
         }
 
-        void KilledUnit(Unit * victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;
             DoScriptText(SAY_KILL, me);
         }
 
-        void SpellHitTarget(Unit* pTarget, const SpellEntry* pSpell)
+        void SpellHitTarget(Unit* target, const SpellInfo* pSpell)
         {
             //this part should be in the core
             if (pSpell->Id == SPELL_SHATTER || pSpell->Id == H_SPELL_SHATTER)
             {
                 //this spell must have custom handling in the core, dealing damage based on distance
-                pTarget->CastSpell(pTarget, DUNGEON_MODE(SPELL_SHATTER_EFFECT, H_SPELL_SHATTER_EFFECT), true);
+                target->CastSpell(target, DUNGEON_MODE(SPELL_SHATTER_EFFECT, H_SPELL_SHATTER_EFFECT), true);
 
-                if (pTarget->HasAura(SPELL_STONED))
-                    pTarget->RemoveAurasDueToSpell(SPELL_STONED);
+                if (target->HasAura(SPELL_STONED))
+                    target->RemoveAurasDueToSpell(SPELL_STONED);
 
                 //clear this, if we are still performing
                 if (bIsSlam)

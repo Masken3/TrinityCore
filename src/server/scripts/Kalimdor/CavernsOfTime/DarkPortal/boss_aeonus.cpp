@@ -48,19 +48,19 @@ class boss_aeonus : public CreatureScript
 public:
     boss_aeonus() : CreatureScript("boss_aeonus") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_aeonusAI (pCreature);
+        return new boss_aeonusAI (creature);
     }
 
     struct boss_aeonusAI : public ScriptedAI
     {
-        boss_aeonusAI(Creature *c) : ScriptedAI(c)
+        boss_aeonusAI(Creature* c) : ScriptedAI(c)
         {
-            pInstance = c->GetInstanceScript();
+            instance = c->GetInstanceScript();
         }
 
-        InstanceScript *pInstance;
+        InstanceScript* instance;
 
         uint32 SandBreath_Timer;
         uint32 TimeStop_Timer;
@@ -73,12 +73,12 @@ public:
             Frenzy_Timer = 30000+rand()%15000;
         }
 
-        void EnterCombat(Unit * /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void MoveInLineOfSight(Unit *who)
+        void MoveInLineOfSight(Unit* who)
         {
             //Despawn Time Keeper
             if (who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == C_TIME_KEEPER)
@@ -93,18 +93,18 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void JustDied(Unit * /*victim*/)
+        void JustDied(Unit* /*victim*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-             if (pInstance)
+             if (instance)
              {
-                 pInstance->SetData(TYPE_RIFT, DONE);
-                 pInstance->SetData(TYPE_MEDIVH, DONE);//FIXME: later should be removed
+                 instance->SetData(TYPE_RIFT, DONE);
+                 instance->SetData(TYPE_MEDIVH, DONE);//FIXME: later should be removed
              }
         }
 
-        void KilledUnit(Unit * /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }

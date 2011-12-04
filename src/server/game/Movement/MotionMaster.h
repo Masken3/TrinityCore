@@ -94,7 +94,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void InitTop();
     public:
 
-        explicit MotionMaster(Unit *unit) : i_top(-1), i_owner(unit), m_expList(NULL), m_cleanFlag(MMCF_NONE)
+        explicit MotionMaster(Unit* unit) : i_top(-1), i_owner(unit), m_expList(NULL), m_cleanFlag(MMCF_NONE)
         {
             for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
             {
@@ -152,6 +152,11 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MovePoint(uint32 id, const Position &pos)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
         void MovePoint(uint32 id, float x, float y, float z);
+
+        // These two movement types should only be used with creatures having landing/takeoff animations
+        void MoveLand(uint32 id, Position const& pos, float speed);
+        void MoveTakeoff(uint32 id, Position const& pos, float speed);
+
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE);
         void MoveFall(float z, uint32 id = 0);
         void MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ);
@@ -180,7 +185,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void DelayedExpire();
 
         Unit       *i_owner;
-        ExpireList *m_expList;
+        ExpireList* m_expList;
         uint8       m_cleanFlag;
 };
 #endif

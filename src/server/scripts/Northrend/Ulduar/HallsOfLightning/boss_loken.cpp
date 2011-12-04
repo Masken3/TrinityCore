@@ -63,19 +63,19 @@ class boss_loken : public CreatureScript
 public:
     boss_loken() : CreatureScript("boss_loken") { }
 
-    CreatureAI* GetAI(Creature* pCreature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_lokenAI(pCreature);
+        return new boss_lokenAI(creature);
     }
 
     struct boss_lokenAI : public ScriptedAI
     {
-        boss_lokenAI(Creature* pCreature) : ScriptedAI(pCreature)
+        boss_lokenAI(Creature* creature) : ScriptedAI(creature)
         {
-            m_pInstance = pCreature->GetInstanceScript();
+            m_instance = creature->GetInstanceScript();
         }
 
-        InstanceScript* m_pInstance;
+        InstanceScript* m_instance;
 
         bool m_bIsAura;
 
@@ -97,33 +97,33 @@ public:
 
             m_uiHealthAmountModifier = 1;
 
-            if (m_pInstance)
+            if (m_instance)
             {
-                m_pInstance->SetData(TYPE_LOKEN, NOT_STARTED);
-                m_pInstance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMELY_DEATH_START_EVENT);
+                m_instance->SetData(TYPE_LOKEN, NOT_STARTED);
+                m_instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMELY_DEATH_START_EVENT);
             }
         }
 
-        void EnterCombat(Unit* /*pWho*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
-            if (m_pInstance)
+            if (m_instance)
             {
-                m_pInstance->SetData(TYPE_LOKEN, IN_PROGRESS);
-                m_pInstance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMELY_DEATH_START_EVENT);
+                m_instance->SetData(TYPE_LOKEN, IN_PROGRESS);
+                m_instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMELY_DEATH_START_EVENT);
             }
         }
 
-        void JustDied(Unit* /*pKiller*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
-            if (m_pInstance)
-                m_pInstance->SetData(TYPE_LOKEN, DONE);
+            if (m_instance)
+                m_instance->SetData(TYPE_LOKEN, DONE);
         }
 
-        void KilledUnit(Unit* /*pVictim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
@@ -139,10 +139,10 @@ public:
                 // workaround for PULSING_SHOCKWAVE
                 if (m_uiPulsingShockwave_Timer <= uiDiff)
                 {
-                    Map* pMap = me->GetMap();
-                    if (pMap->IsDungeon())
+                    Map* map = me->GetMap();
+                    if (map->IsDungeon())
                     {
-                        Map::PlayerList const &PlayerList = pMap->GetPlayers();
+                        Map::PlayerList const &PlayerList = map->GetPlayers();
 
                         if (PlayerList.isEmpty())
                             return;
@@ -180,8 +180,8 @@ public:
 
             if (m_uiArcLightning_Timer <= uiDiff)
             {
-                if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                    DoCast(pTarget, SPELL_ARC_LIGHTNING);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    DoCast(target, SPELL_ARC_LIGHTNING);
 
                 m_uiArcLightning_Timer = 15000 + rand()%1000;
             }
@@ -204,7 +204,7 @@ public:
             // Health check
             if (HealthBelowPct(100 - 25 * m_uiHealthAmountModifier))
             {
-                switch(m_uiHealthAmountModifier)
+                switch (m_uiHealthAmountModifier)
                 {
                     case 1: DoScriptText(SAY_75HEALTH, me); break;
                     case 2: DoScriptText(SAY_50HEALTH, me); break;
