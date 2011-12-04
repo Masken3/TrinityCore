@@ -243,6 +243,8 @@ void LootStore::ReportNotExistedId(uint32 id) const
 // RATE_DROP_ITEMS is no longer used for all types of entries
 bool LootStoreItem::Roll(bool rate) const
 {
+	if(needs_quest)
+		return true;
     if (chance >= 100.0f)
         return true;
 
