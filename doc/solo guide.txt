@@ -3,7 +3,7 @@ This is a guide for playing World of Warcraft on the "solo" fork of TrinityCore.
 
 Useful websites:
 
-wowwiki.com
+wowpedia.org
 old.wowhead.com
 
 
